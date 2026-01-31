@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Starship Simulation - Prototype</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #000;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+        canvas {
+            display: block;
+            background: #001a33;
+        }
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border: 1px solid #0f0;
+        }
+        #controls {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border: 1px solid #0f0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div id="info"></div>
+    <div id="controls">
+        <div>マウスで目標位置を指定</div>
+        <div>左クリック: スラスタON/OFF</div>
+        <div>右クリック: 射撃</div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const infoDiv = document.getElementById('info');
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Bullet クラス
+        class Bullet {
+            constructor(x, y, vx, vy, color = '#f00') {
+                this.x = x;
+                this.y = y;
+                this.vx = vx;
+                this.vy = vy;
+                this.life = 300; // フレーム数
+                this.size = 3;
+                this.color = color;
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life--;
+
+                // 画面外に出たら消滅
+                if (this.x < -50 || this.x > canvas.width + 50 ||
+                    this.y < -50 || this.y > canvas.height + 50) {
+                    this.life = 0;
+                }
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            isAlive() {
+                return this.life > 0;
+            }
+
+            collidesWith(ship) {
+                const dx = this.x - ship.x;
+                const dy = this.y - ship.y;
+                const distance = Math.hypot(dx, dy);
+                return distance < this.size + ship.size;
+            }
+        }
+
+        // Starship クラス
+        class Starship {
+            constructor(x, y, color = '#0f0', isEnemy = false) {
+                this.x = x;
+                this.y = y;
+                this.vx = 0;
+                this.vy = 0;
+                this.angle = 0;
+                this.rotationSpeed = 0.02;
+                this.thrusterPower = 0.05;
+                this.thrustersActive = true;
+                this.maxSpeed = 2;
+                this.size = 12;
+                this.color = color;
+                this.isEnemy = isEnemy;
+                this.targetX = x;
+                this.targetY = y;
+                this.hp = 100;
+                this.maxHp = 100;
+                this.fireCounter = 0;
+                this.fireInterval = 60; // プレイヤーも敵も60フレーム毎に射撃
+            }
+
+            update(targetX, targetY) {
+                // 敵艦の場合、目標位置を保存
+                if (this.isEnemy) {
+                    this.targetX = targetX;
+                    this.targetY = targetY;
+                    
+                    // 画面端に近い場合、目標位置を画面中央方向に少し修正
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    const margin = 100;
+                    const correction = 0.6; // 修正の強さ
+                    
+                    if (this.x < margin) {
+                        this.targetX += (centerX - this.targetX) * correction;
+                    } else if (this.x > canvas.width - margin) {
+                        this.targetX += (centerX - this.targetX) * correction;
+                    }
+                    
+                    if (this.y < margin) {
+                        this.targetY += (centerY - this.targetY) * correction;
+                    } else if (this.y > canvas.height - margin) {
+                        this.targetY += (centerY - this.targetY) * correction;
+                    }
+                } else {
+                    // 目標位置を保存
+                    this.targetX = targetX;
+                    this.targetY = targetY;
+                }
+
+                // ターゲット位置に向く
+                const dx = targetX - this.x;
+                const dy = targetY - this.y;
+                const targetAngle = Math.atan2(dy, dx);
+
+                // 角度の最短路で回転
+                let angleDiff = targetAngle - this.angle;
+                if (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
+                if (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
+
+                this.angle += angleDiff * this.rotationSpeed;
+
+                // スラスタが有効なら加速（角度差に応じて推力を調整）
+                if (this.thrustersActive) {
+                    // 方向転換時に推力を減らす
+                    const angleDiff = targetAngle - this.angle;
+                    let normalizedDiff = angleDiff;
+                    if (normalizedDiff > Math.PI) normalizedDiff -= 2 * Math.PI;
+                    if (normalizedDiff < -Math.PI) normalizedDiff += 2 * Math.PI;
+
+                    // 角度差の大きさに応じて推力を調整（前方90度以内で推力）
+                    const thrustFactor = Math.max(0, Math.cos(normalizedDiff));
+
+                    this.vx += Math.cos(this.angle) * this.thrusterPower * thrustFactor;
+                    this.vy += Math.sin(this.angle) * this.thrusterPower * thrustFactor;
+                }
+
+                // 画面端からの斥力（距離に応じて強さが変わる）
+                const margin = 80;
+                const maxRepelStrength = 0.05;
+                
+                // 左右の斥力
+                if (this.x < margin) {
+                    const distRatio = 1 - (this.x / margin);
+                    this.vx += maxRepelStrength * distRatio;
+                }
+                if (this.x > canvas.width - margin) {
+                    const distRatio = 1 - ((canvas.width - this.x) / margin);
+                    this.vx -= maxRepelStrength * distRatio;
+                }
+                
+                // 上下の斥力
+                if (this.y < margin) {
+                    const distRatio = 1 - (this.y / margin);
+                    this.vy += maxRepelStrength * distRatio;
+                }
+                if (this.y > canvas.height - margin) {
+                    const distRatio = 1 - ((canvas.height - this.y) / margin);
+                    this.vy -= maxRepelStrength * distRatio;
+                }
+
+                // 速度制限
+                const speed = Math.hypot(this.vx, this.vy);
+                if (speed > this.maxSpeed) {
+                    this.vx = (this.vx / speed) * this.maxSpeed;
+                    this.vy = (this.vy / speed) * this.maxSpeed;
+                }
+
+                // 位置更新（慣性）
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // 画面端で跳ね返る
+                if (this.x < 0 || this.x > canvas.width) {
+                    this.vx *= -1;
+                    this.x = Math.max(0, Math.min(canvas.width, this.x));
+                }
+                if (this.y < 0 || this.y > canvas.height) {
+                    this.vy *= -1;
+                    this.y = Math.max(0, Math.min(canvas.height, this.y));
+                }
+
+                // 微かな摩擦
+                this.vx *= 0.98;
+                this.vy *= 0.98;
+
+                // 射撃カウンター
+                this.fireCounter++;
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+
+                // 船体
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.moveTo(this.size, 0);
+                ctx.lineTo(-this.size * 0.7, -this.size * 0.6);
+                ctx.lineTo(-this.size * 0.5, 0);
+                ctx.lineTo(-this.size * 0.7, this.size * 0.6);
+                ctx.closePath();
+                ctx.fill();
+
+                // スラスタ炎
+                if (this.thrustersActive && Math.random() > 0.3) {
+                    ctx.fillStyle = 'rgba(255, 100, 0, 0.8)';
+                    const flameLength = 10 + Math.random() * 10;
+                    ctx.beginPath();
+                    ctx.moveTo(-this.size * 0.5, -5);
+                    ctx.lineTo(-this.size * 0.5 - flameLength, 0);
+                    ctx.lineTo(-this.size * 0.5, 5);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                ctx.restore();
+
+                // HP バー（ワールド座標で描画）
+                const hpBarWidth = 24;
+                const hpBarHeight = 2;
+                const hpBarX = this.x - hpBarWidth / 2;
+                const hpBarY = this.y - this.size - 6;
+
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
+
+                const hpRatio = this.hp / this.maxHp;
+                ctx.fillStyle = hpRatio > 0.3 ? '#0f0' : '#f00';
+                ctx.fillRect(hpBarX, hpBarY, hpBarWidth * hpRatio, hpBarHeight);
+
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
+            }
+
+            reset(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = 0;
+                this.vy = 0;
+                this.angle = 0;
+            }
+
+            fire() {
+                const bulletSpeed = 5;
+                const bulletVx = Math.cos(this.angle) * bulletSpeed;
+                const bulletVy = Math.sin(this.angle) * bulletSpeed;
+                
+                // 艦の先端から発射
+                const fireX = this.x + Math.cos(this.angle) * this.size;
+                const fireY = this.y + Math.sin(this.angle) * this.size;
+                
+                // 味方は黄色、敵はマゼンタ
+                const bulletColor = this.isEnemy ? '#f0f' : '#ff0';
+                
+                return new Bullet(fireX, fireY, bulletVx, bulletVy, bulletColor);
+            }
+
+            shouldFire() {
+                if (this.fireCounter >= this.fireInterval) {
+                    // 目標の方向を向いている時だけ射撃
+                    // 現在の位置から目標への角度を計算
+                    const dx = this.targetX - this.x;
+                    const dy = this.targetY - this.y;
+                    const targetAngle = Math.atan2(dy, dx);
+                    
+                    // 艦の向きと目標方向の角度差を計算
+                    let angleDiff = targetAngle - this.angle;
+                    
+                    // 角度差を -π ～ π の範囲に正規化
+                    if (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
+                    if (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
+                    
+                    // 前方15度以内なら射撃
+                    if (Math.abs(angleDiff) < Math.PI / 12) {
+                        this.fireCounter = 0;
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            takeDamage(amount) {
+                this.hp -= amount;
+            }
+
+            isAlive() {
+                return this.hp > 0;
+            }
+        }
+
+        // ゲーム初期化
+        const ship = new Starship(canvas.width / 2, canvas.height / 2, '#fff', false);
+        let enemies = [
+            new Starship(200, 200, '#0ff', true)
+        ];
+        const bullets = [];
+        let mouseX = canvas.width / 2;
+        let mouseY = canvas.height / 2;
+
+        // イベントリスナー
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        document.addEventListener('click', (e) => {
+            if (e.button === 0) { // 左クリック
+                ship.thrustersActive = !ship.thrustersActive;
+            } else if (e.button === 2) { // 右クリック
+                bullets.push(ship.fire());
+            }
+        });
+
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+
+        // スター背景を生成
+        const stars = [];
+        for (let i = 0; i < 200; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: Math.random() * 1.5,
+                brightness: Math.random() * 0.5 + 0.5
+            });
+        }
+
+        // メインループ
+        function animate() {
+            // 背景描画
+            ctx.fillStyle = '#001a33';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 星を描画
+            stars.forEach(star => {
+                ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`;
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // 敵艦の目標マーカー（画面中央）
+            ctx.strokeStyle = 'rgba(0, 100, 0, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(mouseX, mouseY, 30, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Starship更新・描画
+            ship.update(enemies.length > 0 ? enemies[0].x : mouseX, enemies.length > 0 ? enemies[0].y : mouseY);
+            
+            // プレイヤー艦が射撃すべき場合
+            if (ship.shouldFire()) {
+                bullets.push(ship.fire());
+            }
+            
+            ship.draw();
+
+            // 敵艦更新・描画
+            enemies.forEach(enemy => {
+                enemy.update(ship.x, ship.y);
+                
+                // 敵艦が射撃すべき場合
+                if (enemy.shouldFire()) {
+                    bullets.push(enemy.fire());
+                }
+                
+                enemy.draw();
+            });
+
+            // 弾の更新・描画と衝突判定
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                bullets[i].update();
+                
+                if (bullets[i].isAlive()) {
+                    // プレイヤー艦との衝突判定
+                    if (bullets[i].collidesWith(ship)) {
+                        ship.takeDamage(10);
+                        bullets.splice(i, 1);
+                        continue;
+                    }
+                    
+                    // 敵艦との衝突判定
+                    for (let j = enemies.length - 1; j >= 0; j--) {
+                        if (bullets[i].collidesWith(enemies[j])) {
+                            enemies[j].takeDamage(25);
+                            bullets.splice(i, 1);
+                            break;
+                        }
+                    }
+                    
+                    if (i >= 0 && i < bullets.length) {
+                        bullets[i].draw();
+                    }
+                } else {
+                    bullets.splice(i, 1);
+                }
+            }
+
+            // 死亡した敵艦を削除
+            enemies = enemies.filter(enemy => enemy.isAlive());
+
+            // 情報表示
+            const speed = Math.hypot(ship.vx, ship.vy).toFixed(2);
+            const angle = (ship.angle * 180 / Math.PI).toFixed(1);
+            infoDiv.innerHTML = `
+                位置: (${ship.x.toFixed(0)}, ${ship.y.toFixed(0)})<br>
+                速度: ${speed} u/frame<br>
+                角度: ${angle}°<br>
+                スラスタ: ${ship.thrustersActive ? 'ON' : 'OFF'}<br>
+                HP: ${ship.hp.toFixed(0)} / ${ship.maxHp}<br>
+                敵艦数: ${enemies.length}<br>
+                弾数: ${bullets.length}
+            `;
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // ウィンドウリサイズ対応
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
