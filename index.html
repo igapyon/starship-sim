@@ -77,6 +77,29 @@
             background: rgba(0, 100, 0, 0.9);
             box-shadow: 0 0 20px #0f0;
         }
+        #test-buttons {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 10;
+        }
+        .test-btn {
+            padding: 8px 12px;
+            background: rgba(0, 50, 100, 0.7);
+            color: #0f0;
+            border: 1px solid #0f0;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+            transition: all 0.2s;
+        }
+        .test-btn:hover {
+            background: rgba(0, 100, 150, 0.9);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -86,6 +109,11 @@
         <div>画面タッチで操作</div>
         <div>モジュラー構成システム</div>
         <div>段階的破壊を実装</div>
+    </div>
+    <div id="test-buttons">
+        <button class="test-btn" data-config="weapon1">搭載艦1つ</button>
+        <button class="test-btn" data-config="weapon4">搭載艦4つ</button>
+        <button class="test-btn" data-config="destroyer1">駆逐艦1つ</button>
     </div>
     <button id="thruster-btn">スラスタ<br>OFF</button>
 
@@ -324,6 +352,7 @@
                 }
 
                 this.hullExposed = false;  // 船体HPが露出しているか
+                this.hasBeenDamaged = false;  // ダメージを受けたかどうか
             }
 
             // 総質量を計算
@@ -682,29 +711,46 @@
                     ctx.restore();
                 }
 
-                // HPバー
-                const hpBarWidth = 30;
-                const hpBarHeight = 3;
-                const hpBarX = this.x - hpBarWidth / 2;
-                const hpBarY = this.y - this.hull.size * 1.8 - 8;
+                // HPバー（ダメージ受け時のみ表示）
+                if (this.hasBeenDamaged) {
+                    const hpBarWidth = 30;
+                    const hpBarHeight = 3;
+                    const hpBarSpacing = 5;  // バー間のスペース
 
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-                ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
+                    if (this.weapons.length > 0) {
+                        // 射撃ユニットが存在する場合：各ユニットごとにHPバーを表示
+                        this.weapons.forEach((weapon, index) => {
+                            const hpBarX = this.x - hpBarWidth / 2;
+                            const hpBarY = this.y - this.hull.size * 1.8 - 8 - (index * (hpBarHeight + hpBarSpacing));
 
-                const currentHP = this.getTotalHP();
-                const maxHP = this.getMaxHP();
-                const hpRatio = currentHP / maxHP;
-                
-                if (this.weapons.length === 0) {
-                    ctx.fillStyle = '#fa0';
-                } else {
-                    ctx.fillStyle = hpRatio > 0.3 ? '#0f0' : '#f00';
+                            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                            ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
+
+                            const hpRatio = weapon.hp / weapon.maxHp;
+                            ctx.fillStyle = hpRatio > 0.3 ? '#0f0' : '#f00';
+                            ctx.fillRect(hpBarX, hpBarY, hpBarWidth * hpRatio, hpBarHeight);
+
+                            ctx.strokeStyle = '#fff';
+                            ctx.lineWidth = 1;
+                            ctx.strokeRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
+                        });
+                    } else {
+                        // 射撃ユニットが破壊された場合：船体HPを表示
+                        const hpBarX = this.x - hpBarWidth / 2;
+                        const hpBarY = this.y - this.hull.size * 1.8 - 8;
+
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+                        ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
+
+                        const hpRatio = this.hull.hp / this.hull.maxHp;
+                        ctx.fillStyle = '#fa0';
+                        ctx.fillRect(hpBarX, hpBarY, hpBarWidth * hpRatio, hpBarHeight);
+
+                        ctx.strokeStyle = '#fff';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
+                    }
                 }
-                ctx.fillRect(hpBarX, hpBarY, hpBarWidth * hpRatio, hpBarHeight);
-
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 1;
-                ctx.strokeRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
 
                 // 索敵範囲
                 if (this.weapons.length > 0) {
@@ -780,6 +826,7 @@
             }
 
             takeDamage(amount) {
+                this.hasBeenDamaged = true;
                 if (this.weapons.length > 0) {
                     // 射撃ユニットにダメージ
                     const weapon = this.weapons[0];
@@ -861,24 +908,48 @@
         const canvasWidthBase = canvas.width / window.devicePixelRatio;
         const canvasHeightBase = canvas.height / window.devicePixelRatio;
 
-        // プレイヤー艦隊：駆逐艦 x1
-        // 構成: 大型船体(3) + 射撃ユニット(2) + 推進エンジン(1)
-        const playerFleet = [
-            new Starship(canvasWidthBase / 2, canvasHeightBase / 2, 2, 1, '#fff', false, 'large')
-        ];
-
-        // 敵：標準搭載艦 x4
-        let enemies = [
-            new Starship(100, 100, 1, 1, '#0ff', true),
-            new Starship(canvasWidthBase - 100, 100, 1, 1, '#0ff', true),
-            new Starship(100, canvasHeightBase - 100, 1, 1, '#0ff', true),
-            new Starship(canvasWidthBase - 100, canvasHeightBase - 100, 1, 1, '#0ff', true)
-        ];
-
+        let playerFleet = [];
+        let enemies = [];
         const bullets = [];
         const particles = [];
         let mouseX = canvasWidthBase / 2;
         let mouseY = canvasHeightBase / 2;
+
+        // ゲーム初期化関数
+        function initializeGame(config = 'destroyer1') {
+            // プレイヤー艦隊を初期化
+            playerFleet = [];
+
+            if (config === 'weapon1') {
+                // 搭載艦1つ：射撃ユニット1、標準船体
+                playerFleet.push(new Starship(canvasWidthBase / 2, canvasHeightBase / 2, 1, 1, '#fff', false, 'standard'));
+            } else if (config === 'weapon4') {
+                // 搭載艦4つ：それぞれ射撃ユニット1、標準船体
+                const spacing = 60;
+                playerFleet.push(new Starship(canvasWidthBase / 2 - spacing, canvasHeightBase / 2 - spacing, 1, 1, '#fff', false, 'standard'));
+                playerFleet.push(new Starship(canvasWidthBase / 2 + spacing, canvasHeightBase / 2 - spacing, 1, 1, '#fff', false, 'standard'));
+                playerFleet.push(new Starship(canvasWidthBase / 2 - spacing, canvasHeightBase / 2 + spacing, 1, 1, '#fff', false, 'standard'));
+                playerFleet.push(new Starship(canvasWidthBase / 2 + spacing, canvasHeightBase / 2 + spacing, 1, 1, '#fff', false, 'standard'));
+            } else if (config === 'destroyer1') {
+                // 駆逐艦1つ：射撃ユニット2、大型船体
+                playerFleet.push(new Starship(canvasWidthBase / 2, canvasHeightBase / 2, 2, 1, '#fff', false, 'large'));
+            }
+
+            // 敵：標準搭載艦 x4
+            enemies = [
+                new Starship(100, 100, 1, 1, '#0ff', true),
+                new Starship(canvasWidthBase - 100, 100, 1, 1, '#0ff', true),
+                new Starship(100, canvasHeightBase - 100, 1, 1, '#0ff', true),
+                new Starship(canvasWidthBase - 100, canvasHeightBase - 100, 1, 1, '#0ff', true)
+            ];
+
+            // 弾とパーティクルをリセット
+            bullets.length = 0;
+            particles.length = 0;
+        }
+
+        // 初期化実行（デフォルトは駆逐艦1つ）
+        initializeGame('destroyer1');
 
         // スター背景
         const stars = [];
@@ -913,12 +984,21 @@
         }, { passive: false });
 
         thrusterBtn.addEventListener('click', () => {
+            if (playerFleet.length === 0) return;
             const newState = !playerFleet[0].thrustersActive;
             playerFleet.forEach(ship => {
                 ship.thrustersActive = newState;
             });
             thrusterBtn.classList.toggle('on');
             thrusterBtn.textContent = newState ? 'スラスタ\nON' : 'スラスタ\nOFF';
+        });
+
+        // テストボタンのイベントハンドラ
+        document.querySelectorAll('.test-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const config = btn.dataset.config;
+                initializeGame(config);
+            });
         });
 
         document.addEventListener('contextmenu', (e) => e.preventDefault());
