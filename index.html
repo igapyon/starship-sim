@@ -197,19 +197,11 @@
             }
 
             canFire(targetX, targetY, shipX, shipY) {
-                // 索敵範囲チェック
+                // 索敵範囲チェックのみ（敵がいれば角度関係なく射撃）
                 const dx = targetX - shipX;
                 const dy = targetY - shipY;
                 const distance = Math.hypot(dx, dy);
-                if (distance > this.detectionRange) return false;
-
-                // 角度チェック（砲塔自身の角度を使用）
-                const targetAngle = Math.atan2(dy, dx);
-                let angleDiff = targetAngle - this.angle;
-                if (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
-                if (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
-
-                return Math.abs(angleDiff) < this.fireAngle;
+                return distance <= this.detectionRange;
             }
 
             fire(x, y) {
@@ -437,6 +429,11 @@
                         // 砲塔の位置から共通の目標（敵）への角度を計算
                         weapon.updateAngle(this.targetX, this.targetY, weaponX, weaponY);
                     });
+                } else {
+                    // 標準船体の場合、射撃ユニットの角度を船体の角度に同期
+                    this.weapons.forEach(weapon => {
+                        weapon.angle = this.angle;
+                    });
                 }
 
                 // 船体の旋回
@@ -585,24 +582,23 @@
                     }
                     
                     // 独立砲塔を船体の上に描画
-                    const turretColor = this.isEnemy ? '#0ff' : '#ff0';
-                    
+
                     // 砲塔1（前方/上部）
                     if (this.weapons.length > 0) {
                         ctx.save();
                         ctx.translate(this.x, this.y);
-                        
+
                         // 船体の向きを考慮した砲塔位置（船体座標系での前方）
                         const offsetY = -this.hull.size * 0.6;
                         const rotatedAngle = this.angle - Math.PI / 2;
                         const rotatedX = Math.cos(rotatedAngle) * 0 - Math.sin(rotatedAngle) * offsetY;
                         const rotatedY = Math.sin(rotatedAngle) * 0 + Math.cos(rotatedAngle) * offsetY;
-                        
+
                         ctx.translate(rotatedX, rotatedY);
                         ctx.rotate(this.weapons[0].angle);
-                        
-                        // 砲塔本体（三角形・標準搭載艦と同じ形状）
-                        ctx.fillStyle = turretColor;
+
+                        // 砲塔本体（三角形・標準搭載艦と同じ形状、搭載艦と同じ色ルール）
+                        ctx.fillStyle = this.color;
                         ctx.beginPath();
                         ctx.moveTo(12, 0);
                         ctx.lineTo(-8.4, -7.2);
@@ -622,18 +618,18 @@
                     if (this.weapons.length > 1) {
                         ctx.save();
                         ctx.translate(this.x, this.y);
-                        
+
                         // 船体の向きを考慮した砲塔位置（船体座標系での後方）
                         const offsetY = this.hull.size * 0.6;
                         const rotatedAngle = this.angle - Math.PI / 2;
                         const rotatedX = Math.cos(rotatedAngle) * 0 - Math.sin(rotatedAngle) * offsetY;
                         const rotatedY = Math.sin(rotatedAngle) * 0 + Math.cos(rotatedAngle) * offsetY;
-                        
+
                         ctx.translate(rotatedX, rotatedY);
                         ctx.rotate(this.weapons[1].angle);
 
-                        // 砲塔本体（三角形・標準搭載艦と同じ形状）
-                        ctx.fillStyle = turretColor;
+                        // 砲塔本体（三角形・標準搭載艦と同じ形状、搭載艦と同じ色ルール）
+                        ctx.fillStyle = this.color;
                         ctx.beginPath();
                         ctx.moveTo(12, 0);
                         ctx.lineTo(-8.4, -7.2);
@@ -932,7 +928,12 @@
                 playerFleet.push(new Starship(canvasWidthBase / 2 + spacing, canvasHeightBase / 2 + spacing, 1, 1, '#fff', false, 'standard'));
             } else if (config === 'destroyer1') {
                 // 駆逐艦1つ：射撃ユニット2、大型船体
-                playerFleet.push(new Starship(canvasWidthBase / 2, canvasHeightBase / 2, 2, 1, '#fff', false, 'large'));
+                const destroyer = new Starship(canvasWidthBase / 2, canvasHeightBase / 2, 2, 1, '#fff', false, 'large');
+                // 駆逐艦の索敵範囲を搭載艦の2倍に設定
+                destroyer.weapons.forEach(weapon => {
+                    weapon.detectionRange = 300;  // 搭載艦150の2倍
+                });
+                playerFleet.push(destroyer);
             }
 
             // 敵：標準搭載艦 x4
