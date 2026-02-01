@@ -123,7 +123,7 @@
                 this.mass = 3;
                 this.hp = 300;
                 this.maxHp = 300;
-                this.size = 18;
+                this.size = 28;
             }
         }
 
@@ -151,6 +151,8 @@
                 this.maxRange = 225;  // 索敵範囲の1.5倍
                 this.rotationSpeed = 0.05;  // 砲塔の旋回速度
                 this.angle = 0;  // 砲塔独自の角度
+                this.targetX = 0;  // 砲塔独自の目標X
+                this.targetY = 0;  // 砲塔独自の目標Y
             }
 
             // 砲塔を目標に向けて旋回
@@ -337,9 +339,11 @@
                 return this.engines.reduce((sum, e) => sum + e.thrust, 0);
             }
 
-            // 総旋回速度を計算
+            // 総旋回速度を計算（質量で割る）
             getTotalRotationSpeed() {
-                return this.engines.reduce((sum, e) => sum + e.rotationSpeed, 0);
+                const totalRotationForce = this.engines.reduce((sum, e) => sum + e.rotationSpeed, 0);
+                const totalMass = this.getTotalMass();
+                return totalRotationForce / totalMass;
             }
 
             // 総HPを計算（表示用）
@@ -392,8 +396,17 @@
 
                 // 砲塔を目標に向けて旋回（大型船体の場合のみ独立砲塔）
                 if (this.hull.size > 12) {
-                    this.weapons.forEach(weapon => {
-                        weapon.updateAngle(this.targetX, this.targetY, this.x, this.y);
+                    this.weapons.forEach((weapon, index) => {
+                        // 砲塔の実際の位置を計算
+                        const offsetY = index === 0 ? -this.hull.size * 0.6 : this.hull.size * 0.6;
+                        const rotatedAngle = this.angle - Math.PI / 2;
+                        const rotatedX = Math.cos(rotatedAngle) * 0 - Math.sin(rotatedAngle) * offsetY;
+                        const rotatedY = Math.sin(rotatedAngle) * 0 + Math.cos(rotatedAngle) * offsetY;
+                        const weaponX = this.x + rotatedX;
+                        const weaponY = this.y + rotatedY;
+
+                        // 砲塔の位置から共通の目標（敵）への角度を計算
+                        weapon.updateAngle(this.targetX, this.targetY, weaponX, weaponY);
                     });
                 }
 
@@ -489,7 +502,7 @@
                     ctx.rotate(this.angle - Math.PI / 2);
                     
                     // 船体の色：射撃ユニットがあればオレンジ、なければ本来の色
-                    const hullColor = this.weapons.length > 0 ? '#f80' : this.color;
+                    const hullColor = this.weapons.length > 0 ? 'rgba(255, 136, 0, 0.6)' : this.color;
                     
                     // カプセル型の船体（角丸長方形）
                     const bodyWidth = this.hull.size * 0.5;
@@ -513,25 +526,34 @@
                     // エンジンを後端に描画（小さい長方形）
                     if (this.engines.length > 0) {
                         ctx.fillStyle = 'rgba(100, 100, 100, 0.7)';
-                        ctx.fillRect(-6, bodyHeight/2 - 2, 12, 6);
+                        ctx.fillRect(-6, bodyHeight/2 + 6, 12, 6);
                         ctx.strokeStyle = 'rgba(60, 60, 60, 0.8)';
                         ctx.lineWidth = 1;
-                        ctx.strokeRect(-6, bodyHeight/2 - 2, 12, 6);
+                        ctx.strokeRect(-6, bodyHeight/2 + 6, 12, 6);
                     }
-                    
-                    // エンジン炎（赤い三角）
+
+                    ctx.restore();
+
+                    // エンジン炎（グローバル座標系で船体後方に描画）
                     if (this.thrustersActive && this.engines.length > 0 && Math.random() > 0.3) {
                         const flameSize = 10 + Math.random() * 6;
+                        const flameX = this.x + Math.cos(this.angle + Math.PI) * (this.hull.size * 0.9);
+                        const flameY = this.y + Math.sin(this.angle + Math.PI) * (this.hull.size * 0.9);
+
+                        ctx.save();
+                        ctx.translate(flameX, flameY);
+                        ctx.rotate(this.angle + Math.PI);
+
                         ctx.fillStyle = 'rgba(255, 50, 0, 0.9)';
                         ctx.beginPath();
-                        ctx.moveTo(-4, bodyHeight/2 + 4);
-                        ctx.lineTo(0, bodyHeight/2 + 4 + flameSize);
-                        ctx.lineTo(4, bodyHeight/2 + 4);
+                        ctx.moveTo(0, -4);
+                        ctx.lineTo(flameSize, 0);
+                        ctx.lineTo(0, 4);
                         ctx.closePath();
                         ctx.fill();
+
+                        ctx.restore();
                     }
-                    
-                    ctx.restore();
                     
                     // 独立砲塔を船体の上に描画
                     const turretColor = this.isEnemy ? '#0ff' : '#ff0';
@@ -550,12 +572,13 @@
                         ctx.translate(rotatedX, rotatedY);
                         ctx.rotate(this.weapons[0].angle);
                         
-                        // 砲塔本体（三角形）
+                        // 砲塔本体（三角形・標準搭載艦と同じ形状）
                         ctx.fillStyle = turretColor;
                         ctx.beginPath();
-                        ctx.moveTo(8, 0);
-                        ctx.lineTo(-3, -4);
-                        ctx.lineTo(-3, 4);
+                        ctx.moveTo(12, 0);
+                        ctx.lineTo(-8.4, -7.2);
+                        ctx.lineTo(-6, 0);
+                        ctx.lineTo(-8.4, 7.2);
                         ctx.closePath();
                         ctx.fill();
                         
@@ -579,20 +602,21 @@
                         
                         ctx.translate(rotatedX, rotatedY);
                         ctx.rotate(this.weapons[1].angle);
-                        
-                        // 砲塔本体（三角形）
+
+                        // 砲塔本体（三角形・標準搭載艦と同じ形状）
                         ctx.fillStyle = turretColor;
                         ctx.beginPath();
-                        ctx.moveTo(8, 0);
-                        ctx.lineTo(-3, -4);
-                        ctx.lineTo(-3, 4);
+                        ctx.moveTo(12, 0);
+                        ctx.lineTo(-8.4, -7.2);
+                        ctx.lineTo(-6, 0);
+                        ctx.lineTo(-8.4, 7.2);
                         ctx.closePath();
                         ctx.fill();
-                        
+
                         ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
                         ctx.lineWidth = 1;
                         ctx.stroke();
-                        
+
                         ctx.restore();
                     }
                     
@@ -648,9 +672,9 @@
                         ctx.fillStyle = 'rgba(255, 100, 0, 0.8)';
                         const flameLength = 10 + Math.random() * 10;
                         ctx.beginPath();
-                        ctx.moveTo(-this.hull.size * 0.5, -5);
-                        ctx.lineTo(-this.hull.size * 0.5 - flameLength, 0);
-                        ctx.lineTo(-this.hull.size * 0.5, 5);
+                        ctx.moveTo(-this.hull.size * 0.9 - flameLength, -5);
+                        ctx.lineTo(-this.hull.size * 0.9 - flameLength, 5);
+                        ctx.lineTo(-this.hull.size * 0.9, 0);
                         ctx.closePath();
                         ctx.fill();
                     }
@@ -705,11 +729,27 @@
 
             shouldFire() {
                 if (this.weapons.length === 0) return false;
-                
-                for (let weapon of this.weapons) {
+
+                this.nextFireWeaponIndex = -1;
+                for (let i = 0; i < this.weapons.length; i++) {
+                    const weapon = this.weapons[i];
                     if (weapon.fireCounter >= weapon.fireInterval) {
-                        if (weapon.canFire(this.targetX, this.targetY, this.x, this.y)) {
+                        // 大型船体の場合、砲塔の実際の位置を基準にcanFire判定
+                        let weaponX = this.x;
+                        let weaponY = this.y;
+                        if (this.hull.size > 12) {
+                            const offsetY = i === 0 ? -this.hull.size * 0.6 : this.hull.size * 0.6;
+                            const rotatedAngle = this.angle - Math.PI / 2;
+                            const rotatedX = Math.cos(rotatedAngle) * 0 - Math.sin(rotatedAngle) * offsetY;
+                            const rotatedY = Math.sin(rotatedAngle) * 0 + Math.cos(rotatedAngle) * offsetY;
+                            weaponX += rotatedX;
+                            weaponY += rotatedY;
+                        }
+
+                        // 全ての砲塔が共通の目標を使用
+                        if (weapon.canFire(this.targetX, this.targetY, weaponX, weaponY)) {
                             weapon.fireCounter = 0;
+                            this.nextFireWeaponIndex = i;
                             return true;
                         }
                     }
@@ -718,10 +758,23 @@
             }
 
             fire() {
-                if (this.weapons.length === 0) return null;
-                
-                const weapon = this.weapons[0];
-                const bullet = weapon.fire(this.x, this.y);
+                if (this.weapons.length === 0 || this.nextFireWeaponIndex < 0) return null;
+
+                const weapon = this.weapons[this.nextFireWeaponIndex];
+                let fireFromX = this.x;
+                let fireFromY = this.y;
+
+                // 大型船体の場合、砲塔の位置から発射
+                if (this.hull.size > 12) {
+                    const offsetY = this.nextFireWeaponIndex === 0 ? -this.hull.size * 0.6 : this.hull.size * 0.6;
+                    const rotatedAngle = this.angle - Math.PI / 2;
+                    const rotatedX = Math.cos(rotatedAngle) * 0 - Math.sin(rotatedAngle) * offsetY;
+                    const rotatedY = Math.sin(rotatedAngle) * 0 + Math.cos(rotatedAngle) * offsetY;
+                    fireFromX += rotatedX;
+                    fireFromY += rotatedY;
+                }
+
+                const bullet = weapon.fire(fireFromX, fireFromY);
                 bullet.color = this.isEnemy ? '#f0f' : '#ff0';
                 return bullet;
             }
@@ -809,9 +862,9 @@
         const canvasHeightBase = canvas.height / window.devicePixelRatio;
 
         // プレイヤー艦隊：駆逐艦 x1
-        // 構成: 大型船体(3) + 射撃ユニット(2) + 推進エンジン(2)
+        // 構成: 大型船体(3) + 射撃ユニット(2) + 推進エンジン(1)
         const playerFleet = [
-            new Starship(canvasWidthBase / 2, canvasHeightBase / 2, 2, 2, '#fff', false, 'large')
+            new Starship(canvasWidthBase / 2, canvasHeightBase / 2, 2, 1, '#fff', false, 'large')
         ];
 
         // 敵：標準搭載艦 x4
