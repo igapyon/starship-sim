@@ -1000,6 +1000,8 @@
         let initialEnemyCost = 0;
         let lostPlayerCost = 0;
         let lostEnemyCost = 0;
+        let initialPlayerShipCount = 0;
+        let initialEnemyShipCount = 0;
 
         // ゲーム初期化関数
         function initializeGame(config = 'destroyer1') {
@@ -1008,6 +1010,8 @@
             initialEnemyCost = 0;
             lostPlayerCost = 0;
             lostEnemyCost = 0;
+            initialPlayerShipCount = 0;
+            initialEnemyShipCount = 0;
 
             // 陣営Aを初期化
             playerFleet = [];
@@ -1222,9 +1226,11 @@
                 ];
             }
 
-            // 初期コストを計算
+            // 初期コストと初期シップ数を計算
             initialPlayerCost = playerFleet.reduce((sum, ship) => sum + ship.getCost(), 0);
             initialEnemyCost = enemies.reduce((sum, ship) => sum + ship.getCost(), 0);
+            initialPlayerShipCount = playerFleet.length;
+            initialEnemyShipCount = enemies.length;
 
             // 弾とパーティクルをリセット
             bullets.length = 0;
@@ -1494,17 +1500,18 @@
             // 情報表示：コスト情報
             const currentPlayerCost = initialPlayerCost - lostPlayerCost;
             const currentEnemyCost = initialEnemyCost - lostEnemyCost;
+            // 破壊されたシップ（射撃ユニットなし）は除外
+            const currentPlayerShipCount = playerFleet.filter(ship => ship.weapons.length > 0).length;
+            const currentEnemyShipCount = enemies.filter(ship => ship.weapons.length > 0).length;
 
             infoDiv.innerHTML = `
-<strong>陣営A（オレンジ色）</strong><br>
-初期コスト: ${initialPlayerCost}<br>
-失ったコスト: ${lostPlayerCost}<br>
-現在: ${currentPlayerCost}<br>
+<strong>陣営A（薄ピンク色）</strong><br>
+船体 ${currentPlayerShipCount}/${initialPlayerShipCount}${currentPlayerShipCount === 0 ? ' 全滅' : ''}<br>
+コスト ${currentPlayerCost}/${initialPlayerCost}<br>
 <br>
 <strong>陣営B（水色）</strong><br>
-初期コスト: ${initialEnemyCost}<br>
-失ったコスト: ${lostEnemyCost}<br>
-現在: ${currentEnemyCost}<br>
+船体 ${currentEnemyShipCount}/${initialEnemyShipCount}${currentEnemyShipCount === 0 ? ' 全滅' : ''}<br>
+コスト ${currentEnemyCost}/${initialEnemyCost}<br>
             `;
 
             requestAnimationFrame(animate);
