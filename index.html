@@ -626,22 +626,39 @@
                     const hullColor = this.weapons.length > 0 ? 'rgba(255, 136, 0, 0.6)' : this.color;
                     
                     // カプセル型の船体（角丸長方形）
-                    const bodyWidth = this.hull.size * 0.5;
-                    const bodyHeight = this.hull.size * 1.6;
+                    let bodyWidth = this.hull.size * 0.38;
+                    let bodyHeight = this.hull.size * 1.35;
+
+                    if (this.engines.length === 0 && this.weapons.length === 0) {
+                        // 破壊状態：正常時より小さく（但し現在よりは大きく）
+                        bodyWidth *= 0.9;
+                        bodyHeight *= 0.9;
+                        ctx.strokeStyle = this.color;
+                        ctx.lineWidth = 1;
+                    } else {
+                        // 通常状態：塗りつぶしあり
+                        ctx.fillStyle = hullColor;
+                        ctx.beginPath();
+                        const radius = bodyWidth / 2;
+                        ctx.arc(0, -bodyHeight/2 + radius, radius, Math.PI, 0, false);
+                        ctx.lineTo(bodyWidth/2, bodyHeight/2 - radius);
+                        ctx.arc(0, bodyHeight/2 - radius, radius, 0, Math.PI, false);
+                        ctx.lineTo(-bodyWidth/2, -bodyHeight/2 + radius);
+                        ctx.closePath();
+                        ctx.fill();
+
+                        // 船体輪郭
+                        ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+                        ctx.lineWidth = 1.5;
+                    }
+
                     const radius = bodyWidth / 2;
-                    
-                    ctx.fillStyle = hullColor;
                     ctx.beginPath();
                     ctx.arc(0, -bodyHeight/2 + radius, radius, Math.PI, 0, false);
                     ctx.lineTo(bodyWidth/2, bodyHeight/2 - radius);
                     ctx.arc(0, bodyHeight/2 - radius, radius, 0, Math.PI, false);
                     ctx.lineTo(-bodyWidth/2, -bodyHeight/2 + radius);
                     ctx.closePath();
-                    ctx.fill();
-                    
-                    // 船体輪郭
-                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
-                    ctx.lineWidth = 1.5;
                     ctx.stroke();
                     
                     // エンジンを後端に描画（小さい長方形）
@@ -740,52 +757,42 @@
                         ctx.restore();
                     }
                     
-                    // 残骸輪郭
-                    if (this.engines.length === 0 && this.weapons.length === 0) {
-                        ctx.save();
-                        ctx.translate(this.x, this.y);
-                        ctx.rotate(this.angle - Math.PI / 2);
-                        
-                        ctx.strokeStyle = '#fa0';
-                        ctx.lineWidth = 3;
-                        ctx.beginPath();
-                        ctx.arc(0, -bodyHeight/2 + radius, radius, Math.PI, 0, false);
-                        ctx.lineTo(bodyWidth/2, bodyHeight/2 - radius);
-                        ctx.arc(0, bodyHeight/2 - radius, radius, 0, Math.PI, false);
-                        ctx.lineTo(-bodyWidth/2, -bodyHeight/2 + radius);
-                        ctx.closePath();
-                        ctx.stroke();
-                        
-                        ctx.restore();
-                    }
                     
                 } else {
                     // 標準船体（小型艦）
                     ctx.save();
                     ctx.translate(this.x, this.y);
                     ctx.rotate(this.angle);
-                    
-                    ctx.fillStyle = this.color;
-                    ctx.beginPath();
-                    ctx.moveTo(this.hull.size, 0);
-                    ctx.lineTo(-this.hull.size * 0.7, -this.hull.size * 0.6);
-                    ctx.lineTo(-this.hull.size * 0.5, 0);
-                    ctx.lineTo(-this.hull.size * 0.7, this.hull.size * 0.6);
-                    ctx.closePath();
-                    ctx.fill();
-                    
-                    // 残骸輪郭
+
+                    let scale = 1;
                     if (this.engines.length === 0 && this.weapons.length === 0) {
-                        ctx.strokeStyle = '#fa0';
-                        ctx.lineWidth = 2;
+                        // 破壊状態：塗りつぶしなし、線のみ、さらに小さい外枠
+                        scale = 0.75;
+                        ctx.strokeStyle = this.color;
+                        ctx.lineWidth = 1;
+                    } else {
+                        // 通常状態：塗りつぶしあり
+                        ctx.fillStyle = this.color;
                         ctx.beginPath();
                         ctx.moveTo(this.hull.size, 0);
                         ctx.lineTo(-this.hull.size * 0.7, -this.hull.size * 0.6);
                         ctx.lineTo(-this.hull.size * 0.5, 0);
                         ctx.lineTo(-this.hull.size * 0.7, this.hull.size * 0.6);
                         ctx.closePath();
-                        ctx.stroke();
+                        ctx.fill();
                     }
+
+                    ctx.beginPath();
+                    ctx.moveTo(this.hull.size * scale, 0);
+                    ctx.lineTo(-this.hull.size * 0.7 * scale, -this.hull.size * 0.6 * scale);
+                    ctx.lineTo(-this.hull.size * 0.5 * scale, 0);
+                    ctx.lineTo(-this.hull.size * 0.7 * scale, this.hull.size * 0.6 * scale);
+                    ctx.closePath();
+
+                    if (!(this.engines.length === 0 && this.weapons.length === 0)) {
+                        // 通常状態のみ輪郭線を描画
+                    }
+                    ctx.stroke();
                     
                     // エンジン炎
                     if (this.thrustersActive && this.engines.length > 0 && Math.random() > 0.3) {
