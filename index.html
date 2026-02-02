@@ -111,10 +111,12 @@
         <div>段階的破壊を実装</div>
     </div>
     <div id="test-buttons">
-        <button class="test-btn" data-config="weapon1">搭載艦1つ</button>
-        <button class="test-btn" data-config="weapon4">搭載艦4つ</button>
-        <button class="test-btn" data-config="destroyer1">駆逐艦1つ</button>
-        <button class="test-btn" data-config="destroyer1v6">駆逐艦1vs敵6</button>
+        <button class="test-btn" data-config="weapon1">船種C1つ</button>
+        <button class="test-btn" data-config="weapon4">船種C4つ</button>
+        <button class="test-btn" data-config="destroyer1">船種D1つ</button>
+        <button class="test-btn" data-config="destroyer1v6">船種D1vs敵4</button>
+        <button class="test-btn" data-config="destroyervsdestroyer">船種Dvs船種D</button>
+        <button class="test-btn" data-config="destroyer4vs4">船種D4vs4</button>
     </div>
     <button id="thruster-btn">スラスタ<br>OFF</button>
 
@@ -144,6 +146,10 @@
                 this.maxHp = 100;
                 this.size = 12;
             }
+
+            getCost() {
+                return this.mass;
+            }
         }
 
         // 大型船体（Large Hull）
@@ -154,6 +160,10 @@
                 this.maxHp = 300;
                 this.size = 28;
             }
+
+            getCost() {
+                return this.mass;
+            }
         }
 
         // 標準推進エンジン（Standard Thruster）
@@ -162,6 +172,10 @@
                 this.mass = 1;
                 this.thrust = 0.15;  // 推進力
                 this.rotationSpeed = 0.05;  // 旋回速度
+            }
+
+            getCost() {
+                return this.mass;
             }
         }
 
@@ -176,8 +190,8 @@
                 this.fireAngle = Math.PI / 12;  // 前方15度
                 this.detectionRange = 150;
                 this.bulletSpeed = 5;
-                this.bulletDamage = 25;
-                this.maxRange = 225;  // 索敵範囲の1.5倍
+                this.bulletDamage = 10;
+                this.maxRange = 225;  // 索敇範囲の1.5倍
                 this.rotationSpeed = 0.05;  // 砲塔の旋回速度
                 this.angle = 0;  // 砲塔独自の角度
                 this.targetX = 0;  // 砲塔独自の目標X
@@ -210,8 +224,12 @@
                 const bulletVy = Math.sin(this.angle) * this.bulletSpeed;
                 const fireX = x + Math.cos(this.angle) * 12;
                 const fireY = y + Math.sin(this.angle) * 12;
-                
+
                 return new Bullet(fireX, fireY, bulletVx, bulletVy, x, y, this.bulletDamage, this.maxRange);
+            }
+
+            getCost() {
+                return this.mass;
             }
         }
 
@@ -325,9 +343,9 @@
                 this.targetX = x;
                 this.targetY = y;
                 this.maxSpeed = 2;
-                // 敵機は初期状態ではスラスターOFF（索敇範囲内に入ったらON）
+                // 陣営Bは初期状態ではスラスターOFF（索敇範囲内に入ったらON）
                 this.thrustersActive = !isEnemy;
-                // 敵が相手を検出しているか（索敇範囲内にいるか）
+                // 陣営Bが相手を検出しているか（索敇範囲内にいるか）
                 this.detectedTarget = false;
 
                 // コンポーネント構成
@@ -357,6 +375,11 @@
                 mass += this.weapons.reduce((sum, w) => sum + w.mass, 0);
                 mass += this.engines.reduce((sum, e) => sum + e.mass, 0);
                 return mass;
+            }
+
+            // コストを計算（重量と一致）
+            getCost() {
+                return this.getTotalMass();
             }
 
             // 総推進力を計算
@@ -390,13 +413,13 @@
                 const canvasWidth = canvas.width / window.devicePixelRatio;
                 const canvasHeight = canvas.height / window.devicePixelRatio;
 
-                // 敵艦の認識距離チェック
+                // 陣営Bの認識距離チェック
                 if (this.isEnemy && this.weapons.length > 0) {
                     const dx = targetX - this.x;
                     const dy = targetY - this.y;
                     const distanceToPlayer = Math.hypot(dx, dy);
 
-                    // 索敵範囲内なら目標をプレイヤーに設定
+                    // 索敵範囲内なら目標を陣営Aに設定
                     if (distanceToPlayer < this.weapons[0].detectionRange) {
                         // 索敵範囲内に入ったらスラスターONと検出フラグをON
                         this.thrustersActive = true;
@@ -532,7 +555,7 @@
             }
 
             draw() {
-                // 大型船体（駆逐艦）の場合
+                // 大型船体（船種D）の場合
                 if (this.hull.size > 12) {
                     ctx.save();
                     ctx.translate(this.x, this.y);
@@ -609,7 +632,7 @@
                         ctx.translate(rotatedX, rotatedY);
                         ctx.rotate(this.weapons[0].angle);
 
-                        // 砲塔本体（三角形・標準搭載艦と同じ形状、搭載艦と同じ色ルール）
+                        // 砲塔本体（三角形・船種Cと同じ形状、船種Cと同じ色ルール）
                         ctx.fillStyle = this.color;
                         ctx.beginPath();
                         ctx.moveTo(12, 0);
@@ -640,7 +663,7 @@
                         ctx.translate(rotatedX, rotatedY);
                         ctx.rotate(this.weapons[1].angle);
 
-                        // 砲塔本体（三角形・標準搭載艦と同じ形状、搭載艦と同じ色ルール）
+                        // 砲塔本体（三角形・船種Cと同じ形状、船種Cと同じ色ルール）
                         ctx.fillStyle = this.color;
                         ctx.beginPath();
                         ctx.moveTo(12, 0);
@@ -838,27 +861,32 @@
 
             takeDamage(amount) {
                 this.hasBeenDamaged = true;
+                let destroyedCost = 0;
+                let particles = [];
+
                 if (this.weapons.length > 0) {
                     // 射撃ユニットにダメージ
                     const weapon = this.weapons[0];
                     weapon.hp -= amount;
-                    
+
                     if (weapon.hp <= 0) {
-                        // 射撃ユニット破壊
+                        // 射撃ユニット破壊 - コストを記録
+                        destroyedCost += weapon.getCost();
                         this.weapons.shift();
-                        
-                        // エンジン数が射撃ユニット数を超えたらエンジン喪失
+
+                        // エンジン数が射撃ユニット数を超えたらエンジン喪失 - コストを記録
                         while (this.engines.length > this.weapons.length) {
-                            this.engines.pop();
+                            const engine = this.engines.pop();
+                            destroyedCost += engine.getCost();
                         }
-                        
-                        return this.createSmallExplosion();
+
+                        particles = this.createSmallExplosion();
                     }
                 } else {
                     // 船体にダメージ
                     this.hull.hp -= amount;
                 }
-                return [];
+                return { particles, cost: destroyedCost };
             }
 
             isAlive() {
@@ -926,40 +954,60 @@
         let mouseX = canvasWidthBase / 2;
         let mouseY = canvasHeightBase / 2;
 
+        // コスト追跡
+        let initialPlayerCost = 0;
+        let initialEnemyCost = 0;
+        let lostPlayerCost = 0;
+        let lostEnemyCost = 0;
+
         // ゲーム初期化関数
         function initializeGame(config = 'destroyer1') {
-            // プレイヤー艦隊を初期化
+            // コストリセット
+            initialPlayerCost = 0;
+            initialEnemyCost = 0;
+            lostPlayerCost = 0;
+            lostEnemyCost = 0;
+
+            // 陣営Aを初期化
             playerFleet = [];
 
             if (config === 'weapon1') {
-                // 搭載艦1つ：射撃ユニット1、標準船体
+                // 船種C1つ：射撃ユニット1、標準船体
                 playerFleet.push(new Starship(canvasWidthBase / 2, canvasHeightBase / 2, 1, 1, '#fff', false, 'standard'));
             } else if (config === 'weapon4') {
-                // 搭載艦4つ：それぞれ射撃ユニット1、標準船体
+                // 船種C4つ：それぞれ射撃ユニット1、標準船体
                 const spacing = 60;
                 playerFleet.push(new Starship(canvasWidthBase / 2 - spacing, canvasHeightBase / 2 - spacing, 1, 1, '#fff', false, 'standard'));
                 playerFleet.push(new Starship(canvasWidthBase / 2 + spacing, canvasHeightBase / 2 - spacing, 1, 1, '#fff', false, 'standard'));
                 playerFleet.push(new Starship(canvasWidthBase / 2 - spacing, canvasHeightBase / 2 + spacing, 1, 1, '#fff', false, 'standard'));
                 playerFleet.push(new Starship(canvasWidthBase / 2 + spacing, canvasHeightBase / 2 + spacing, 1, 1, '#fff', false, 'standard'));
             } else if (config === 'destroyer1') {
-                // 駆逐艦1つ：射撃ユニット2、大型船体
+                // 船種D1つ：射撃ユニット2、大型船体
                 const destroyer = new Starship(canvasWidthBase / 2, canvasHeightBase / 2, 2, 1, '#fff', false, 'large');
-                // 駆逐艦の索敵範囲を搭載艦の2倍に設定
+                // 船種Dの索敇範囲を船種Cの1.2倍に設定
                 destroyer.weapons.forEach(weapon => {
-                    weapon.detectionRange = 300;  // 搭載艦150の2倍
+                    weapon.detectionRange = 180;  // 船種C150の1.2倍
                 });
                 playerFleet.push(destroyer);
             } else if (config === 'destroyer1v6') {
-                // 駆逐艦1つ：射撃ユニット2、大型船体
+                // 船種D1つ：射撃ユニット2、大型船体
                 const destroyer = new Starship(canvasWidthBase / 2, canvasHeightBase / 2, 2, 1, '#fff', false, 'large');
-                // 駆逐艦の索敵範囲を搭載艦の2倍に設定
+                // 船種Dの索敇範囲を船種Cの1.2倍に設定
                 destroyer.weapons.forEach(weapon => {
-                    weapon.detectionRange = 300;  // 搭載艦150の2倍
+                    weapon.detectionRange = 180;  // 船種C150の1.2倍
+                });
+                playerFleet.push(destroyer);
+            } else if (config === 'destroyervsdestroyer') {
+                // 駆逐艦1つ（陣営A）：射撃ユニット2、大型船体
+                const destroyer = new Starship(canvasWidthBase / 2, canvasHeightBase - 80, 2, 1, '#fff', false, 'large');
+                // 船種Dの索敇範囲を船種Cの1.2倍に設定
+                destroyer.weapons.forEach(weapon => {
+                    weapon.detectionRange = 180;  // 船種C150の1.2倍
                 });
                 playerFleet.push(destroyer);
             }
 
-            // 敵：標準搭載艦 x4（または敵4機の場合は画面上部に矩形配置）
+            // 敵：シーンに応じた配置
             if (config === 'destroyer1v6') {
                 // 敵4機を画面上部に矩形配置（2x2）
                 enemies = [];
@@ -973,6 +1021,49 @@
                         enemies.push(new Starship(x, y, 1, 1, '#0ff', true));
                     }
                 }
+            } else if (config === 'destroyervsdestroyer') {
+                // 敵陣営：船種D1機を画面上部中央に配置
+                enemies = [];
+                const x = canvasWidthBase / 2;
+                const y = 80;
+                const destroyer = new Starship(x, y, 2, 1, '#0ff', true, 'large');
+                destroyer.weapons.forEach(weapon => {
+                    weapon.detectionRange = 180;  // 船種C150の1.2倍
+                });
+                enemies.push(destroyer);
+            } else if (config === 'destroyer4vs4') {
+                // プレイヤー陣営：船種D 4隻を画面下部に配置
+                playerFleet = [];
+                const playerStartX = canvasWidthBase / 2 - 120;
+                const playerStartY = canvasHeightBase - 120;
+                const playerSpacing = 120;
+                for (let row = 0; row < 2; row++) {
+                    for (let col = 0; col < 2; col++) {
+                        const x = playerStartX + col * playerSpacing;
+                        const y = playerStartY + row * playerSpacing;
+                        const destroyer = new Starship(x, y, 2, 1, '#fff', false, 'large');
+                        destroyer.weapons.forEach(weapon => {
+                            weapon.detectionRange = 180;  // 船種C150の1.2倍
+                        });
+                        playerFleet.push(destroyer);
+                    }
+                }
+                // 敵陣営：船種D 4隻を画面上部に配置
+                enemies = [];
+                const enemyStartX = canvasWidthBase / 2 - 120;
+                const enemyStartY = 80;
+                const enemySpacing = 120;
+                for (let row = 0; row < 2; row++) {
+                    for (let col = 0; col < 2; col++) {
+                        const x = enemyStartX + col * enemySpacing;
+                        const y = enemyStartY + row * enemySpacing;
+                        const destroyer = new Starship(x, y, 2, 1, '#0ff', true, 'large');
+                        destroyer.weapons.forEach(weapon => {
+                            weapon.detectionRange = 180;  // 船種C150の1.2倍
+                        });
+                        enemies.push(destroyer);
+                    }
+                }
             } else {
                 // 通常：敵4機を4隅配置
                 enemies = [
@@ -983,12 +1074,16 @@
                 ];
             }
 
+            // 初期コストを計算
+            initialPlayerCost = playerFleet.reduce((sum, ship) => sum + ship.getCost(), 0);
+            initialEnemyCost = enemies.reduce((sum, ship) => sum + ship.getCost(), 0);
+
             // 弾とパーティクルをリセット
             bullets.length = 0;
             particles.length = 0;
         }
 
-        // 初期化実行（デフォルトは駆逐艦1つ）
+        // 初期化実行（デフォルトは船種D1つ）
         initializeGame('destroyer1');
 
         // スター背景
@@ -1070,7 +1165,7 @@
             ctx.arc(mouseX, mouseY, 30, 0, Math.PI * 2);
             ctx.stroke();
 
-            // プレイヤー艦隊の更新と描画
+            // 陣営Aの更新と描画
             playerFleet.forEach((ship, index) => {
                 // 各艦の目標選択（優先順位システム）
                 let targetEnemy = null;
@@ -1108,7 +1203,7 @@
                 // 更新
                 ship.update(targetX, targetY);
                 
-                // プレイヤー艦同士の衝突判定（斥力）
+                // 陣営A同士の衝突判定（斥力）
                 for (let j = 0; j < playerFleet.length; j++) {
                     if (j !== index && ship.collidesWith(playerFleet[j])) {
                         const dx = ship.x - playerFleet[j].x;
@@ -1134,7 +1229,7 @@
 
             // 敵更新
             enemies.forEach(enemy => {
-                // 最も近いプレイヤー艦を目標にする
+                // 最も近い陣営Aを目標にする
                 let closestPlayer = null;
                 let minDist = Infinity;
                 
@@ -1151,7 +1246,7 @@
                 if (closestPlayer) {
                     enemy.update(closestPlayer.x, closestPlayer.y);
                     
-                    // プレイヤー艦との衝突判定（斥力）
+                    // 陣営Aとの衝突判定（斥力）
                     playerFleet.forEach(playerShip => {
                         if (enemy.collidesWith(playerShip)) {
                             const dx = enemy.x - playerShip.x;
@@ -1166,7 +1261,7 @@
                     });
                 }
                 
-                // 敵同士の衝突
+                // 陣営B同士の衝突
                 for (let j = 0; j < enemies.length; j++) {
                     if (enemies[j] !== enemy && enemy.collidesWith(enemies[j])) {
                         const dx = enemy.x - enemies[j].x;
@@ -1194,14 +1289,16 @@
                 bullets[i].update();
                 
                 if (bullets[i].isAlive()) {
-                    // プレイヤー艦への当たり判定
+                    // 陣営Aへの当たり判定
                     if (bullets[i].color === '#f0f') {
                         for (let p = 0; p < playerFleet.length; p++) {
                             if (bullets[i].collidesWith(playerFleet[p])) {
-                                const newParticles = playerFleet[p].takeDamage(bullets[i].damage);
-                                particles.push(...newParticles);
+                                const damageResult = playerFleet[p].takeDamage(bullets[i].damage);
+                                particles.push(...damageResult.particles);
+                                lostPlayerCost += damageResult.cost;
                                 if (!playerFleet[p].isAlive()) {
                                     particles.push(...playerFleet[p].createExplosion());
+                                    lostPlayerCost += playerFleet[p].getCost();
                                     playerFleet.splice(p, 1);
                                 }
                                 bullets.splice(i, 1);
@@ -1214,10 +1311,12 @@
                     // 敵への当たり判定
                     for (let j = enemies.length - 1; j >= 0; j--) {
                         if (bullets[i].color === '#ff0' && bullets[i].collidesWith(enemies[j])) {
-                            const newParticles = enemies[j].takeDamage(bullets[i].damage);
-                            particles.push(...newParticles);
+                            const damageResult = enemies[j].takeDamage(bullets[i].damage);
+                            particles.push(...damageResult.particles);
+                            lostEnemyCost += damageResult.cost;
                             if (!enemies[j].isAlive()) {
                                 particles.push(...enemies[j].createExplosion());
+                                lostEnemyCost += enemies[j].getCost();
                                 enemies.splice(j, 1);
                             }
                             bullets.splice(i, 1);
@@ -1243,44 +1342,21 @@
                 }
             }
 
-            // 情報表示
-            const destroyer = playerFleet[0];
-            
-            if (destroyer) {
-                const speed = Math.hypot(destroyer.vx, destroyer.vy).toFixed(2);
-                const angle = (destroyer.angle * 180 / Math.PI).toFixed(1);
-                const totalMass = destroyer.getTotalMass().toFixed(1);
-                const acceleration = destroyer.engines.length > 0 ? 
-                    (destroyer.getTotalThrust() / destroyer.getTotalMass()).toFixed(3) : '0.000';
-                
-                infoDiv.innerHTML = `
-<strong>駆逐艦 (Destroyer)</strong><br>
-位置: (${destroyer.x.toFixed(0)}, ${destroyer.y.toFixed(0)})<br>
-速度: ${speed} u/f<br>
-角度: ${angle}°<br>
+            // 情報表示：コスト情報
+            const currentPlayerCost = initialPlayerCost - lostPlayerCost;
+            const currentEnemyCost = initialEnemyCost - lostEnemyCost;
+
+            infoDiv.innerHTML = `
+<strong>陣営A（白）</strong><br>
+初期コスト: ${initialPlayerCost}<br>
+失ったコスト: ${lostPlayerCost}<br>
+現在: ${currentPlayerCost}<br>
 <br>
-<strong>構成:</strong><br>
-大型船体: HP ${destroyer.hull.hp.toFixed(0)}/${destroyer.hull.maxHp}<br>
-射撃ユニット: ${destroyer.weapons.length}<br>
-推進エンジン: ${destroyer.engines.length}<br>
-総質量: ${totalMass}<br>
-加速度: ${acceleration}<br>
-<br>
-<strong>戦闘HP:</strong><br>
-${destroyer.getTotalHP().toFixed(0)}/${destroyer.getMaxHP()}<br>
-${destroyer.weapons.length === 0 ? '<span style="color:#fa0">船体HP露出</span><br>' : ''}
-<br>
-敵艦: ${enemies.length}<br>
-弾数: ${bullets.length}
-                `;
-            } else {
-                infoDiv.innerHTML = `
-<strong style="color:#f00">駆逐艦 撃沈</strong><br>
-<br>
-敵艦: ${enemies.length}<br>
-弾数: ${bullets.length}
-                `;
-            }
+<strong>陣営B（シアン）</strong><br>
+初期コスト: ${initialEnemyCost}<br>
+失ったコスト: ${lostEnemyCost}<br>
+現在: ${currentEnemyCost}<br>
+            `;
 
             requestAnimationFrame(animate);
         }
