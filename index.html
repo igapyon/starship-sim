@@ -596,8 +596,8 @@
                     // 90度回転を追加（横向き基準 → 縦向き）
                     ctx.rotate(this.angle - Math.PI / 2);
                     
-                    // 船体の色：射撃ユニットがあればオレンジ、なければ本来の色
-                    const hullColor = this.weapons.length > 0 ? 'rgba(255, 136, 0, 0.6)' : this.color;
+                    // 船体の色：射撃ユニットがあればグレー、なければ本来の色
+                    const hullColor = this.weapons.length > 0 ? 'rgba(136, 136, 136, 0.7)' : this.color;
                     
                     // カプセル型の船体（角丸長方形）
                     let bodyWidth = this.hull.size * 0.38;
