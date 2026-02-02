@@ -53,30 +53,6 @@
             z-index: 10;
             max-width: 280px;
         }
-        #thruster-btn {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            width: 60px;
-            height: 60px;
-            border: 2px solid #0f0;
-            background: rgba(0, 50, 0, 0.7);
-            color: #0f0;
-            font-weight: bold;
-            font-size: 12px;
-            border-radius: 50%;
-            cursor: pointer;
-            z-index: 10;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            transition: all 0.2s;
-        }
-        #thruster-btn:active, #thruster-btn.on {
-            background: rgba(0, 100, 0, 0.9);
-            box-shadow: 0 0 20px #0f0;
-        }
         #test-buttons {
             position: absolute;
             top: 10px;
@@ -121,13 +97,11 @@
         <button class="test-btn" data-config="corvette8vsdestroyer2">C8vsD2</button>
         <button class="test-btn" data-config="mixed1c8vsmixed1c8">D1C8vsD1C8</button>
     </div>
-    <button id="thruster-btn">スラスタ<br>OFF</button>
 
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const infoDiv = document.getElementById('info');
-        const thrusterBtn = document.getElementById('thruster-btn');
 
         function resizeCanvas() {
             const dpr = window.devicePixelRatio || 1;
@@ -266,7 +240,7 @@
         // ========================================
 
         class Bullet {
-            constructor(x, y, vx, vy, originX, originY, damage, maxRange, color = '#ff0') {
+            constructor(x, y, vx, vy, originX, originY, damage, maxRange, color = '#ffccdd') {
                 this.x = x;
                 this.y = y;
                 this.vx = vx;
@@ -360,7 +334,7 @@
         // ========================================
 
         class Starship {
-            constructor(x, y, weaponCount, engineCount, color = '#fff', isEnemy = false, hullType = 'standard') {
+            constructor(x, y, weaponCount, engineCount, color = '#ffccdd', isEnemy = false, hullType = 'standard') {
                 this.x = x;
                 this.y = y;
                 this.vx = 0;
@@ -828,7 +802,7 @@
                             ctx.fillStyle = hpRatio > 0.3 ? '#0f0' : '#f00';
                             ctx.fillRect(hpBarX, hpBarY, hpBarWidth * hpRatio, hpBarHeight);
 
-                            ctx.strokeStyle = '#fff';
+                            ctx.strokeStyle = '#ffccdd';
                             ctx.lineWidth = 1;
                             ctx.strokeRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
                         });
@@ -841,10 +815,10 @@
                         ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
 
                         const hpRatio = this.hull.hp / this.hull.maxHp;
-                        ctx.fillStyle = '#fa0';
+                        ctx.fillStyle = '#555555';
                         ctx.fillRect(hpBarX, hpBarY, hpBarWidth * hpRatio, hpBarHeight);
 
-                        ctx.strokeStyle = '#fff';
+                        ctx.strokeStyle = '#ffccdd';
                         ctx.lineWidth = 1;
                         ctx.strokeRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
                     }
@@ -922,7 +896,7 @@
                 }
 
                 const bullet = weapon.fire(fireFromX, fireFromY);
-                bullet.color = this.isEnemy ? '#f0f' : '#ff0';
+                bullet.color = this.isEnemy ? '#99ddff' : '#ffccdd';
                 return bullet;
             }
 
@@ -1040,17 +1014,17 @@
 
             if (config === 'weapon1') {
                 // 船種C1つ：射撃ユニット1、標準船体
-                playerFleet.push(new Starship(canvasWidthBase / 2, canvasHeightBase / 2, 1, 1, '#fff', false, 'standard'));
+                playerFleet.push(new Starship(canvasWidthBase / 2, canvasHeightBase / 2, 1, 1, '#ffccdd', false, 'standard'));
             } else if (config === 'weapon4') {
                 // 船種C4つ：それぞれ射撃ユニット1、標準船体
                 const spacing = 60;
-                playerFleet.push(new Starship(canvasWidthBase / 2 - spacing, canvasHeightBase / 2 - spacing, 1, 1, '#fff', false, 'standard'));
-                playerFleet.push(new Starship(canvasWidthBase / 2 + spacing, canvasHeightBase / 2 - spacing, 1, 1, '#fff', false, 'standard'));
-                playerFleet.push(new Starship(canvasWidthBase / 2 - spacing, canvasHeightBase / 2 + spacing, 1, 1, '#fff', false, 'standard'));
-                playerFleet.push(new Starship(canvasWidthBase / 2 + spacing, canvasHeightBase / 2 + spacing, 1, 1, '#fff', false, 'standard'));
+                playerFleet.push(new Starship(canvasWidthBase / 2 - spacing, canvasHeightBase / 2 - spacing, 1, 1, '#ffccdd', false, 'standard'));
+                playerFleet.push(new Starship(canvasWidthBase / 2 + spacing, canvasHeightBase / 2 - spacing, 1, 1, '#ffccdd', false, 'standard'));
+                playerFleet.push(new Starship(canvasWidthBase / 2 - spacing, canvasHeightBase / 2 + spacing, 1, 1, '#ffccdd', false, 'standard'));
+                playerFleet.push(new Starship(canvasWidthBase / 2 + spacing, canvasHeightBase / 2 + spacing, 1, 1, '#ffccdd', false, 'standard'));
             } else if (config === 'destroyer1') {
                 // 船種D1つ：独立砲塔射撃ユニット2、大型船体、エンジン2
-                const destroyer = new Starship(canvasWidthBase / 2, canvasHeightBase / 2, 2, 2, '#fff', false, 'large');
+                const destroyer = new Starship(canvasWidthBase / 2, canvasHeightBase / 2, 2, 2, '#ffccdd', false, 'large');
                 // 船種Dの独立砲塔設定
                 destroyer.weapons.forEach(weapon => {
                     weapon.detectionRange = 180;  // 船種C150の1.2倍
@@ -1059,7 +1033,7 @@
                 playerFleet.push(destroyer);
             } else if (config === 'destroyer1v6') {
                 // 船種D1つ：独立砲塔射撃ユニット2、大型船体、エンジン2
-                const destroyer = new Starship(canvasWidthBase / 2, canvasHeightBase / 2, 2, 2, '#fff', false, 'large');
+                const destroyer = new Starship(canvasWidthBase / 2, canvasHeightBase / 2, 2, 2, '#ffccdd', false, 'large');
                 // 船種Dの独立砲塔設定
                 destroyer.weapons.forEach(weapon => {
                     weapon.detectionRange = 180;  // 船種C150の1.2倍
@@ -1068,7 +1042,7 @@
                 playerFleet.push(destroyer);
             } else if (config === 'destroyervsdestroyer') {
                 // 駆逐艦1つ（陣営A）：独立砲塔射撃ユニット2、大型船体、エンジン2
-                const destroyer = new Starship(canvasWidthBase / 2, canvasHeightBase - 80, 2, 2, '#fff', false, 'large');
+                const destroyer = new Starship(canvasWidthBase / 2, canvasHeightBase - 80, 2, 2, '#ffccdd', false, 'large');
                 // 船種Dの独立砲塔設定
                 destroyer.weapons.forEach(weapon => {
                     weapon.detectionRange = 180;  // 船種C150の1.2倍
@@ -1088,7 +1062,7 @@
                     for (let col = 0; col < 2; col++) {
                         const x = startX + col * spacing;
                         const y = startY + row * spacing;
-                        enemies.push(new Starship(x, y, 1, 1, '#0ff', true));
+                        enemies.push(new Starship(x, y, 1, 1, '#99ddff', true));
                     }
                 }
             } else if (config === 'destroyervsdestroyer') {
@@ -1096,7 +1070,7 @@
                 enemies = [];
                 const x = canvasWidthBase / 2;
                 const y = 80;
-                const destroyer = new Starship(x, y, 2, 2, '#0ff', true, 'large');
+                const destroyer = new Starship(x, y, 2, 2, '#99ddff', true, 'large');
                 destroyer.weapons.forEach(weapon => {
                     weapon.detectionRange = 180;  // 船種C150の1.2倍
                     weapon.mass = 2;  // 独立砲塔は重量2
@@ -1112,7 +1086,7 @@
                     for (let col = 0; col < 2; col++) {
                         const x = playerStartX + col * playerSpacing;
                         const y = playerStartY + row * playerSpacing;
-                        const destroyer = new Starship(x, y, 2, 2, '#fff', false, 'large');
+                        const destroyer = new Starship(x, y, 2, 2, '#ffccdd', false, 'large');
                         destroyer.weapons.forEach(weapon => {
                             weapon.detectionRange = 180;  // 船種C150の1.2倍
                             weapon.mass = 2;  // 独立砲塔は重量2
@@ -1129,7 +1103,7 @@
                     for (let col = 0; col < 2; col++) {
                         const x = enemyStartX + col * enemySpacing;
                         const y = enemyStartY + row * enemySpacing;
-                        const destroyer = new Starship(x, y, 2, 2, '#0ff', true, 'large');
+                        const destroyer = new Starship(x, y, 2, 2, '#99ddff', true, 'large');
                         destroyer.weapons.forEach(weapon => {
                             weapon.detectionRange = 180;  // 船種C150の1.2倍
                             weapon.mass = 2;  // 独立砲塔は重量2
@@ -1147,7 +1121,7 @@
                     for (let col = 0; col < 3; col++) {
                         const x = playerStartX + col * playerSpacing;
                         const y = playerStartY + row * playerSpacing;
-                        playerFleet.push(new Starship(x, y, 1, 1, '#fff', false, 'standard'));
+                        playerFleet.push(new Starship(x, y, 1, 1, '#ffccdd', false, 'standard'));
                     }
                 }
                 // 敵陣営：船種C 9隻を画面上部に密集配置（3x3）
@@ -1159,7 +1133,7 @@
                     for (let col = 0; col < 3; col++) {
                         const x = enemyStartX + col * enemySpacing;
                         const y = enemyStartY + row * enemySpacing;
-                        enemies.push(new Starship(x, y, 1, 1, '#0ff', true, 'standard'));
+                        enemies.push(new Starship(x, y, 1, 1, '#99ddff', true, 'standard'));
                     }
                 }
             } else if (config === 'corvette8vsdestroyer2') {
@@ -1172,7 +1146,7 @@
                     for (let col = 0; col < 4; col++) {
                         const x = playerStartX + col * playerSpacing;
                         const y = playerStartY + row * playerSpacing;
-                        playerFleet.push(new Starship(x, y, 1, 1, '#fff', false, 'standard'));
+                        playerFleet.push(new Starship(x, y, 1, 1, '#ffccdd', false, 'standard'));
                     }
                 }
                 // 敵陣営：船種D 2隻を画面上部中央に横並び配置
@@ -1183,7 +1157,7 @@
                 for (let i = 0; i < 2; i++) {
                     const x = enemyStartX + i * enemySpacing;
                     const y = enemyStartY;
-                    const destroyer = new Starship(x, y, 2, 2, '#0ff', true, 'large');
+                    const destroyer = new Starship(x, y, 2, 2, '#99ddff', true, 'large');
                     destroyer.weapons.forEach(weapon => {
                         weapon.detectionRange = 180;  // 船種C150の1.2倍
                         weapon.mass = 2;  // 独立砲塔は重量2
@@ -1196,7 +1170,7 @@
                 // 船種D1隻を画面下部中央に配置
                 const playerDestroyerX = canvasWidthBase / 2;
                 const playerDestroyerY = canvasHeightBase - 80;
-                const destroyer = new Starship(playerDestroyerX, playerDestroyerY, 2, 2, '#fff', false, 'large');
+                const destroyer = new Starship(playerDestroyerX, playerDestroyerY, 2, 2, '#ffccdd', false, 'large');
                 destroyer.weapons.forEach(weapon => {
                     weapon.detectionRange = 180;
                     weapon.mass = 2;
@@ -1211,7 +1185,7 @@
                     for (let col = 0; col < 4; col++) {
                         const x = playerCorvetteStartX + col * playerCorvetteSpacing;
                         const y = playerCorvetteStartY + row * playerCorvetteSpacing;
-                        playerFleet.push(new Starship(x, y, 1, 1, '#fff', false, 'standard'));
+                        playerFleet.push(new Starship(x, y, 1, 1, '#ffccdd', false, 'standard'));
                     }
                 }
 
@@ -1220,7 +1194,7 @@
                 // 船種D1隻を画面上部中央に配置
                 const enemyDestroyerX = canvasWidthBase / 2;
                 const enemyDestroyerY = 80;
-                const enemyDestroyer = new Starship(enemyDestroyerX, enemyDestroyerY, 2, 2, '#0ff', true, 'large');
+                const enemyDestroyer = new Starship(enemyDestroyerX, enemyDestroyerY, 2, 2, '#99ddff', true, 'large');
                 enemyDestroyer.weapons.forEach(weapon => {
                     weapon.detectionRange = 180;
                     weapon.mass = 2;
@@ -1235,16 +1209,16 @@
                     for (let col = 0; col < 4; col++) {
                         const x = enemyCorvetteStartX + col * enemyCorvetteSpacing;
                         const y = enemyCorvetteStartY + row * enemyCorvetteSpacing;
-                        enemies.push(new Starship(x, y, 1, 1, '#0ff', true, 'standard'));
+                        enemies.push(new Starship(x, y, 1, 1, '#99ddff', true, 'standard'));
                     }
                 }
             } else {
                 // 通常：敵4機を4隅配置
                 enemies = [
-                    new Starship(100, 100, 1, 1, '#0ff', true),
-                    new Starship(canvasWidthBase - 100, 100, 1, 1, '#0ff', true),
-                    new Starship(100, canvasHeightBase - 100, 1, 1, '#0ff', true),
-                    new Starship(canvasWidthBase - 100, canvasHeightBase - 100, 1, 1, '#0ff', true)
+                    new Starship(100, 100, 1, 1, '#99ddff', true),
+                    new Starship(canvasWidthBase - 100, 100, 1, 1, '#99ddff', true),
+                    new Starship(100, canvasHeightBase - 100, 1, 1, '#99ddff', true),
+                    new Starship(canvasWidthBase - 100, canvasHeightBase - 100, 1, 1, '#99ddff', true)
                 ];
             }
 
@@ -1291,16 +1265,6 @@
             e.preventDefault();
             handleMove(e);
         }, { passive: false });
-
-        thrusterBtn.addEventListener('click', () => {
-            if (playerFleet.length === 0) return;
-            const newState = !playerFleet[0].thrustersActive;
-            playerFleet.forEach(ship => {
-                ship.thrustersActive = newState;
-            });
-            thrusterBtn.classList.toggle('on');
-            thrusterBtn.textContent = newState ? 'スラスタ\nON' : 'スラスタ\nOFF';
-        });
 
         // テストボタンのイベントハンドラ
         document.querySelectorAll('.test-btn').forEach(btn => {
@@ -1475,7 +1439,7 @@
                 
                 if (bullets[i].isAlive()) {
                     // 陣営Aへの当たり判定
-                    if (bullets[i].color === '#f0f') {
+                    if (bullets[i].color === '#99ddff') {
                         for (let p = 0; p < playerFleet.length; p++) {
                             if (bullets[i].collidesWith(playerFleet[p])) {
                                 const damageResult = playerFleet[p].takeDamage(bullets[i].damage);
@@ -1495,7 +1459,7 @@
                     
                     // 敵への当たり判定
                     for (let j = enemies.length - 1; j >= 0; j--) {
-                        if (bullets[i].color === '#ff0' && bullets[i].collidesWith(enemies[j])) {
+                        if (bullets[i].color === '#ffccdd' && bullets[i].collidesWith(enemies[j])) {
                             const damageResult = enemies[j].takeDamage(bullets[i].damage);
                             particles.push(...damageResult.particles);
                             lostEnemyCost += damageResult.cost;
@@ -1532,12 +1496,12 @@
             const currentEnemyCost = initialEnemyCost - lostEnemyCost;
 
             infoDiv.innerHTML = `
-<strong>陣営A（白）</strong><br>
+<strong>陣営A（オレンジ色）</strong><br>
 初期コスト: ${initialPlayerCost}<br>
 失ったコスト: ${lostPlayerCost}<br>
 現在: ${currentPlayerCost}<br>
 <br>
-<strong>陣営B（シアン）</strong><br>
+<strong>陣営B（水色）</strong><br>
 初期コスト: ${initialEnemyCost}<br>
 失ったコスト: ${lostEnemyCost}<br>
 現在: ${currentEnemyCost}<br>
