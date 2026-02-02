@@ -115,6 +115,7 @@
 index.html           # メインプログラム（JavaScript、HTML、CSS一体）
 README.md            # このファイル
 SHIP_TYPES.md        # 艦船の仕様定義ドキュメント
+ARCHITECTURE.md      # 設計方針とアーキテクチャの決定根拠
 ```
 
 ## ブラウザ互換性
