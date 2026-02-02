@@ -114,6 +114,7 @@
         <button class="test-btn" data-config="weapon1">搭載艦1つ</button>
         <button class="test-btn" data-config="weapon4">搭載艦4つ</button>
         <button class="test-btn" data-config="destroyer1">駆逐艦1つ</button>
+        <button class="test-btn" data-config="destroyer1v6">駆逐艦1vs敵6</button>
     </div>
     <button id="thruster-btn">スラスタ<br>OFF</button>
 
@@ -324,7 +325,10 @@
                 this.targetX = x;
                 this.targetY = y;
                 this.maxSpeed = 2;
-                this.thrustersActive = true;
+                // 敵機は初期状態ではスラスターOFF（索敇範囲内に入ったらON）
+                this.thrustersActive = !isEnemy;
+                // 敵が相手を検出しているか（索敇範囲内にいるか）
+                this.detectedTarget = false;
 
                 // コンポーネント構成
                 this.hull = hullType === 'large' ? new LargeHull() : new Hull();
@@ -391,24 +395,31 @@
                     const dx = targetX - this.x;
                     const dy = targetY - this.y;
                     const distanceToPlayer = Math.hypot(dx, dy);
-                    
+
+                    // 索敵範囲内なら目標をプレイヤーに設定
                     if (distanceToPlayer < this.weapons[0].detectionRange) {
+                        // 索敵範囲内に入ったらスラスターONと検出フラグをON
+                        this.thrustersActive = true;
+                        this.detectedTarget = true;
+
                         this.targetX = targetX;
                         this.targetY = targetY;
-                        
+
                         const centerX = canvasWidth / 2;
                         const centerY = canvasHeight / 2;
                         const margin = 100;
                         const correction = 0.6;
-                        
+
                         if (this.x < margin) this.targetX += (centerX - this.targetX) * correction;
                         else if (this.x > canvasWidth - margin) this.targetX += (centerX - this.targetX) * correction;
                         if (this.y < margin) this.targetY += (centerY - this.targetY) * correction;
                         else if (this.y > canvasHeight - margin) this.targetY += (centerY - this.targetY) * correction;
                     } else {
+                        // 索敵範囲外：移動しない、検出フラグもOFF
+                        this.thrustersActive = false;
+                        this.detectedTarget = false;
                         this.targetX = this.x;
                         this.targetY = this.y;
-                        return;
                     }
                 } else {
                     this.targetX = targetX;
@@ -426,7 +437,8 @@
                         const weaponX = this.x + rotatedX;
                         const weaponY = this.y + rotatedY;
 
-                        // 砲塔の位置から共通の目標（敵）への角度を計算
+                        // 砲塔の位置から共通の目標への角度を計算
+                        // 敵が索敇範囲外の場合、this.targetは自身の位置のため砲塔は旋回しない
                         weapon.updateAngle(this.targetX, this.targetY, weaponX, weaponY);
                     });
                 } else {
@@ -772,6 +784,9 @@
             shouldFire() {
                 if (this.weapons.length === 0) return false;
 
+                // 敵が目標を検出していない場合は射撃しない
+                if (this.isEnemy && !this.detectedTarget) return false;
+
                 this.nextFireWeaponIndex = -1;
                 for (let i = 0; i < this.weapons.length; i++) {
                     const weapon = this.weapons[i];
@@ -934,15 +949,39 @@
                     weapon.detectionRange = 300;  // 搭載艦150の2倍
                 });
                 playerFleet.push(destroyer);
+            } else if (config === 'destroyer1v6') {
+                // 駆逐艦1つ：射撃ユニット2、大型船体
+                const destroyer = new Starship(canvasWidthBase / 2, canvasHeightBase / 2, 2, 1, '#fff', false, 'large');
+                // 駆逐艦の索敵範囲を搭載艦の2倍に設定
+                destroyer.weapons.forEach(weapon => {
+                    weapon.detectionRange = 300;  // 搭載艦150の2倍
+                });
+                playerFleet.push(destroyer);
             }
 
-            // 敵：標準搭載艦 x4
-            enemies = [
-                new Starship(100, 100, 1, 1, '#0ff', true),
-                new Starship(canvasWidthBase - 100, 100, 1, 1, '#0ff', true),
-                new Starship(100, canvasHeightBase - 100, 1, 1, '#0ff', true),
-                new Starship(canvasWidthBase - 100, canvasHeightBase - 100, 1, 1, '#0ff', true)
-            ];
+            // 敵：標準搭載艦 x4（または敵4機の場合は画面上部に矩形配置）
+            if (config === 'destroyer1v6') {
+                // 敵4機を画面上部に矩形配置（2x2）
+                enemies = [];
+                const startX = canvasWidthBase / 2 - 80;
+                const startY = 80;
+                const spacing = 120;
+                for (let row = 0; row < 2; row++) {
+                    for (let col = 0; col < 2; col++) {
+                        const x = startX + col * spacing;
+                        const y = startY + row * spacing;
+                        enemies.push(new Starship(x, y, 1, 1, '#0ff', true));
+                    }
+                }
+            } else {
+                // 通常：敵4機を4隅配置
+                enemies = [
+                    new Starship(100, 100, 1, 1, '#0ff', true),
+                    new Starship(canvasWidthBase - 100, 100, 1, 1, '#0ff', true),
+                    new Starship(100, canvasHeightBase - 100, 1, 1, '#0ff', true),
+                    new Starship(canvasWidthBase - 100, canvasHeightBase - 100, 1, 1, '#0ff', true)
+                ];
+            }
 
             // 弾とパーティクルをリセット
             bullets.length = 0;
