@@ -68,6 +68,7 @@
 </head>
 <body>
     <canvas id="canvas"></canvas>
+    <!-- 左下：情報パネル（陣営A：水色の情報表示） -->
     <div id="info"></div>
     <div id="test-buttons">
         <button class="test-btn" data-config="mixed1c8vsmixed1c8">D1C8vsD1C8</button>
@@ -741,10 +742,10 @@
                     ctx.lineTo(-this.hull.size * 0.7 * scale, this.hull.size * 0.6 * scale);
                     ctx.closePath();
 
-                    if (!(this.engines.length === 0 && this.weapons.length === 0)) {
-                        // 通常状態のみ輪郭線を描画
+                    // 破壊状態のみ縁取りを描画
+                    if (this.engines.length === 0 && this.weapons.length === 0) {
+                        ctx.stroke();
                     }
-                    ctx.stroke();
                     
                     // エンジン炎
                     if (this.thrustersActive && this.engines.length > 0 && Math.random() > 0.3) {
@@ -1483,11 +1484,11 @@
             const currentEnemyShipCount = enemies.filter(ship => ship.weapons.length > 0).length;
 
             infoDiv.innerHTML = `
-<strong>陣営A（薄ピンク色）</strong><br>
+<strong>陣営A（水色）</strong><br>
 船体 ${currentPlayerShipCount}/${initialPlayerShipCount}${currentPlayerShipCount === 0 ? ' 全滅' : ''}<br>
 コスト ${currentPlayerCost}/${initialPlayerCost}<br>
 <br>
-<strong>陣営B（水色）</strong><br>
+<strong>陣営B（桃色）</strong><br>
 船体 ${currentEnemyShipCount}/${initialEnemyShipCount}${currentEnemyShipCount === 0 ? ' 全滅' : ''}<br>
 コスト ${currentEnemyCost}/${initialEnemyCost}<br>
             `;
