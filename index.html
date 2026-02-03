@@ -64,11 +64,35 @@
             background: rgba(0, 100, 150, 0.9);
             box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
         }
+        #wreckage-toggle {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            padding: 8px 12px;
+            background: rgba(0, 50, 100, 0.7);
+            color: #0f0;
+            border: 1px solid #0f0;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+        #wreckage-toggle:hover {
+            background: rgba(0, 100, 150, 0.9);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        #wreckage-toggle.active {
+            background: rgba(200, 100, 0, 0.8);
+            border: 1px solid rgba(255, 200, 0, 0.8);
+            color: rgba(255, 200, 0, 0.9);
+            box-shadow: 0 0 10px rgba(255, 150, 0, 0.6);
+        }
     </style>
 </head>
 <body>
     <canvas id="canvas"></canvas>
-    <!-- 左下：情報パネル（陣営A：水色の情報表示） -->
+    <!-- 左下：情報パネル（チームA：水色の情報表示） -->
     <div id="info"></div>
     <div id="test-buttons">
         <button class="test-btn" data-config="mixed1c8vsmixed1c8">D1C8vsD1C8</button>
@@ -76,6 +100,8 @@
         <button class="test-btn" data-config="destroyer4vs4">D4vsD4</button>
         <button class="test-btn" data-config="corvette8vsdestroyer2">C8vsD2</button>
     </div>
+    <!-- 右下：残骸攻撃トグルボタン -->
+    <button id="wreckage-toggle">残骸を無視する</button>
 
     <script>
         const canvas = document.getElementById('canvas');
@@ -326,9 +352,9 @@
                 this.targetVx = 0;  // 目標の速度X（偏差撃ち用）
                 this.targetVy = 0;  // 目標の速度Y（偏差撃ち用）
                 this.maxSpeed = 2;
-                // 陣営Bは初期状態ではスラスターOFF（索敇範囲内に入ったらON）
+                // チームBは初期状態ではスラスターOFF（索敇範囲内に入ったらON）
                 this.thrustersActive = !isEnemy;
-                // 陣営Bが相手を検出しているか（索敇範囲内にいるか）
+                // チームBが相手を検出しているか（索敇範囲内にいるか）
                 this.detectedTarget = false;
 
                 // コンポーネント構成
@@ -403,13 +429,13 @@
                 const canvasWidth = canvas.width / window.devicePixelRatio;
                 const canvasHeight = canvas.height / window.devicePixelRatio;
 
-                // 陣営Bの認識距離チェック
+                // チームBの認識距離チェック
                 if (this.isEnemy && this.weapons.length > 0) {
                     const dx = targetX - this.x;
                     const dy = targetY - this.y;
                     const distanceToPlayer = Math.hypot(dx, dy);
 
-                    // 索敵範囲内なら目標を陣営Aに設定
+                    // 索敵範囲内なら目標をチームAに設定
                     if (distanceToPlayer < this.weapons[0].detectionRange) {
                         // 索敵範囲内に入ったらスラスターONと検出フラグをON
                         this.thrustersActive = true;
@@ -812,13 +838,17 @@
                     ctx.stroke();
                 }
                 
-                // 残骸円
-                if (this.engines.length === 0 && this.isAlive()) {
+                // 残骸円（残骸を攻撃する設定の場合のみ表示）
+                if (this.engines.length === 0 && this.isAlive() && attackWrecks) {
                     ctx.strokeStyle = 'rgba(255, 170, 0, 0.4)';
                     ctx.lineWidth = 2;
                     ctx.setLineDash([5, 5]);
                     ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.hull.size * 1.8 + 4, 0, Math.PI * 2);
+                    // 船種Cと船種Dで異なる半径を使用
+                    const wreckageRadius = this.hull.size <= 12 ?
+                        this.hull.size * 1.2 + 2 :
+                        this.hull.size * 0.8 + 1;
+                    ctx.arc(this.x, this.y, wreckageRadius, 0, Math.PI * 2);
                     ctx.stroke();
                     ctx.setLineDash([]);
                 }
@@ -973,6 +1003,7 @@
         const particles = [];
         let mouseX = canvasWidthBase / 2;
         let mouseY = canvasHeightBase / 2;
+        let attackWrecks = false;  // 残骸を攻撃するか（デフォルト：しない）
 
         // コスト追跡
         let initialPlayerCost = 0;
@@ -992,7 +1023,7 @@
             initialPlayerShipCount = 0;
             initialEnemyShipCount = 0;
 
-            // 陣営Aを初期化
+            // チームAを初期化
             playerFleet = [];
 
             if (config === 'weapon1') {
@@ -1024,7 +1055,7 @@
                 });
                 playerFleet.push(destroyer);
             } else if (config === 'destroyervsdestroyer') {
-                // 駆逐艦1つ（陣営A）：独立砲塔射撃ユニット2、大型船体、エンジン2
+                // 駆逐艦1つ（チームA）：独立砲塔射撃ユニット2、大型船体、エンジン2
                 const destroyer = new Starship(canvasWidthBase / 2, canvasHeightBase - 80, 2, 2, '#99ddff', false, 'large');
                 // 船種Dの独立砲塔設定
                 destroyer.weapons.forEach(weapon => {
@@ -1259,6 +1290,19 @@
             });
         });
 
+        // 残骸攻撃トグルボタンのイベントハンドラ
+        document.getElementById('wreckage-toggle').addEventListener('click', () => {
+            attackWrecks = !attackWrecks;
+            const toggle = document.getElementById('wreckage-toggle');
+            if (attackWrecks) {
+                toggle.classList.add('active');
+                toggle.textContent = '残骸を攻撃する';
+            } else {
+                toggle.classList.remove('active');
+                toggle.textContent = '残骸を無視する';
+            }
+        });
+
         document.addEventListener('contextmenu', (e) => e.preventDefault());
 
         // ========================================
@@ -1288,7 +1332,7 @@
             ctx.arc(mouseX, mouseY, 30, 0, Math.PI * 2);
             ctx.stroke();
 
-            // 陣営Aの更新と描画
+            // チームAの更新と描画
             playerFleet.forEach((ship, index) => {
                 // 各艦の目標選択（優先順位システム）
                 let targetEnemy = null;
@@ -1297,20 +1341,34 @@
                     let activeEnemies = [];
 
                     enemies.forEach(enemy => {
-                        // 残骸（射撃ユニットなし）は索敵対象から除外
-                        if (enemy.weapons.length === 0) return;
+                        // 残骸（射撃ユニットなし）の扱い
+                        const isWreck = enemy.weapons.length === 0;
+
+                        // 残骸を無視する設定の場合、残骸を完全にスキップ
+                        if (isWreck && !attackWrecks) {
+                            return;
+                        }
 
                         const dx = enemy.x - ship.x;
                         const dy = enemy.y - ship.y;
                         const distance = Math.hypot(dx, dy);
 
                         if (distance < ship.weapons[0].detectionRange) {
-                            activeEnemies.push({ enemy, distance });
+                            activeEnemies.push({ enemy, distance, isWreck });
                         }
                     });
 
                     if (activeEnemies.length > 0) {
-                        activeEnemies.sort((a, b) => a.distance - b.distance);
+                        // ソート
+                        activeEnemies.sort((a, b) => {
+                            // 残骸を攻撃しない設定の場合のみ、生きた敵を優先
+                            if (!attackWrecks) {
+                                if (a.isWreck && !b.isWreck) return 1;   // 残骸は後ろ
+                                if (!a.isWreck && b.isWreck) return -1;  // 生きた敵が優先
+                            }
+                            // 残骸を攻撃する設定、または同じタイプなら距離でソート
+                            return a.distance - b.distance;
+                        });
                         targetEnemy = activeEnemies[0].enemy;
                     }
                 }
@@ -1330,7 +1388,7 @@
                 // 更新
                 ship.update(targetX, targetY);
                 
-                // 陣営A同士の衝突判定（斥力）
+                // チームA同士の衝突判定（斥力）
                 for (let j = 0; j < playerFleet.length; j++) {
                     if (j !== index && ship.collidesWith(playerFleet[j])) {
                         const dx = ship.x - playerFleet[j].x;
@@ -1356,13 +1414,18 @@
 
             // 敵更新
             enemies.forEach(enemy => {
-                // 最も近い陣営Aを目標にする（残骸は除外）
+                // 最も近いチームAを目標にする
                 let closestPlayer = null;
                 let minDist = Infinity;
 
                 playerFleet.forEach(playerShip => {
-                    // 残骸（射撃ユニットなし）は索敵対象から除外
-                    if (playerShip.weapons.length === 0) return;
+                    // 残骸（射撃ユニットなし）の扱い
+                    const isWreck = playerShip.weapons.length === 0;
+
+                    // 残骸を無視する設定の場合、残骸を完全にスキップ
+                    if (isWreck && !attackWrecks) {
+                        return;
+                    }
 
                     const dx = playerShip.x - enemy.x;
                     const dy = playerShip.y - enemy.y;
@@ -1372,7 +1435,7 @@
                         closestPlayer = playerShip;
                     }
                 });
-                
+
                 if (closestPlayer) {
                     // 目標の速度を設定（偏差撃ち用）
                     enemy.targetVx = closestPlayer.vx;
@@ -1380,7 +1443,7 @@
 
                     enemy.update(closestPlayer.x, closestPlayer.y);
 
-                    // 陣営Aとの衝突判定（斥力）
+                    // チームAとの衝突判定（斥力）
                     playerFleet.forEach(playerShip => {
                         if (enemy.collidesWith(playerShip)) {
                             const dx = enemy.x - playerShip.x;
@@ -1395,7 +1458,7 @@
                     });
                 }
                 
-                // 陣営B同士の衝突
+                // チームB同士の衝突
                 for (let j = 0; j < enemies.length; j++) {
                     if (enemies[j] !== enemy && enemy.collidesWith(enemies[j])) {
                         const dx = enemy.x - enemies[j].x;
@@ -1423,7 +1486,7 @@
                 bullets[i].update();
                 
                 if (bullets[i].isAlive()) {
-                    // 陣営Aへの当たり判定
+                    // チームAへの当たり判定
                     if (bullets[i].color === '#ffccdd') {
                         for (let p = 0; p < playerFleet.length; p++) {
                             if (bullets[i].collidesWith(playerFleet[p])) {
@@ -1445,6 +1508,14 @@
                     // 敵への当たり判定
                     for (let j = enemies.length - 1; j >= 0; j--) {
                         if (bullets[i].color === '#99ddff' && bullets[i].collidesWith(enemies[j])) {
+                            // 残骸かどうかチェック（weapons.length === 0なら残骸）
+                            const isWreck = enemies[j].weapons.length === 0;
+
+                            // 残骸を無視する設定の場合、残骸へのダメージをスキップ
+                            if (isWreck && !attackWrecks) {
+                                continue;
+                            }
+
                             const damageResult = enemies[j].takeDamage(bullets[i].damage);
                             particles.push(...damageResult.particles);
                             lostEnemyCost += damageResult.cost;
@@ -1484,11 +1555,11 @@
             const currentEnemyShipCount = enemies.filter(ship => ship.weapons.length > 0).length;
 
             infoDiv.innerHTML = `
-<strong>陣営A（水色）</strong><br>
+<strong>チームA（水色）</strong><br>
 船体 ${currentPlayerShipCount}/${initialPlayerShipCount}${currentPlayerShipCount === 0 ? ' 全滅' : ''}<br>
 コスト ${currentPlayerCost}/${initialPlayerCost}<br>
 <br>
-<strong>陣営B（桃色）</strong><br>
+<strong>チームB（桃色）</strong><br>
 船体 ${currentEnemyShipCount}/${initialEnemyShipCount}${currentEnemyShipCount === 0 ? ' 全滅' : ''}<br>
 コスト ${currentEnemyCost}/${initialEnemyCost}<br>
             `;
