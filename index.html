@@ -820,7 +820,7 @@
                         ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
 
                         const hpRatio = this.hull.hp / this.hull.maxHp;
-                        ctx.fillStyle = '#555555';
+                        ctx.fillStyle = '#888888';
                         ctx.fillRect(hpBarX, hpBarY, hpBarWidth * hpRatio, hpBarHeight);
 
                         ctx.strokeStyle = '#99ddff';
@@ -838,8 +838,8 @@
                     ctx.stroke();
                 }
                 
-                // 残骸円（残骸を攻撃する設定の場合のみ表示）
-                if (this.engines.length === 0 && this.isAlive() && attackWrecks) {
+                // 残骸円（常に表示）
+                if (this.engines.length === 0 && this.isAlive()) {
                     ctx.strokeStyle = 'rgba(255, 170, 0, 0.4)';
                     ctx.lineWidth = 2;
                     ctx.setLineDash([5, 5]);
@@ -930,6 +930,11 @@
                             destroyedCost += engine.getCost();
                         }
 
+                        // 残骸状態に遷移した場合、HPバーを表示するため hasBeenDamaged を確実に true に設定
+                        if (this.weapons.length === 0) {
+                            this.hasBeenDamaged = true;
+                        }
+
                         particles = this.createSmallExplosion();
                     }
                 } else {
@@ -987,6 +992,75 @@
                 }
                 
                 return explosionParticles;
+            }
+
+            // ========================================
+            // 共通ロジックメソッド
+            // ========================================
+
+            selectTarget(opponents, attackWrecks) {
+                let closestActive = null;
+                let closestActiveDistance = Infinity;
+                let closestDebris = null;
+                let closestDebrisDistance = Infinity;
+
+                if (this.weapons.length > 0) {
+                    opponents.forEach(opponent => {
+                        const isWreck = opponent.weapons.length === 0;
+                        const dx = opponent.x - this.x;
+                        const dy = opponent.y - this.y;
+                        const distance = Math.hypot(dx, dy);
+
+                        if (distance < this.weapons[0].detectionRange) {
+                            if (isWreck) {
+                                // 残骸：attackWrecks 設定に従う
+                                if (attackWrecks && distance < closestDebrisDistance) {
+                                    closestDebris = opponent;
+                                    closestDebrisDistance = distance;
+                                }
+                            } else {
+                                // 通常状態：最も近い相手を記録
+                                if (distance < closestActiveDistance) {
+                                    closestActive = opponent;
+                                    closestActiveDistance = distance;
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // 優先順位：通常状態 > 残骸
+                return closestActive || (closestDebris && attackWrecks ? closestDebris : null);
+            }
+
+            handleTeammateCollisions(teammates, excludeIndex = null) {
+                for (let j = 0; j < teammates.length; j++) {
+                    if ((excludeIndex === null || j !== excludeIndex) && teammates[j] !== this && this.collidesWith(teammates[j])) {
+                        const dx = this.x - teammates[j].x;
+                        const dy = this.y - teammates[j].y;
+                        const dist = Math.hypot(dx, dy);
+                        if (dist > 0) {
+                            const pushForce = 0.5;
+                            this.vx += (dx / dist) * pushForce;
+                            this.vy += (dy / dist) * pushForce;
+                        }
+                    }
+                }
+            }
+
+            handleOpponentCollisions(opponents) {
+                for (let k = 0; k < opponents.length; k++) {
+                    if (this.collidesWith(opponents[k])) {
+                        const dx = this.x - opponents[k].x;
+                        const dy = this.y - opponents[k].y;
+                        const dist = Math.hypot(dx, dy);
+                        if (dist > 0) {
+                            const pushForce = 0.5;
+                            this.vx += (dx / dist) * pushForce;
+                            this.vy += (dy / dist) * pushForce;
+                        }
+                    }
+                }
             }
         }
 
@@ -1333,131 +1407,48 @@
             ctx.stroke();
 
             // チームAの更新と描画
+            // （開発中期まで：索敇範囲外のみマウス操作可能、範囲内は自動制御）
             playerFleet.forEach((ship, index) => {
-                // 各艦の目標選択（優先順位システム）
-                let targetEnemy = null;
-                
-                if (ship.weapons.length > 0) {
-                    let activeEnemies = [];
+                const target = ship.selectTarget(enemies, attackWrecks);
 
-                    enemies.forEach(enemy => {
-                        // 残骸（射撃ユニットなし）の扱い
-                        const isWreck = enemy.weapons.length === 0;
+                // 索敇範囲内に敵がない場合のみマウス操作を受け付ける
+                const targetX = target ? target.x : mouseX;
+                const targetY = target ? target.y : mouseY;
 
-                        // 残骸を無視する設定の場合、残骸を完全にスキップ
-                        if (isWreck && !attackWrecks) {
-                            return;
-                        }
+                ship.targetVx = target ? target.vx : 0;
+                ship.targetVy = target ? target.vy : 0;
 
-                        const dx = enemy.x - ship.x;
-                        const dy = enemy.y - ship.y;
-                        const distance = Math.hypot(dx, dy);
-
-                        if (distance < ship.weapons[0].detectionRange) {
-                            activeEnemies.push({ enemy, distance, isWreck });
-                        }
-                    });
-
-                    if (activeEnemies.length > 0) {
-                        // ソート
-                        activeEnemies.sort((a, b) => {
-                            // 残骸を攻撃しない設定の場合のみ、生きた敵を優先
-                            if (!attackWrecks) {
-                                if (a.isWreck && !b.isWreck) return 1;   // 残骸は後ろ
-                                if (!a.isWreck && b.isWreck) return -1;  // 生きた敵が優先
-                            }
-                            // 残骸を攻撃する設定、または同じタイプなら距離でソート
-                            return a.distance - b.distance;
-                        });
-                        targetEnemy = activeEnemies[0].enemy;
-                    }
-                }
-                
-                const targetX = targetEnemy ? targetEnemy.x : mouseX;
-                const targetY = targetEnemy ? targetEnemy.y : mouseY;
-
-                // 目標の速度を設定（偏差撃ち用）
-                if (targetEnemy) {
-                    ship.targetVx = targetEnemy.vx;
-                    ship.targetVy = targetEnemy.vy;
-                } else {
-                    ship.targetVx = 0;
-                    ship.targetVy = 0;
-                }
-
-                // 更新
                 ship.update(targetX, targetY);
-                
-                // チームA同士の衝突判定（斥力）
-                for (let j = 0; j < playerFleet.length; j++) {
-                    if (j !== index && ship.collidesWith(playerFleet[j])) {
-                        const dx = ship.x - playerFleet[j].x;
-                        const dy = ship.y - playerFleet[j].y;
-                        const dist = Math.hypot(dx, dy);
-                        if (dist > 0) {
-                            const pushForce = 0.5;
-                            ship.vx += (dx / dist) * pushForce;
-                            ship.vy += (dy / dist) * pushForce;
-                        }
-                    }
-                }
-                
-                // 射撃
-                if (targetEnemy && ship.shouldFire()) {
+                ship.handleTeammateCollisions(playerFleet, index);
+                ship.handleOpponentCollisions(enemies);
+
+                if (target && ship.shouldFire()) {
                     const bullet = ship.fire();
                     if (bullet) bullets.push(bullet);
                 }
-                
-                // 描画
+
                 ship.draw();
             });
 
             // 敵更新
             enemies.forEach(enemy => {
-                // 最も近いチームAを目標にする
-                let closestPlayer = null;
-                let minDist = Infinity;
+                const target = enemy.selectTarget(playerFleet, attackWrecks);
 
-                playerFleet.forEach(playerShip => {
-                    // 残骸（射撃ユニットなし）の扱い
-                    const isWreck = playerShip.weapons.length === 0;
-
-                    // 残骸を無視する設定の場合、残骸を完全にスキップ
-                    if (isWreck && !attackWrecks) {
-                        return;
-                    }
-
-                    const dx = playerShip.x - enemy.x;
-                    const dy = playerShip.y - enemy.y;
-                    const dist = Math.hypot(dx, dy);
-                    if (dist < minDist) {
-                        minDist = dist;
-                        closestPlayer = playerShip;
-                    }
-                });
-
-                if (closestPlayer) {
-                    // 目標の速度を設定（偏差撃ち用）
-                    enemy.targetVx = closestPlayer.vx;
-                    enemy.targetVy = closestPlayer.vy;
-
-                    enemy.update(closestPlayer.x, closestPlayer.y);
-
-                    // チームAとの衝突判定（斥力）
-                    playerFleet.forEach(playerShip => {
-                        if (enemy.collidesWith(playerShip)) {
-                            const dx = enemy.x - playerShip.x;
-                            const dy = enemy.y - playerShip.y;
-                            const dist = Math.hypot(dx, dy);
-                            if (dist > 0) {
-                                const pushForce = 0.5;
-                                enemy.vx += (dx / dist) * pushForce;
-                                enemy.vy += (dy / dist) * pushForce;
-                            }
-                        }
-                    });
+                if (target) {
+                    enemy.targetVx = target.vx;
+                    enemy.targetVy = target.vy;
+                    enemy.update(target.x, target.y);
+                } else {
+                    enemy.detectedTarget = false;
+                    enemy.thrustersActive = false;
+                    enemy.vx *= 0.95;
+                    enemy.vy *= 0.95;
+                    enemy.targetVx = 0;
+                    enemy.targetVy = 0;
                 }
-                
+
+                enemy.handleOpponentCollisions(playerFleet);
+
                 // チームB同士の衝突
                 for (let j = 0; j < enemies.length; j++) {
                     if (enemies[j] !== enemy && enemy.collidesWith(enemies[j])) {
@@ -1471,13 +1462,12 @@
                         }
                     }
                 }
-                
-                // 射撃
+
                 if (enemy.shouldFire()) {
                     const bullet = enemy.fire();
                     if (bullet) bullets.push(bullet);
                 }
-                
+
                 enemy.draw();
             });
 
@@ -1508,14 +1498,7 @@
                     // 敵への当たり判定
                     for (let j = enemies.length - 1; j >= 0; j--) {
                         if (bullets[i].color === '#99ddff' && bullets[i].collidesWith(enemies[j])) {
-                            // 残骸かどうかチェック（weapons.length === 0なら残骸）
-                            const isWreck = enemies[j].weapons.length === 0;
-
-                            // 残骸を無視する設定の場合、残骸へのダメージをスキップ
-                            if (isWreck && !attackWrecks) {
-                                continue;
-                            }
-
+                            // プレイヤーの弾は常に敵に当たり判定を持つ（残骸を無視する設定に関わらず）
                             const damageResult = enemies[j].takeDamage(bullets[i].damage);
                             particles.push(...damageResult.particles);
                             lostEnemyCost += damageResult.cost;
