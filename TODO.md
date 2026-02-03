@@ -18,6 +18,22 @@
 [ ] 残骸を無視する、の場合に、敵の球がちゃんと残骸に当たっているか確認する。
 [ ] 残骸を攻撃する、のときに、残骸よりも活性化した敵チームがいる場合にはそちらを優先する
 
+### レーダーシステムの実装乖離を修正
+
+[ ] RadarA/RadarB の detectionBonus を索敇ロジックに統合する
+  - 現状：RadarA/RadarB クラスは存在し質量（mass）はコスト計算に含まれるが、detectionBonus は未使用
+  - 目標：RadarA/RadarB の detectionBonus を実際の索敇範囲計算に反映させる
+
+[ ] selectTarget() メソッドを修正して、weapon.detectionRange ではなく radar.detectionBonus を使用
+  - 現状：1135行で `distance < this.weapons[0].detectionRange` を使用
+  - 目標：レーダーコンポーネントベースの索敇範囲を使用
+
+[ ] 全シーンの detectionRange 後付け設定を改善
+  - 現状：初期化時に `weapon.detectionRange = 180` などと後から上書き
+  - 目標：レーダーコンポーネントで統一管理
+
+[ ] SHIP_TYPES.md のドキュメントを修正：レーダーコンポーネントが索敇範囲を決定することを明記
+
 ## 今後の拡張予定
 
 ### シミュレーション機能の強化

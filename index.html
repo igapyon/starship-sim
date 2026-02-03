@@ -203,7 +203,8 @@
         }
 
         // 高性能レーダー（Advanced Radar）
-        class AdvancedRadar {
+        // レーダーA（Radar A）
+        class RadarA {
             constructor() {
                 this.mass = 1;
                 this.detectionBonus = 30;  // 索敵範囲ボーナス（ピクセル）
@@ -504,13 +505,13 @@
                     this.engines.push(new ThrusterEngine());
                 }
 
-                // 大型船体には高性能レーダーを搭載
+                // 大型船体にはレーダーAを搭載
                 if (hullType === 'large') {
-                    this.radar = new AdvancedRadar();
+                    this.radar = new RadarA();
                     this.radarCount = 1;
                 } else if (hullType === 'hull5') {
                     this.radar = new RadarB();
-                    this.radarCount = 2;
+                    this.radarCount = 1;
                 }
 
                 // 射撃ユニット数の上限チェック
