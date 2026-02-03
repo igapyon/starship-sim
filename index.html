@@ -119,17 +119,11 @@
     <!-- 左下：情報パネル（チームA：水色の情報表示） -->
     <div id="info"></div>
     <div id="test-buttons">
-        <button class="test-btn" data-config="mixed1c8vsmixed1c8">D1C8vsD1C8</button>
-        <button class="test-btn" data-config="corvette9vs9">C9vsC9</button>
-        <button class="test-btn" data-config="destroyer4vs4">D4vsD4</button>
+        <button class="test-btn" data-config="mixed1c8vsmixed1c8">L1D2C8</button>
         <button class="test-btn" data-config="corvette8vsdestroyer2">C8vsD2</button>
-        <button class="test-btn" data-config="lightcruiser1vs1">L1vsL1</button>
         <button class="test-btn" data-config="lightcruiser1vsdestroyer2">L1vsD2</button>
-        <button class="test-btn" data-config="turretb1vs1">TurretB 1vs1</button>
-        <button class="test-btn" data-config="c25d4l1vs">C25D4L1</button>
         <button class="test-btn" data-config="mass_d1c8">Mass D1C8</button>
-        <button class="test-btn" data-config="teambcontrol_d1c8">Team-B D1C8</button>
-        <button class="test-btn" data-config="threeway_d1c8">3WAY D1C8</button>
+        <button class="test-btn" data-config="threeway_l1d4c32">L1D4C16</button>
     </div>
     <!-- 右下：ビーコン配置ボタン -->
     <button id="beacon-button">ビーコン: チームA</button>
@@ -1284,67 +1278,6 @@
                     weapon.mass = 2;  // 独立砲塔は重量2
                 });
                 enemies.push(destroyer);
-            } else if (config === 'destroyer4vs4') {
-                // プレイヤー陣営：船種D 4隻を画面下部に配置
-                playerFleet = [];
-                const playerStartX = canvasWidthBase / 2 - 120;
-                const playerStartY = canvasHeightBase - 120;
-                const playerSpacing = 120;
-                for (let row = 0; row < 2; row++) {
-                    for (let col = 0; col < 2; col++) {
-                        const x = playerStartX + col * playerSpacing;
-                        const y = playerStartY + row * playerSpacing;
-                        const destroyer = new Starship(x, y, 2, 2, '#99ddff', 'large');
-                        destroyer.weapons.forEach(weapon => {
-                            weapon.detectionRange = 180;  // 船種C150の1.2倍
-                            weapon.mass = 2;  // 独立砲塔は重量2
-                        });
-                        playerFleet.push(destroyer);
-                    }
-                }
-                // 敵陣営：船種D 4隻を画面上部に配置
-                enemies = [];
-                const enemyStartX = canvasWidthBase / 2 - 120;
-                const enemyStartY = 80;
-                const enemySpacing = 120;
-                for (let row = 0; row < 2; row++) {
-                    for (let col = 0; col < 2; col++) {
-                        const x = enemyStartX + col * enemySpacing;
-                        const y = enemyStartY + row * enemySpacing;
-                        const destroyer = new Starship(x, y, 2, 2, '#ffccdd', 'large');
-                        destroyer.weapons.forEach(weapon => {
-                            weapon.detectionRange = 180;  // 船種C150の1.2倍
-                            weapon.mass = 2;  // 独立砲塔は重量2
-                        });
-                        enemies.push(destroyer);
-                    }
-                }
-            } else if (config === 'lightcruiser1vs1') {
-                // 軽巡洋艦 1隻 vs 1隻
-                playerFleet = [];
-                enemies = [];
-
-                const playerCruiser = new Starship(
-                    canvasWidthBase / 2,
-                    canvasHeightBase - 120,
-                    3,
-                    3,
-                    '#99ddff',
-                    'hull5',
-                    IndependentTurretB
-                );
-                playerFleet.push(playerCruiser);
-
-                const enemyCruiser = new Starship(
-                    canvasWidthBase / 2,
-                    120,
-                    3,
-                    3,
-                    '#ffccdd',
-                    'hull5',
-                    IndependentTurretB
-                );
-                enemies.push(enemyCruiser);
             } else if (config === 'lightcruiser1vsdestroyer2') {
                 // 軽巡洋艦 1隻 vs 駆逐艦 2隻
                 playerFleet = [];
@@ -1372,136 +1305,6 @@
                         weapon.mass = 2;  // 独立砲塔は重量2
                     });
                     enemies.push(destroyer);
-                }
-            } else if (config === 'turretb1vs1') {
-                // 独立砲塔B 1隻 vs 1隻
-                playerFleet = [];
-                enemies = [];
-
-                const playerShip = new Starship(
-                    canvasWidthBase / 2,
-                    canvasHeightBase - 120,
-                    1,
-                    1,
-                    '#99ddff',
-                    'large',
-                    IndependentTurretB
-                );
-                playerFleet.push(playerShip);
-
-                const enemyShip = new Starship(
-                    canvasWidthBase / 2,
-                    120,
-                    1,
-                    1,
-                    '#ffccdd',
-                    'large',
-                    IndependentTurretB
-                );
-                enemies.push(enemyShip);
-            } else if (config === 'c25d4l1vs') {
-                // C25D4L1（チームA vs チームB）
-                playerFleet = [];
-                enemies = [];
-
-                const columns = 5;
-                const rows = 5;
-                const corvetteSpacing = 36;
-                const centerX = canvasWidthBase / 2;
-
-                // チームA（下側）
-                const playerStartX = centerX - ((columns - 1) * corvetteSpacing) / 2;
-                const playerStartY = canvasHeightBase - 220;
-                for (let row = 0; row < rows; row++) {
-                    for (let col = 0; col < columns; col++) {
-                        const x = playerStartX + col * corvetteSpacing;
-                        const y = playerStartY + row * corvetteSpacing;
-                        playerFleet.push(new Starship(x, y, 1, 1, '#99ddff', 'standard'));
-                    }
-                }
-
-                const playerDestroyerStartX = centerX - 135;
-                const playerDestroyerY = canvasHeightBase - 120;
-                const playerDestroyerSpacing = 90;
-                for (let i = 0; i < 4; i++) {
-                    const x = playerDestroyerStartX + i * playerDestroyerSpacing;
-                    const destroyer = new Starship(x, playerDestroyerY, 2, 2, '#99ddff', 'large');
-                    destroyer.weapons.forEach(weapon => {
-                        weapon.detectionRange = 180;
-                        weapon.mass = 2;
-                    });
-                    playerFleet.push(destroyer);
-                }
-
-                const playerCruiser = new Starship(
-                    centerX,
-                    canvasHeightBase - 80,
-                    3,
-                    3,
-                    '#99ddff',
-                    'hull5',
-                    IndependentTurretB
-                );
-                playerFleet.push(playerCruiser);
-
-                // チームB（上側）
-                const enemyStartX = centerX - ((columns - 1) * corvetteSpacing) / 2;
-                const enemyStartY = 120;
-                for (let row = 0; row < rows; row++) {
-                    for (let col = 0; col < columns; col++) {
-                        const x = enemyStartX + col * corvetteSpacing;
-                        const y = enemyStartY + row * corvetteSpacing;
-                        enemies.push(new Starship(x, y, 1, 1, '#ffccdd', 'standard'));
-                    }
-                }
-
-                const enemyDestroyerStartX = centerX - 135;
-                const enemyDestroyerY = 80;
-                const enemyDestroyerSpacing = 90;
-                for (let i = 0; i < 4; i++) {
-                    const x = enemyDestroyerStartX + i * enemyDestroyerSpacing;
-                    const destroyer = new Starship(x, enemyDestroyerY, 2, 2, '#ffccdd', 'large');
-                    destroyer.weapons.forEach(weapon => {
-                        weapon.detectionRange = 180;
-                        weapon.mass = 2;
-                    });
-                    enemies.push(destroyer);
-                }
-
-                const enemyCruiser = new Starship(
-                    centerX,
-                    60,
-                    3,
-                    3,
-                    '#ffccdd',
-                    'hull5',
-                    IndependentTurretB
-                );
-                enemies.push(enemyCruiser);
-            } else if (config === 'corvette9vs9') {
-                // プレイヤー陣営：船種C 9隻を画面下部に密集配置（3x3）
-                playerFleet = [];
-                const playerStartX = canvasWidthBase / 2 - 40;  // 中央からオフセット
-                const playerStartY = canvasHeightBase - 120;
-                const playerSpacing = 40;  // 密集配置
-                for (let row = 0; row < 3; row++) {
-                    for (let col = 0; col < 3; col++) {
-                        const x = playerStartX + col * playerSpacing;
-                        const y = playerStartY + row * playerSpacing;
-                        playerFleet.push(new Starship(x, y, 1, 1, '#99ddff', 'standard'));
-                    }
-                }
-                // 敵陣営：船種C 9隻を画面上部に密集配置（3x3）
-                enemies = [];
-                const enemyStartX = canvasWidthBase / 2 - 40;  // 中央からオフセット
-                const enemyStartY = 80;
-                const enemySpacing = 40;  // 密集配置
-                for (let row = 0; row < 3; row++) {
-                    for (let col = 0; col < 3; col++) {
-                        const x = enemyStartX + col * enemySpacing;
-                        const y = enemyStartY + row * enemySpacing;
-                        enemies.push(new Starship(x, y, 1, 1, '#ffccdd', 'standard'));
-                    }
                 }
             } else if (config === 'corvette8vsdestroyer2') {
                 // プレイヤー陣営：船種C 8隻を画面下部に密集配置（4x2）
@@ -1532,55 +1335,113 @@
                     enemies.push(destroyer);
                 }
             } else if (config === 'mixed1c8vsmixed1c8') {
-                // プレイヤー陣営：船種D 1隻（中央）+ 船種C 8隻（4x2配置）
+                // 3チーム混合艦隊戦（L1D2C8構成）
+                // チームA：画面下側（L1D2C8構成）
                 playerFleet = [];
-                // 船種D1隻を画面下部中央に配置
-                const playerDestroyerX = canvasWidthBase / 2;
-                const playerDestroyerY = canvasHeightBase - 80;
-                const destroyer = new Starship(playerDestroyerX, playerDestroyerY, 2, 2, '#99ddff', 'large');
-                destroyer.weapons.forEach(weapon => {
-                    weapon.detectionRange = 180;
-                    weapon.mass = 2;
-                });
-                playerFleet.push(destroyer);
+                // ライトクルーザー1隻
+                const playerLCX = canvasWidthBase / 2;
+                const playerLCY = canvasHeightBase - 100;
+                const playerLC = new Starship(playerLCX, playerLCY, 3, 3, '#99ddff', 'hull5', IndependentTurretB);
+                playerFleet.push(playerLC);
 
-                // 船種C8隻を画面下部に横並び配置（4x2）
-                const playerCorvetteStartX = canvasWidthBase / 2 - 60;
-                const playerCorvetteStartY = canvasHeightBase - 150;
-                const playerCorvetteSpacing = 40;
+                // デストロイヤー2隻
+                const playerDStartX = canvasWidthBase / 2 - 60;
+                const playerDStartY = canvasHeightBase - 200;
+                const playerDSpacing = 80;
+                for (let i = 0; i < 2; i++) {
+                    const x = playerDStartX + i * playerDSpacing;
+                    const y = playerDStartY;
+                    const destroyer = new Starship(x, y, 2, 2, '#99ddff', 'large');
+                    destroyer.weapons.forEach(weapon => {
+                        weapon.detectionRange = 180;
+                        weapon.mass = 2;
+                    });
+                    playerFleet.push(destroyer);
+                }
+
+                // コルベット8隻（4x2グリッド）
+                const playerCStartX = canvasWidthBase / 2 - 60;
+                const playerCStartY = canvasHeightBase - 280;
+                const playerCSpacing = 40;
                 for (let row = 0; row < 2; row++) {
                     for (let col = 0; col < 4; col++) {
-                        const x = playerCorvetteStartX + col * playerCorvetteSpacing;
-                        const y = playerCorvetteStartY + row * playerCorvetteSpacing;
+                        const x = playerCStartX + col * playerCSpacing;
+                        const y = playerCStartY + row * playerCSpacing;
                         playerFleet.push(new Starship(x, y, 1, 1, '#99ddff', 'standard'));
                     }
                 }
 
-                // 敵陣営：船種D 1隻（中央）+ 船種C 8隻（4x2配置）
+                // チームB：画面左上（L1D2C8構成）
                 enemies = [];
-                // 船種D1隻を画面上部中央に配置
-                const enemyDestroyerX = canvasWidthBase / 2;
-                const enemyDestroyerY = 80;
-                const enemyDestroyer = new Starship(enemyDestroyerX, enemyDestroyerY, 2, 2, '#ffccdd', 'large');
-                enemyDestroyer.weapons.forEach(weapon => {
-                    weapon.detectionRange = 180;
-                    weapon.mass = 2;
-                });
-                enemies.push(enemyDestroyer);
+                // ライトクルーザー1隻
+                const enemyLCX = 100;
+                const enemyLCY = 100;
+                const enemyLC = new Starship(enemyLCX, enemyLCY, 3, 3, '#ffccdd', 'hull5', IndependentTurretB);
+                enemies.push(enemyLC);
 
-                // 船種C8隻を画面上部に横並び配置（4x2）
-                const enemyCorvetteStartX = canvasWidthBase / 2 - 60;
-                const enemyCorvetteStartY = 130;
-                const enemyCorvetteSpacing = 40;
+                // デストロイヤー2隻
+                const enemyDStartX = 80;
+                const enemyDStartY = 180;
+                const enemyDSpacing = 80;
+                for (let i = 0; i < 2; i++) {
+                    const x = enemyDStartX;
+                    const y = enemyDStartY + i * enemyDSpacing;
+                    const destroyer = new Starship(x, y, 2, 2, '#ffccdd', 'large');
+                    destroyer.weapons.forEach(weapon => {
+                        weapon.detectionRange = 180;
+                        weapon.mass = 2;
+                    });
+                    enemies.push(destroyer);
+                }
+
+                // コルベット8隻（4x2グリッド）
+                const enemyCStartX = 150;
+                const enemyCStartY = 180;
+                const enemyCSpacing = 40;
                 for (let row = 0; row < 2; row++) {
                     for (let col = 0; col < 4; col++) {
-                        const x = enemyCorvetteStartX + col * enemyCorvetteSpacing;
-                        const y = enemyCorvetteStartY + row * enemyCorvetteSpacing;
+                        const x = enemyCStartX + col * enemyCSpacing;
+                        const y = enemyCStartY + row * enemyCSpacing;
                         enemies.push(new Starship(x, y, 1, 1, '#ffccdd', 'standard'));
                     }
                 }
+
+                // チームC：画面右上（L1D2C8構成）
+                teamC = [];
+                // ライトクルーザー1隻
+                const teamCLCX = canvasWidthBase - 100;
+                const teamCLCY = 100;
+                const teamCLC = new Starship(teamCLCX, teamCLCY, 3, 3, '#ffd24d', 'hull5', IndependentTurretB);
+                teamC.push(teamCLC);
+
+                // デストロイヤー2隻
+                const teamCDStartX = canvasWidthBase - 80;
+                const teamCDStartY = 180;
+                const teamCDSpacing = 80;
+                for (let i = 0; i < 2; i++) {
+                    const x = teamCDStartX;
+                    const y = teamCDStartY + i * teamCDSpacing;
+                    const destroyer = new Starship(x, y, 2, 2, '#ffd24d', 'large');
+                    destroyer.weapons.forEach(weapon => {
+                        weapon.detectionRange = 180;
+                        weapon.mass = 2;
+                    });
+                    teamC.push(destroyer);
+                }
+
+                // コルベット8隻（4x2グリッド）
+                const teamCCorvetteStartX = canvasWidthBase - 250;
+                const teamCCorvetteStartY = 180;
+                const teamCCorvetteSpacing = 40;
+                for (let row = 0; row < 2; row++) {
+                    for (let col = 0; col < 4; col++) {
+                        const x = teamCCorvetteStartX + col * teamCCorvetteSpacing;
+                        const y = teamCCorvetteStartY + row * teamCCorvetteSpacing;
+                        teamC.push(new Starship(x, y, 1, 1, '#ffd24d', 'standard'));
+                    }
+                }
             } else if (config === 'mass_d1c8') {
-                // 大量テスト：D1C8編成を上下に多数配置
+                // 大量テスト：L1D1C8編成を上下に多数配置
                 playerFleet = [];
                 enemies = [];
 
@@ -1596,7 +1457,10 @@
                 const bottomStartX = topStartX;
                 const bottomStartY = canvasHeightBase - (rows - 1) * groupSpacingY - 260;
 
-                // チームA（下側）
+                // チームA（下側）- ライトクルーザー1隻を追加
+                const playerLC = new Starship(canvasWidthBase / 2, canvasHeightBase - 100, 3, 3, '#99ddff', 'hull5', IndependentTurretB);
+                playerFleet.push(playerLC);
+
                 for (let i = 0; i < groupsPerSide; i++) {
                     const col = i % columns;
                     const row = Math.floor(i / columns);
@@ -1622,7 +1486,10 @@
                     }
                 }
 
-                // チームB（上側）
+                // チームB（上側）- ライトクルーザー1隻を追加
+                const enemyLC = new Starship(canvasWidthBase / 2, 100, 3, 3, '#ffccdd', 'hull5', IndependentTurretB);
+                enemies.push(enemyLC);
+
                 for (let i = 0; i < groupsPerSide; i++) {
                     const col = i % columns;
                     const row = Math.floor(i / columns);
@@ -1657,124 +1524,108 @@
                 ];
             }
 
-            // チームB操作版の2チーム混合艦隊戦（テストシーン）
-            if (config === 'teambcontrol_d1c8') {
-                mouseControlTeam = 'B';  // マウス操作対象をチームBに設定
-
-                // チームAは使用しない
-                playerFleet = [];
-
-                // チームB：画面下部（船種D1隻 + 船種C8隻）- マウス操作対象
-                enemies = [];
-                const enemyDestroyerX = canvasWidthBase / 2;
-                const enemyDestroyerY = canvasHeightBase - 100;
-                const enemyDestroyer = new Starship(enemyDestroyerX, enemyDestroyerY, 2, 2, '#ffccdd', 'large');
-                enemyDestroyer.weapons.forEach(weapon => {
-                    weapon.detectionRange = 180;
-                    weapon.mass = 2;
-                });
-                enemies.push(enemyDestroyer);
-
-                // チームB の船種C8隻を下部に配置（4x2）
-                const enemyCorvetteStartX = enemyDestroyerX - 60;
-                const enemyCorvetteStartY = canvasHeightBase - 180;
-                const enemyCorvetteSpacing = 40;
-                for (let row = 0; row < 2; row++) {
-                    for (let col = 0; col < 4; col++) {
-                        const x = enemyCorvetteStartX + col * enemyCorvetteSpacing;
-                        const y = enemyCorvetteStartY + row * enemyCorvetteSpacing;
-                        enemies.push(new Starship(x, y, 1, 1, '#ffccdd', 'standard'));
-                    }
-                }
-
-                // チームC：画面上部（船種D1隻 + 船種C8隻）
-                teamC = [];
-                const teamCDestroyerX = canvasWidthBase / 2;
-                const teamCDestroyerY = 100;
-                const teamCDestroyer = new Starship(teamCDestroyerX, teamCDestroyerY, 2, 2, '#ffd24d', 'large');
-                teamCDestroyer.weapons.forEach(weapon => {
-                    weapon.detectionRange = 180;
-                    weapon.mass = 2;
-                });
-                teamC.push(teamCDestroyer);
-
-                // チームC の船種C8隻を上部に配置（4x2）
-                const teamCCorvetteStartX = teamCDestroyerX - 60;
-                const teamCCorvetteStartY = 150;
-                const teamCCorvetteSpacing = 40;
-                for (let row = 0; row < 2; row++) {
-                    for (let col = 0; col < 4; col++) {
-                        const x = teamCCorvetteStartX + col * teamCCorvetteSpacing;
-                        const y = teamCCorvetteStartY + row * teamCCorvetteSpacing;
-                        teamC.push(new Starship(x, y, 1, 1, '#ffd24d', 'standard'));
-                    }
-                }
-            }
             // 3チーム混合艦隊戦（テストシーン）
-            else if (config === 'threeway_d1c8') {
+            if (config === 'threeway_l1d4c32') {
                 mouseControlTeam = 'A';  // マウス操作対象をチームAに設定
-                // チームA：画面下部（船種D1隻 + 船種C8隻）
-                playerFleet = [];
-                const playerDestroyerX = canvasWidthBase / 2;
-                const playerDestroyerY = canvasHeightBase - 100;
-                const playerDestroyer = new Starship(playerDestroyerX, playerDestroyerY, 2, 2, '#99ddff', 'large');
-                playerDestroyer.weapons.forEach(weapon => {
-                    weapon.detectionRange = 180;
-                    weapon.mass = 2;
-                });
-                playerFleet.push(playerDestroyer);
 
-                // チームA の船種C8隻を下部に配置（4x2）
-                const playerCorvetteStartX = canvasWidthBase / 2 - 60;
-                const playerCorvetteStartY = canvasHeightBase - 180;
-                const playerCorvetteSpacing = 40;
-                for (let row = 0; row < 2; row++) {
+                // チームA：画面下側（L1D4C16構成）
+                playerFleet = [];
+                // ライトクルーザー1隻
+                const playerLCX = canvasWidthBase / 2 + 100;
+                const playerLCY = canvasHeightBase - 100;
+                const playerLC = new Starship(playerLCX, playerLCY, 3, 3, '#99ddff', 'hull5', IndependentTurretB);
+                playerFleet.push(playerLC);
+
+                // デストロイヤー4隻
+                const playerDStartX = canvasWidthBase / 2 - 50;
+                const playerDStartY = canvasHeightBase - 200;
+                const playerDSpacing = 60;
+                for (let i = 0; i < 4; i++) {
+                    const x = playerDStartX + i * playerDSpacing;
+                    const y = playerDStartY;
+                    const destroyer = new Starship(x, y, 2, 2, '#99ddff', 'large');
+                    destroyer.weapons.forEach(weapon => {
+                        weapon.detectionRange = 180;
+                        weapon.mass = 2;
+                    });
+                    playerFleet.push(destroyer);
+                }
+
+                // コルベット16隻（4x4グリッド）
+                const playerCStartX = canvasWidthBase / 2 - 20;
+                const playerCStartY = canvasHeightBase - 280;
+                const playerCSpacing = 40;
+                for (let row = 0; row < 4; row++) {
                     for (let col = 0; col < 4; col++) {
-                        const x = playerCorvetteStartX + col * playerCorvetteSpacing;
-                        const y = playerCorvetteStartY + row * playerCorvetteSpacing;
+                        const x = playerCStartX + col * playerCSpacing;
+                        const y = playerCStartY + row * playerCSpacing;
                         playerFleet.push(new Starship(x, y, 1, 1, '#99ddff', 'standard'));
                     }
                 }
 
-                // チームB：画面左上（船種D1隻 + 船種C8隻）
+                // チームB：画面左上（L1D4C16構成）
                 enemies = [];
-                const enemyDestroyerX = 80;
-                const enemyDestroyerY = 100;
-                const enemyDestroyer = new Starship(enemyDestroyerX, enemyDestroyerY, 2, 2, '#ffccdd', 'large');
-                enemyDestroyer.weapons.forEach(weapon => {
-                    weapon.detectionRange = 180;
-                    weapon.mass = 2;
-                });
-                enemies.push(enemyDestroyer);
+                // ライトクルーザー1隻
+                const enemyLCX = 100;
+                const enemyLCY = 100;
+                const enemyLC = new Starship(enemyLCX, enemyLCY, 3, 3, '#ffccdd', 'hull5', IndependentTurretB);
+                enemies.push(enemyLC);
 
-                // チームB の船種C8隻を左上に配置（4x2）
-                const enemyCorvetteStartX = 20;
-                const enemyCorvetteStartY = 150;
-                const enemyCorvetteSpacing = 40;
-                for (let row = 0; row < 2; row++) {
+                // デストロイヤー4隻
+                const enemyDStartX = 80;
+                const enemyDStartY = 180;
+                const enemyDSpacing = 60;
+                for (let i = 0; i < 4; i++) {
+                    const x = enemyDStartX;
+                    const y = enemyDStartY + i * enemyDSpacing;
+                    const destroyer = new Starship(x, y, 2, 2, '#ffccdd', 'large');
+                    destroyer.weapons.forEach(weapon => {
+                        weapon.detectionRange = 180;
+                        weapon.mass = 2;
+                    });
+                    enemies.push(destroyer);
+                }
+
+                // コルベット16隻（4x4グリッド）
+                const enemyCStartX = 150;
+                const enemyCStartY = 180;
+                const enemyCSpacing = 40;
+                for (let row = 0; row < 4; row++) {
                     for (let col = 0; col < 4; col++) {
-                        const x = enemyCorvetteStartX + col * enemyCorvetteSpacing;
-                        const y = enemyCorvetteStartY + row * enemyCorvetteSpacing;
+                        const x = enemyCStartX + col * enemyCSpacing;
+                        const y = enemyCStartY + row * enemyCSpacing;
                         enemies.push(new Starship(x, y, 1, 1, '#ffccdd', 'standard'));
                     }
                 }
 
-                // チームC：画面右上（船種D1隻 + 船種C8隻）
+                // チームC：画面右上（L1D4C16構成）
                 teamC = [];
-                const teamCDestroyerX = canvasWidthBase - 80;
-                const teamCDestroyerY = 100;
-                const teamCDestroyer = new Starship(teamCDestroyerX, teamCDestroyerY, 2, 2, '#ffd24d', 'large');
-                teamCDestroyer.weapons.forEach(weapon => {
-                    weapon.detectionRange = 180;
-                    weapon.mass = 2;
-                });
-                teamC.push(teamCDestroyer);
+                // ライトクルーザー1隻
+                const teamCLCX = canvasWidthBase - 100;
+                const teamCLCY = 100;
+                const teamCLC = new Starship(teamCLCX, teamCLCY, 3, 3, '#ffd24d', 'hull5', IndependentTurretB);
+                teamC.push(teamCLC);
 
-                // チームC の船種C8隻を右上に配置（4x2）
-                const teamCCorvetteStartX = canvasWidthBase - 180;
-                const teamCCorvetteStartY = 150;
+                // デストロイヤー4隻
+                const teamCDStartX = canvasWidthBase - 80;
+                const teamCDStartY = 180;
+                const teamCDSpacing = 60;
+                for (let i = 0; i < 4; i++) {
+                    const x = teamCDStartX;
+                    const y = teamCDStartY + i * teamCDSpacing;
+                    const destroyer = new Starship(x, y, 2, 2, '#ffd24d', 'large');
+                    destroyer.weapons.forEach(weapon => {
+                        weapon.detectionRange = 180;
+                        weapon.mass = 2;
+                    });
+                    teamC.push(destroyer);
+                }
+
+                // コルベット16隻（4x4グリッド）
+                const teamCCorvetteStartX = canvasWidthBase - 250;
+                const teamCCorvetteStartY = 180;
                 const teamCCorvetteSpacing = 40;
-                for (let row = 0; row < 2; row++) {
+                for (let row = 0; row < 4; row++) {
                     for (let col = 0; col < 4; col++) {
                         const x = teamCCorvetteStartX + col * teamCCorvetteSpacing;
                         const y = teamCCorvetteStartY + row * teamCCorvetteSpacing;
