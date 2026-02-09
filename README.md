@@ -62,7 +62,20 @@
 
 - テンプレート: `index-src.html`
 - CSSソース: `src/css/app.css`
-- JSソース: `src/js/app.js`
+- TypeScriptソース:
+  - `src/ts/main.ts`
+  - `src/ts/components.ts`
+  - `src/ts/projectiles-effects.ts`
+  - `src/ts/starship.ts`
+  - `src/ts/scenes.ts`
+  - `src/ts/game-loop.ts`
+- 開発実行用JS（ビルド生成）:
+  - `src/js/main.js`
+  - `src/js/components.js`
+  - `src/js/projectiles-effects.js`
+  - `src/js/starship.js`
+  - `src/js/scenes.js`
+  - `src/js/game-loop.js`
 - ビルドスクリプト: `scripts/build.mjs`
 
 開発中の素早い確認:
@@ -75,6 +88,18 @@
 
 ```bash
 npm run build
+```
+
+ユーティリティテストの実行（Vitest）:
+
+```bash
+npm test
+```
+
+TypeScript 型チェック:
+
+```bash
+npm run typecheck
 ```
 
 ---
@@ -238,9 +263,23 @@ starship-sim/
 ├── index.html              # 配布用単一ファイル（ビルド生成物）
 ├── src/
 │   ├── css/app.css         # 開発用CSS
-│   └── js/app.js           # 開発用JavaScript
+│   ├── ts/
+│   │   ├── main.ts         # TypeScriptソース
+│   │   ├── components.ts
+│   │   ├── projectiles-effects.ts
+│   │   ├── starship.ts
+│   │   ├── scenes.ts
+│   │   └── game-loop.ts
+│   └── js/
+│       ├── main.js         # ビルド生成JS（開発実行用）
+│       ├── components.js
+│       ├── projectiles-effects.js
+│       ├── starship.js
+│       ├── scenes.js
+│       └── game-loop.js
 ├── scripts/build.mjs       # 単一HTML生成スクリプト
 ├── package.json            # npm scripts（build）
+├── tsconfig.json           # TypeScript設定
 ├── README.md               # プロジェクト説明
 ├── BUILD_PROCESS.md        # ビルド方式の設計
 ├── ARCHITECTURE.md         # 設計方針と技術決定
