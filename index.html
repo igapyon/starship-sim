@@ -362,7 +362,7 @@
                 const dx = this.x - ship.x;
                 const dy = this.y - ship.y;
                 const distance = Math.hypot(dx, dy);
-                return distance < this.size + ship.hull.size;
+                return distance < this.size + ship.getCollisionRadius();
             }
         }
 
@@ -541,6 +541,13 @@
                 mass += this.engines.reduce((sum, e) => sum + e.mass, 0);
                 if (this.radar) mass += this.radar.mass * this.radarCount;
                 return mass;
+            }
+
+            // 船体見た目に寄せた当たり判定半径
+            getCollisionRadius() {
+                if (this.hull.size === 47) return 31;  // Hull5
+                if (this.hull.size === 28) return 20;  // LargeHull
+                return 11;  // Standard Hull
             }
 
             // コストを計算（重量と一致）
@@ -913,12 +920,13 @@
                     const hpBarWidth = 30;
                     const hpBarHeight = 3;
                     const hpBarSpacing = 5;  // バー間のスペース
+                    const hpBarBaseY = this.y - this.getCollisionRadius() - 15;
 
                     if (this.weapons.length > 0) {
                         // 射撃ユニットが存在する場合：各ユニットごとにHPバーを表示
                         this.weapons.forEach((weapon, index) => {
                             const hpBarX = this.x - hpBarWidth / 2;
-                            const hpBarY = this.y - this.hull.size * 1.8 - 8 - (index * (hpBarHeight + hpBarSpacing));
+                            const hpBarY = hpBarBaseY - (index * (hpBarHeight + hpBarSpacing));
 
                             ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
                             ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
@@ -934,7 +942,7 @@
                     } else {
                         // 射撃ユニットが破壊された場合：船体HPを表示
                         const hpBarX = this.x - hpBarWidth / 2;
-                        const hpBarY = this.y - this.hull.size * 1.8 - 8;
+                        const hpBarY = hpBarBaseY;
 
                         ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
                         ctx.fillRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
@@ -964,10 +972,8 @@
                     ctx.lineWidth = 2;
                     ctx.setLineDash([5, 5]);
                     ctx.beginPath();
-                    // 船種Cと船種Dで異なる半径を使用
-                    const wreckageRadius = this.hull.size <= 12 ?
-                        this.hull.size * 1.2 + 2 :
-                        this.hull.size * 0.8 + 1;
+                    // 当たり判定半径と表示を一致させる
+                    const wreckageRadius = this.getCollisionRadius();
                     ctx.arc(this.x, this.y, wreckageRadius, 0, Math.PI * 2);
                     ctx.stroke();
                     ctx.setLineDash([]);
@@ -1074,7 +1080,7 @@
                 const dx = this.x - otherShip.x;
                 const dy = this.y - otherShip.y;
                 const distance = Math.hypot(dx, dy);
-                return distance < this.hull.size + otherShip.hull.size;
+                return distance < this.getCollisionRadius() + otherShip.getCollisionRadius();
             }
 
             createExplosion() {
