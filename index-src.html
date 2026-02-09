@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Starship Simulation v2 - Modular Design</title>
+    <link rel="stylesheet" href="src/css/app.css">
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <!-- 左下：情報パネル（チームA：水色の情報表示） -->
+    <div id="info"></div>
+    <div id="test-buttons">
+        <button class="test-btn" data-config="mixed1c8vsmixed1c8">L1D2C8</button>
+        <button class="test-btn" data-config="corvette8vsdestroyer2">C8vsD2</button>
+        <button class="test-btn" data-config="lightcruiser1vsdestroyer2">L1vsD2</button>
+        <button class="test-btn" data-config="mass_d1c8">Mass D1C8</button>
+        <button class="test-btn" data-config="threeway_l1d4c32">L1D4C16</button>
+    </div>
+    <!-- 右下：ビーコン配置ボタン -->
+    <button id="beacon-button">ビーコン: チームA</button>
+    <!-- 右下：残骸攻撃トグルボタン -->
+    <button id="wreckage-toggle">残骸を無視する</button>
+
+    <script src="src/js/app.js"></script>
+</body>
+</html>

@@ -26,8 +26,8 @@
 ### 実行環境
 - **ファイル形式**: 単一の HTML ファイル（`index.html`）
 - **実行方法**: ブラウザで `index.html` を開くだけ
-- **依存ライブラリ**: なし
-- **環境構築**: 不要
+- **実行時依存**: なし（外部ライブラリ不要）
+- **開発時依存**: Node.js（ビルド時のみ）
 
 ### コード規模
 - **総行数**: 約 2,016 行（HTML + CSS + JavaScript 一体）
@@ -52,6 +52,30 @@
 3. **モジュラー艦船設計**
    - 船体 + エンジン + 武器 + レーダーの組み合わせ
    - コスト（重量）ベースのバランスシステム
+
+---
+
+## 🛠 開発ビルド
+
+配布物は従来どおり `index.html` 単体です。  
+開発時は分割ソースを編集し、ビルドで `index.html` を再生成します。
+
+- テンプレート: `index-src.html`
+- CSSソース: `src/css/app.css`
+- JSソース: `src/js/app.js`
+- ビルドスクリプト: `scripts/build.mjs`
+
+開発中の素早い確認:
+
+```bash
+# ブラウザで index-src.html を直接開いて動作確認
+```
+
+配布用単一ファイルの再生成:
+
+```bash
+npm run build
+```
 
 ---
 
@@ -201,7 +225,7 @@
 1. **即座の共有性** - ファイル 1 つで配布可能
 2. **教育的価値** - コード全体が 1 ファイルで即座に理解可能
 3. **オフライン実行** - ネットワーク接続不要
-4. **実験性** - npm やビルドプロセスなしで迅速にテスト可能
+4. **実験性** - 配布は単一HTMLのまま、開発時のみビルド導入で迅速に改善可能
 5. **透明性** - すべてのロジックがオープン（ブラックボックスなし）
 
 ---
@@ -210,14 +234,20 @@
 
 ```
 starship-sim/
-├── index.html              # メインプログラム（HTML + CSS + JS 一体）
+├── index-src.html          # 開発用テンプレート
+├── index.html              # 配布用単一ファイル（ビルド生成物）
+├── src/
+│   ├── css/app.css         # 開発用CSS
+│   └── js/app.js           # 開発用JavaScript
+├── scripts/build.mjs       # 単一HTML生成スクリプト
+├── package.json            # npm scripts（build）
 ├── README.md               # プロジェクト説明
+├── BUILD_PROCESS.md        # ビルド方式の設計
 ├── ARCHITECTURE.md         # 設計方針と技術決定
 ├── SHIP_TYPES.md           # 艦船の仕様定義
 ├── UNIT_TYPES.md           # コンポーネント仕様一覧
 ├── SCREEN.md               # 画面構成ガイド
 ├── DETECTION_LOGIC.md      # 索敇・目標選択ロジック
-├── PROJECT_OVERVIEW.md     # 本ドキュメント
 ├── TODO.md                 # 拡張予定
 └── LICENSE                 # MIT License
 ```
