@@ -62,18 +62,43 @@ function layoutUi() {
     const worldRight = worldLeft + worldPixelSize;
     const worldBottom = worldTop + worldPixelSize;
     const margin = 8;
+    const rightGutter = renderState.viewportWidth - worldRight - margin;
+    const topGutter = worldTop - margin;
+    const bottomGutter = renderState.viewportHeight - worldBottom - margin;
     const testWidth = testButtons.offsetWidth;
     const testHeight = testButtons.offsetHeight;
-    const testLeft = clamp(worldRight - testWidth, margin, renderState.viewportWidth - testWidth - margin);
-    const testTopPreferred = worldTop - testHeight - margin;
-    const testTop = clamp(testTopPreferred, margin, renderState.viewportHeight - testHeight - margin);
+    let testLeft;
+    let testTop;
+    if (rightGutter >= testWidth) {
+        testLeft = worldRight + margin;
+        testTop = clamp(worldTop, margin, renderState.viewportHeight - testHeight - margin);
+    }
+    else if (topGutter >= testHeight) {
+        testLeft = clamp(worldRight - testWidth, margin, renderState.viewportWidth - testWidth - margin);
+        testTop = worldTop - testHeight - margin;
+    }
+    else {
+        testLeft = clamp(worldRight - testWidth, margin, renderState.viewportWidth - testWidth - margin);
+        testTop = margin;
+    }
     testButtons.style.left = `${Math.round(testLeft)}px`;
     testButtons.style.top = `${Math.round(testTop)}px`;
     const bottomWidth = bottomControls.offsetWidth;
     const bottomHeight = bottomControls.offsetHeight;
-    const bottomLeft = clamp(worldRight - bottomWidth, margin, renderState.viewportWidth - bottomWidth - margin);
-    const bottomTopPreferred = worldBottom + margin;
-    const bottomTop = clamp(bottomTopPreferred, margin, renderState.viewportHeight - bottomHeight - margin);
+    let bottomLeft;
+    let bottomTop;
+    if (rightGutter >= bottomWidth) {
+        bottomLeft = worldRight + margin;
+        bottomTop = clamp(worldBottom - bottomHeight, margin, renderState.viewportHeight - bottomHeight - margin);
+    }
+    else if (bottomGutter >= bottomHeight) {
+        bottomLeft = clamp(worldRight - bottomWidth, margin, renderState.viewportWidth - bottomWidth - margin);
+        bottomTop = worldBottom + margin;
+    }
+    else {
+        bottomLeft = clamp(renderState.viewportWidth - bottomWidth - margin, margin, renderState.viewportWidth - bottomWidth - margin);
+        bottomTop = clamp(renderState.viewportHeight - bottomHeight - margin, margin, renderState.viewportHeight - bottomHeight - margin);
+    }
     bottomControls.style.left = `${Math.round(bottomLeft)}px`;
     bottomControls.style.top = `${Math.round(bottomTop)}px`;
 }

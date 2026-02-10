@@ -68,16 +68,28 @@
                 flex-direction: column;
                 align-items: flex-end;
                 gap: 8px;
-                width: min(340px, 92vw);
+                width: fit-content;
+                max-width: calc(100vw - 16px);
                 z-index: 10;
             }
+            #action-controls {
+                display: flex;
+                flex-wrap: nowrap;
+                align-items: center;
+                justify-content: flex-end;
+                gap: 6px;
+                width: fit-content;
+                max-width: 100%;
+            }
             #wreckage-toggle {
-                padding: 8px 12px;
+                padding: 6px 10px;
                 background: rgba(0, 50, 100, 0.7);
                 color: #0f0;
                 border: 1px solid #0f0;
                 cursor: pointer;
-                font-size: 11px;
+                font-size: 10px;
+                line-height: 1.2;
+                white-space: nowrap;
                 font-family: 'Courier New', monospace;
                 transition: all 0.2s;
             }
@@ -93,20 +105,38 @@
             }
             #beacon-controls {
                 display: flex;
-                flex-wrap: wrap;
+                flex-wrap: nowrap;
                 justify-content: flex-end;
-                gap: 6px;
-                width: 100%;
+                gap: 4px;
+                width: fit-content;
             }
             .beacon-team-btn {
-                padding: 8px 10px;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                padding: 6px 8px;
                 background: rgba(0, 50, 100, 0.7);
                 color: #0f0;
                 border: 1px solid #0f0;
                 cursor: pointer;
-                font-size: 11px;
+                font-size: 12px;
+                font-weight: bold;
+                line-height: 1;
                 font-family: 'Courier New', monospace;
                 transition: all 0.2s;
+            }
+            .beacon-icon {
+                width: 12px;
+                height: 12px;
+                fill: none;
+                stroke: currentColor;
+                stroke-width: 1.2;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+            }
+            .beacon-label {
+                min-width: 0.7em;
+                text-align: center;
             }
             .beacon-team-btn:hover {
                 background: rgba(0, 100, 150, 0.9);
@@ -119,7 +149,7 @@
                 box-shadow: 0 0 10px rgba(153, 221, 255, 0.6);
             }
             #zoom-controls {
-                width: 100%;
+                width: min(260px, calc(100vw - 16px));
                 padding: 8px 10px;
                 background: rgba(0, 0, 0, 0.8);
                 border: 1px solid #0f0;
@@ -153,14 +183,43 @@
             <label for="zoom-slider">ZOOM <span id="zoom-value">1x</span></label>
             <input id="zoom-slider" type="range" min="0" max="0" step="1" value="0">
         </div>
-        <!-- ビーコン配置チーム選択 -->
-        <div id="beacon-controls">
-            <button class="beacon-team-btn active" data-team="A">Beacon-A</button>
-            <button class="beacon-team-btn" data-team="B">Beacon-B</button>
-            <button class="beacon-team-btn" data-team="C">Beacon-C</button>
+        <div id="action-controls">
+            <!-- ビーコン配置チーム選択 -->
+            <div id="beacon-controls">
+                <button class="beacon-team-btn active" data-team="A" aria-label="Beacon team A">
+                    <svg class="beacon-icon" viewBox="0 0 16 16" aria-hidden="true">
+                        <circle cx="8" cy="8" r="1.5"></circle>
+                        <path d="M8 4.5a3.5 3.5 0 0 1 0 7"></path>
+                        <path d="M8 2a6 6 0 0 1 0 12"></path>
+                        <path d="M8 4.5a3.5 3.5 0 0 0 0 7"></path>
+                        <path d="M8 2a6 6 0 0 0 0 12"></path>
+                    </svg>
+                    <span class="beacon-label">A</span>
+                </button>
+                <button class="beacon-team-btn" data-team="B" aria-label="Beacon team B">
+                    <svg class="beacon-icon" viewBox="0 0 16 16" aria-hidden="true">
+                        <circle cx="8" cy="8" r="1.5"></circle>
+                        <path d="M8 4.5a3.5 3.5 0 0 1 0 7"></path>
+                        <path d="M8 2a6 6 0 0 1 0 12"></path>
+                        <path d="M8 4.5a3.5 3.5 0 0 0 0 7"></path>
+                        <path d="M8 2a6 6 0 0 0 0 12"></path>
+                    </svg>
+                    <span class="beacon-label">B</span>
+                </button>
+                <button class="beacon-team-btn" data-team="C" aria-label="Beacon team C">
+                    <svg class="beacon-icon" viewBox="0 0 16 16" aria-hidden="true">
+                        <circle cx="8" cy="8" r="1.5"></circle>
+                        <path d="M8 4.5a3.5 3.5 0 0 1 0 7"></path>
+                        <path d="M8 2a6 6 0 0 1 0 12"></path>
+                        <path d="M8 4.5a3.5 3.5 0 0 0 0 7"></path>
+                        <path d="M8 2a6 6 0 0 0 0 12"></path>
+                    </svg>
+                    <span class="beacon-label">C</span>
+                </button>
+            </div>
+            <!-- 残骸攻撃トグルボタン -->
+            <button id="wreckage-toggle">残骸を無視する</button>
         </div>
-        <!-- 残骸攻撃トグルボタン -->
-        <button id="wreckage-toggle">残骸を無視する</button>
     </div>
 
     <script>
@@ -228,18 +287,43 @@
         const worldRight = worldLeft + worldPixelSize;
         const worldBottom = worldTop + worldPixelSize;
         const margin = 8;
+        const rightGutter = renderState.viewportWidth - worldRight - margin;
+        const topGutter = worldTop - margin;
+        const bottomGutter = renderState.viewportHeight - worldBottom - margin;
         const testWidth = testButtons.offsetWidth;
         const testHeight = testButtons.offsetHeight;
-        const testLeft = clamp(worldRight - testWidth, margin, renderState.viewportWidth - testWidth - margin);
-        const testTopPreferred = worldTop - testHeight - margin;
-        const testTop = clamp(testTopPreferred, margin, renderState.viewportHeight - testHeight - margin);
+        let testLeft;
+        let testTop;
+        if (rightGutter >= testWidth) {
+            testLeft = worldRight + margin;
+            testTop = clamp(worldTop, margin, renderState.viewportHeight - testHeight - margin);
+        }
+        else if (topGutter >= testHeight) {
+            testLeft = clamp(worldRight - testWidth, margin, renderState.viewportWidth - testWidth - margin);
+            testTop = worldTop - testHeight - margin;
+        }
+        else {
+            testLeft = clamp(worldRight - testWidth, margin, renderState.viewportWidth - testWidth - margin);
+            testTop = margin;
+        }
         testButtons.style.left = `${Math.round(testLeft)}px`;
         testButtons.style.top = `${Math.round(testTop)}px`;
         const bottomWidth = bottomControls.offsetWidth;
         const bottomHeight = bottomControls.offsetHeight;
-        const bottomLeft = clamp(worldRight - bottomWidth, margin, renderState.viewportWidth - bottomWidth - margin);
-        const bottomTopPreferred = worldBottom + margin;
-        const bottomTop = clamp(bottomTopPreferred, margin, renderState.viewportHeight - bottomHeight - margin);
+        let bottomLeft;
+        let bottomTop;
+        if (rightGutter >= bottomWidth) {
+            bottomLeft = worldRight + margin;
+            bottomTop = clamp(worldBottom - bottomHeight, margin, renderState.viewportHeight - bottomHeight - margin);
+        }
+        else if (bottomGutter >= bottomHeight) {
+            bottomLeft = clamp(worldRight - bottomWidth, margin, renderState.viewportWidth - bottomWidth - margin);
+            bottomTop = worldBottom + margin;
+        }
+        else {
+            bottomLeft = clamp(renderState.viewportWidth - bottomWidth - margin, margin, renderState.viewportWidth - bottomWidth - margin);
+            bottomTop = clamp(renderState.viewportHeight - bottomHeight - margin, margin, renderState.viewportHeight - bottomHeight - margin);
+        }
         bottomControls.style.left = `${Math.round(bottomLeft)}px`;
         bottomControls.style.top = `${Math.round(bottomTop)}px`;
     }
