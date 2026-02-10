@@ -83,6 +83,9 @@
             if (e.touches) {
                 screenX = e.touches[0].clientX - rect.left;
                 screenY = e.touches[0].clientY - rect.top;
+            } else if (e.changedTouches) {
+                screenX = e.changedTouches[0].clientX - rect.left;
+                screenY = e.changedTouches[0].clientY - rect.top;
             } else {
                 screenX = e.clientX - rect.left;
                 screenY = e.clientY - rect.top;
@@ -94,7 +97,7 @@
         }
 
         document.addEventListener('mousemove', handleMove);
-        document.addEventListener('touchmove', (e) => {
+        canvas.addEventListener('touchmove', (e) => {
             e.preventDefault();
             handleMove(e);
         }, { passive: false });
@@ -136,17 +139,35 @@
         });
         updateBeaconTeamSelection('A');
 
-        // キャンバスクリックでビーコン配置
-        canvas.addEventListener('click', (e) => {
+        function placeBeaconFromEvent(e) {
             const rect = canvas.getBoundingClientRect();
-            const screenX = e.clientX - rect.left;
-            const screenY = e.clientY - rect.top;
+            let screenX;
+            let screenY;
+            if (e.touches) {
+                screenX = e.touches[0].clientX - rect.left;
+                screenY = e.touches[0].clientY - rect.top;
+            } else if (e.changedTouches) {
+                screenX = e.changedTouches[0].clientX - rect.left;
+                screenY = e.changedTouches[0].clientY - rect.top;
+            } else {
+                screenX = e.clientX - rect.left;
+                screenY = e.clientY - rect.top;
+            }
             const worldPoint = screenToWorld(screenX, screenY);
             if (!worldPoint) return;
 
             // ビーコンを配置
             detectionBeacons.push(new DetectionBeacon(worldPoint.x, worldPoint.y, selectedBeaconTeam));
+        }
+
+        // キャンバスクリック/タップでビーコン配置
+        canvas.addEventListener('click', (e) => {
+            placeBeaconFromEvent(e);
         });
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            placeBeaconFromEvent(e);
+        }, { passive: false });
 
         zoomSlider.addEventListener('input', () => {
             const index = Number(zoomSlider.value);
