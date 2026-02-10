@@ -7,7 +7,8 @@ const ctx = canvas.getContext('2d');
 const infoDiv = document.getElementById('info');
 const testButtons = document.getElementById('test-buttons');
 const bottomControls = document.getElementById('bottom-controls');
-const zoomSlider = document.getElementById('zoom-slider');
+const zoomOutButton = document.getElementById('zoom-out');
+const zoomInButton = document.getElementById('zoom-in');
 const zoomValueLabel = document.getElementById('zoom-value');
 const renderState = {
     dpr: 1,
@@ -20,7 +21,7 @@ const renderState = {
     zoom: 1
 };
 function formatZoomLabel(zoom) {
-    return `${parseFloat(zoom.toFixed(3))}x`;
+    return `${Math.round(zoom * 100)}%`;
 }
 function updateZoomControls() {
     const maxFittableZoom = Math.min(renderState.viewportWidth, renderState.viewportHeight) / WORLD_SIZE;
@@ -33,17 +34,13 @@ function updateZoomControls() {
             levels.push(nextLevel);
     }
     renderState.zoomLevels = levels;
-    zoomSlider.min = '0';
-    zoomSlider.max = String(levels.length - 1);
-    zoomSlider.step = '1';
     const currentIndex = levels.indexOf(renderState.zoom);
     if (currentIndex === -1) {
         renderState.zoom = levels[levels.length - 1];
-        zoomSlider.value = String(levels.length - 1);
     }
-    else {
-        zoomSlider.value = String(currentIndex);
-    }
+    const nextIndex = levels.indexOf(renderState.zoom);
+    zoomOutButton.disabled = nextIndex <= 0;
+    zoomInButton.disabled = nextIndex >= levels.length - 1;
     zoomValueLabel.textContent = formatZoomLabel(renderState.zoom);
 }
 function recomputeRenderState() {
@@ -67,38 +64,14 @@ function layoutUi() {
     const bottomGutter = renderState.viewportHeight - worldBottom - margin;
     const testWidth = testButtons.offsetWidth;
     const testHeight = testButtons.offsetHeight;
-    let testLeft;
-    let testTop;
-    if (rightGutter >= testWidth) {
-        testLeft = worldRight + margin;
-        testTop = clamp(worldTop, margin, renderState.viewportHeight - testHeight - margin);
-    }
-    else if (topGutter >= testHeight) {
-        testLeft = clamp(worldRight - testWidth, margin, renderState.viewportWidth - testWidth - margin);
-        testTop = worldTop - testHeight - margin;
-    }
-    else {
-        testLeft = clamp(worldRight - testWidth, margin, renderState.viewportWidth - testWidth - margin);
-        testTop = margin;
-    }
+    const testLeft = clamp(renderState.viewportWidth - testWidth - margin, margin, renderState.viewportWidth - testWidth - margin);
+    const testTop = margin;
     testButtons.style.left = `${Math.round(testLeft)}px`;
     testButtons.style.top = `${Math.round(testTop)}px`;
     const bottomWidth = bottomControls.offsetWidth;
     const bottomHeight = bottomControls.offsetHeight;
-    let bottomLeft;
-    let bottomTop;
-    if (rightGutter >= bottomWidth) {
-        bottomLeft = worldRight + margin;
-        bottomTop = clamp(worldBottom - bottomHeight, margin, renderState.viewportHeight - bottomHeight - margin);
-    }
-    else if (bottomGutter >= bottomHeight) {
-        bottomLeft = clamp(worldRight - bottomWidth, margin, renderState.viewportWidth - bottomWidth - margin);
-        bottomTop = worldBottom + margin;
-    }
-    else {
-        bottomLeft = clamp(renderState.viewportWidth - bottomWidth - margin, margin, renderState.viewportWidth - bottomWidth - margin);
-        bottomTop = clamp(renderState.viewportHeight - bottomHeight - margin, margin, renderState.viewportHeight - bottomHeight - margin);
-    }
+    const bottomLeft = clamp(renderState.viewportWidth - bottomWidth - margin, margin, renderState.viewportWidth - bottomWidth - margin);
+    const bottomTop = clamp(renderState.viewportHeight - bottomHeight - margin, margin, renderState.viewportHeight - bottomHeight - margin);
     bottomControls.style.left = `${Math.round(bottomLeft)}px`;
     bottomControls.style.top = `${Math.round(bottomTop)}px`;
 }
@@ -219,14 +192,23 @@ canvas.addEventListener('touchstart', (e) => {
     e.preventDefault();
     placeBeaconFromEvent(e);
 }, { passive: false });
-zoomSlider.addEventListener('input', () => {
-    const index = Number(zoomSlider.value);
-    const nextZoom = renderState.zoomLevels[index];
+function shiftZoom(direction) {
+    const index = renderState.zoomLevels.indexOf(renderState.zoom);
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= renderState.zoomLevels.length)
+        return;
+    const nextZoom = renderState.zoomLevels[targetIndex];
     if (!nextZoom)
         return;
     renderState.zoom = nextZoom;
-    zoomValueLabel.textContent = formatZoomLabel(nextZoom);
+    updateZoomControls();
     recomputeRenderState();
     layoutUi();
+}
+zoomOutButton.addEventListener('click', () => {
+    shiftZoom(-1);
+});
+zoomInButton.addEventListener('click', () => {
+    shiftZoom(1);
 });
 document.addEventListener('contextmenu', (e) => e.preventDefault());

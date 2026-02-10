@@ -153,24 +153,64 @@
                 position: absolute;
                 top: 8px;
                 left: 8px;
-                width: min(260px, calc(100vw - 16px));
+                width: fit-content;
+                max-width: calc(100vw - 16px);
                 padding: 5px 8px;
-                background: rgba(0, 0, 0, 0.8);
-                border: 1px solid #0f0;
+                background: transparent;
                 color: #0f0;
                 font-size: 10px;
                 line-height: 1.1;
                 font-family: 'Courier New', monospace;
                 z-index: 10;
             }
-            #zoom-controls label {
-                display: block;
-                margin-bottom: 3px;
+            #zoom-stepper {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 10px;
             }
-            #zoom-slider {
-                width: 100%;
+            #zoom-value {
+                min-width: 38px;
+                text-align: center;
+                font-weight: bold;
+                font-size: 16px;
+                line-height: 1;
+            }
+            #zoom-out, #zoom-in {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 38px;
+                height: 38px;
+                padding: 0;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border: none;
+                background: transparent;
+                box-shadow: none;
+                color: #0f0;
+                font-family: 'Courier New', monospace;
                 cursor: pointer;
-                height: 14px;
+            }
+            .zoom-icon {
+                width: 34px;
+                height: 34px;
+                fill: none;
+                stroke: currentColor;
+                stroke-width: 1.6;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+            }
+            #zoom-out:disabled, #zoom-in:disabled {
+                opacity: 0.35;
+                cursor: default;
+            }
+            #zoom-out:hover:not(:disabled), #zoom-in:hover:not(:disabled) {
+                color: #66ff66;
+            }
+            #zoom-out:focus, #zoom-in:focus {
+                outline: none;
+                box-shadow: none;
             }
         </style>
 </head>
@@ -186,8 +226,24 @@
         <button class="test-btn" data-config="threeway_l1d4c32">L1D4C16</button>
     </div>
     <div id="zoom-controls">
-        <label for="zoom-slider">ZOOM <span id="zoom-value">1x</span></label>
-        <input id="zoom-slider" type="range" min="0" max="0" step="1" value="0">
+        <div id="zoom-stepper">
+            <button id="zoom-out" type="button" aria-label="Zoom out">
+                <svg class="zoom-icon" viewBox="0 0 16 16" aria-hidden="true">
+                    <circle cx="6.5" cy="6.5" r="4.5"></circle>
+                    <line x1="10.2" y1="10.2" x2="14" y2="14"></line>
+                    <line x1="4.2" y1="6.5" x2="8.8" y2="6.5"></line>
+                </svg>
+            </button>
+            <span id="zoom-value">1x</span>
+            <button id="zoom-in" type="button" aria-label="Zoom in">
+                <svg class="zoom-icon" viewBox="0 0 16 16" aria-hidden="true">
+                    <circle cx="6.5" cy="6.5" r="4.5"></circle>
+                    <line x1="10.2" y1="10.2" x2="14" y2="14"></line>
+                    <line x1="4.2" y1="6.5" x2="8.8" y2="6.5"></line>
+                    <line x1="6.5" y1="4.2" x2="6.5" y2="8.8"></line>
+                </svg>
+            </button>
+        </div>
     </div>
     <div id="bottom-controls">
         <div id="action-controls">
@@ -239,7 +295,8 @@
     const infoDiv = document.getElementById('info');
     const testButtons = document.getElementById('test-buttons');
     const bottomControls = document.getElementById('bottom-controls');
-    const zoomSlider = document.getElementById('zoom-slider');
+    const zoomOutButton = document.getElementById('zoom-out');
+    const zoomInButton = document.getElementById('zoom-in');
     const zoomValueLabel = document.getElementById('zoom-value');
     const renderState = {
         dpr: 1,
@@ -252,7 +309,7 @@
         zoom: 1
     };
     function formatZoomLabel(zoom) {
-        return `${parseFloat(zoom.toFixed(3))}x`;
+        return `${Math.round(zoom * 100)}%`;
     }
     function updateZoomControls() {
         const maxFittableZoom = Math.min(renderState.viewportWidth, renderState.viewportHeight) / WORLD_SIZE;
@@ -265,17 +322,13 @@
                 levels.push(nextLevel);
         }
         renderState.zoomLevels = levels;
-        zoomSlider.min = '0';
-        zoomSlider.max = String(levels.length - 1);
-        zoomSlider.step = '1';
         const currentIndex = levels.indexOf(renderState.zoom);
         if (currentIndex === -1) {
             renderState.zoom = levels[levels.length - 1];
-            zoomSlider.value = String(levels.length - 1);
         }
-        else {
-            zoomSlider.value = String(currentIndex);
-        }
+        const nextIndex = levels.indexOf(renderState.zoom);
+        zoomOutButton.disabled = nextIndex <= 0;
+        zoomInButton.disabled = nextIndex >= levels.length - 1;
         zoomValueLabel.textContent = formatZoomLabel(renderState.zoom);
     }
     function recomputeRenderState() {
@@ -299,38 +352,14 @@
         const bottomGutter = renderState.viewportHeight - worldBottom - margin;
         const testWidth = testButtons.offsetWidth;
         const testHeight = testButtons.offsetHeight;
-        let testLeft;
-        let testTop;
-        if (rightGutter >= testWidth) {
-            testLeft = worldRight + margin;
-            testTop = clamp(worldTop, margin, renderState.viewportHeight - testHeight - margin);
-        }
-        else if (topGutter >= testHeight) {
-            testLeft = clamp(worldRight - testWidth, margin, renderState.viewportWidth - testWidth - margin);
-            testTop = worldTop - testHeight - margin;
-        }
-        else {
-            testLeft = clamp(worldRight - testWidth, margin, renderState.viewportWidth - testWidth - margin);
-            testTop = margin;
-        }
+        const testLeft = clamp(renderState.viewportWidth - testWidth - margin, margin, renderState.viewportWidth - testWidth - margin);
+        const testTop = margin;
         testButtons.style.left = `${Math.round(testLeft)}px`;
         testButtons.style.top = `${Math.round(testTop)}px`;
         const bottomWidth = bottomControls.offsetWidth;
         const bottomHeight = bottomControls.offsetHeight;
-        let bottomLeft;
-        let bottomTop;
-        if (rightGutter >= bottomWidth) {
-            bottomLeft = worldRight + margin;
-            bottomTop = clamp(worldBottom - bottomHeight, margin, renderState.viewportHeight - bottomHeight - margin);
-        }
-        else if (bottomGutter >= bottomHeight) {
-            bottomLeft = clamp(worldRight - bottomWidth, margin, renderState.viewportWidth - bottomWidth - margin);
-            bottomTop = worldBottom + margin;
-        }
-        else {
-            bottomLeft = clamp(renderState.viewportWidth - bottomWidth - margin, margin, renderState.viewportWidth - bottomWidth - margin);
-            bottomTop = clamp(renderState.viewportHeight - bottomHeight - margin, margin, renderState.viewportHeight - bottomHeight - margin);
-        }
+        const bottomLeft = clamp(renderState.viewportWidth - bottomWidth - margin, margin, renderState.viewportWidth - bottomWidth - margin);
+        const bottomTop = clamp(renderState.viewportHeight - bottomHeight - margin, margin, renderState.viewportHeight - bottomHeight - margin);
         bottomControls.style.left = `${Math.round(bottomLeft)}px`;
         bottomControls.style.top = `${Math.round(bottomTop)}px`;
     }
@@ -451,15 +480,24 @@
         e.preventDefault();
         placeBeaconFromEvent(e);
     }, { passive: false });
-    zoomSlider.addEventListener('input', () => {
-        const index = Number(zoomSlider.value);
-        const nextZoom = renderState.zoomLevels[index];
+    function shiftZoom(direction) {
+        const index = renderState.zoomLevels.indexOf(renderState.zoom);
+        const targetIndex = index + direction;
+        if (targetIndex < 0 || targetIndex >= renderState.zoomLevels.length)
+            return;
+        const nextZoom = renderState.zoomLevels[targetIndex];
         if (!nextZoom)
             return;
         renderState.zoom = nextZoom;
-        zoomValueLabel.textContent = formatZoomLabel(nextZoom);
+        updateZoomControls();
         recomputeRenderState();
         layoutUi();
+    }
+    zoomOutButton.addEventListener('click', () => {
+        shiftZoom(-1);
+    });
+    zoomInButton.addEventListener('click', () => {
+        shiftZoom(1);
     });
     document.addEventListener('contextmenu', (e) => e.preventDefault());
     
