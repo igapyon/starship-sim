@@ -17,10 +17,18 @@
         <button class="test-btn" data-config="mass_d1c8">Mass D1C8</button>
         <button class="test-btn" data-config="threeway_l1d4c32">L1D4C16</button>
     </div>
-    <!-- 右下：ビーコン配置ボタン -->
-    <button id="beacon-button">ビーコン: チームA</button>
+    <!-- 右下：ビーコン配置チーム選択 -->
+    <div id="beacon-controls">
+        <button class="beacon-team-btn active" data-team="A">Beacon-A</button>
+        <button class="beacon-team-btn" data-team="B">Beacon-B</button>
+        <button class="beacon-team-btn" data-team="C">Beacon-C</button>
+    </div>
     <!-- 右下：残骸攻撃トグルボタン -->
     <button id="wreckage-toggle">残骸を無視する</button>
+    <div id="zoom-controls">
+        <label for="zoom-slider">ZOOM <span id="zoom-value">1x</span></label>
+        <input id="zoom-slider" type="range" min="0" max="0" step="1" value="0">
+    </div>
 
     <script src="src/js/main.js"></script>
     <script src="src/js/components.js"></script>

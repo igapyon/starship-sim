@@ -81,11 +81,16 @@
             color: rgba(255, 200, 0, 0.9);
             box-shadow: 0 0 10px rgba(255, 150, 0, 0.6);
         }
-        #beacon-button {
+        #beacon-controls {
             position: absolute;
             bottom: 50px;
             right: 10px;
-            padding: 8px 12px;
+            display: flex;
+            gap: 6px;
+            z-index: 10;
+        }
+        .beacon-team-btn {
+            padding: 8px 10px;
             background: rgba(0, 50, 100, 0.7);
             color: #0f0;
             border: 1px solid #0f0;
@@ -93,15 +98,35 @@
             font-size: 11px;
             font-family: 'Courier New', monospace;
             transition: all 0.2s;
-            z-index: 10;
         }
-        #beacon-button:hover {
+        .beacon-team-btn:hover {
             background: rgba(0, 100, 150, 0.9);
             box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
         }
-        #beacon-button.active {
+        .beacon-team-btn.active {
             background: rgba(100, 200, 255, 0.8);
             border: 2px solid rgba(153, 221, 255, 0.9);
             color: rgba(153, 221, 255, 1);
             box-shadow: 0 0 10px rgba(153, 221, 255, 0.6);
+        }
+        #zoom-controls {
+            position: absolute;
+            bottom: 90px;
+            right: 10px;
+            width: 160px;
+            padding: 8px 10px;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #0f0;
+            color: #0f0;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+            z-index: 10;
+        }
+        #zoom-controls label {
+            display: block;
+            margin-bottom: 6px;
+        }
+        #zoom-slider {
+            width: 100%;
+            cursor: pointer;
         }

@@ -100,21 +100,18 @@
                     ship.vy *= 0.95;
                     ship.detectedTarget = false;
 
-                    const canvasWidth = canvas.width / window.devicePixelRatio;
-                    const canvasHeight = canvas.height / window.devicePixelRatio;
-
                     // 移動
                     ship.x += ship.vx;
                     ship.y += ship.vy;
 
                     // 画面端での反射
-                    if (ship.x < 0 || ship.x > canvasWidth) {
+                    if (ship.x < 0 || ship.x > WORLD_SIZE) {
                         ship.vx *= -1;
-                        ship.x = Math.max(0, Math.min(canvasWidth, ship.x));
+                        ship.x = Math.max(0, Math.min(WORLD_SIZE, ship.x));
                     }
-                    if (ship.y < 0 || ship.y > canvasHeight) {
+                    if (ship.y < 0 || ship.y > WORLD_SIZE) {
                         ship.vy *= -1;
-                        ship.y = Math.max(0, Math.min(canvasHeight, ship.y));
+                        ship.y = Math.max(0, Math.min(WORLD_SIZE, ship.y));
                     }
 
                     // 摩擦
@@ -136,12 +133,26 @@
         // ========================================
 
         function animate() {
-            const canvasWidth = canvas.width / window.devicePixelRatio;
-            const canvasHeight = canvas.height / window.devicePixelRatio;
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.imageSmoothingEnabled = false;
 
-            // 背景
+            // レターボックス背景
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // world空間を描画する変換を適用
+            ctx.setTransform(
+                renderState.dpr * renderState.worldScale,
+                0,
+                0,
+                renderState.dpr * renderState.worldScale,
+                renderState.offsetX * renderState.dpr,
+                renderState.offsetY * renderState.dpr
+            );
+
+            // world背景
             ctx.fillStyle = '#001a33';
-            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+            ctx.fillRect(0, 0, WORLD_SIZE, WORLD_SIZE);
 
             // 星
             stars.forEach(star => {
@@ -278,7 +289,3 @@
         }
 
         animate();
-
-        window.addEventListener('resize', () => {
-            resizeCanvas();
-        });

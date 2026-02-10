@@ -20,10 +20,8 @@ class Bullet {
         this.x += this.vx;
         this.y += this.vy;
         this.life--;
-        const canvasWidth = canvas.width / window.devicePixelRatio;
-        const canvasHeight = canvas.height / window.devicePixelRatio;
-        if (this.x < -50 || this.x > canvasWidth + 50 ||
-            this.y < -50 || this.y > canvasHeight + 50) {
+        if (this.x < -50 || this.x > WORLD_SIZE + 50 ||
+            this.y < -50 || this.y > WORLD_SIZE + 50) {
             this.life = 0;
         }
         const dx = this.x - this.originX;
