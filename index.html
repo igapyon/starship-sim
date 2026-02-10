@@ -30,31 +30,32 @@
             }
             #info {
                 position: absolute;
-                bottom: 10px;
-                left: 10px;
+                bottom: 8px;
+                left: 8px;
                 color: #0f0;
-                font-size: 11px;
-                line-height: 1.4;
-                background: rgba(0, 0, 0, 0.8);
-                padding: 10px;
+                font-size: 9px;
+                line-height: 1.25;
+                background: rgba(0, 0, 0, 0.45);
+                padding: 6px 7px;
                 border: 1px solid #0f0;
                 z-index: 10;
-                max-width: 200px;
+                max-width: 150px;
             }
             #test-buttons {
                 position: absolute;
                 display: flex;
                 flex-direction: column;
-                gap: 8px;
+                gap: 6px;
                 z-index: 10;
             }
             .test-btn {
-                padding: 8px 12px;
+                padding: 6px 10px;
                 background: rgba(0, 50, 100, 0.7);
                 color: #0f0;
                 border: 1px solid #0f0;
                 cursor: pointer;
-                font-size: 11px;
+                font-size: 10px;
+                line-height: 1.1;
                 font-family: 'Courier New', monospace;
                 transition: all 0.2s;
             }
@@ -149,21 +150,27 @@
                 box-shadow: 0 0 10px rgba(153, 221, 255, 0.6);
             }
             #zoom-controls {
+                position: absolute;
+                top: 8px;
+                left: 8px;
                 width: min(260px, calc(100vw - 16px));
-                padding: 8px 10px;
+                padding: 5px 8px;
                 background: rgba(0, 0, 0, 0.8);
                 border: 1px solid #0f0;
                 color: #0f0;
-                font-size: 11px;
+                font-size: 10px;
+                line-height: 1.1;
                 font-family: 'Courier New', monospace;
+                z-index: 10;
             }
             #zoom-controls label {
                 display: block;
-                margin-bottom: 6px;
+                margin-bottom: 3px;
             }
             #zoom-slider {
                 width: 100%;
                 cursor: pointer;
+                height: 14px;
             }
         </style>
 </head>
@@ -178,11 +185,11 @@
         <button class="test-btn" data-config="mass_d1c8">Mass D1C8</button>
         <button class="test-btn" data-config="threeway_l1d4c32">L1D4C16</button>
     </div>
+    <div id="zoom-controls">
+        <label for="zoom-slider">ZOOM <span id="zoom-value">1x</span></label>
+        <input id="zoom-slider" type="range" min="0" max="0" step="1" value="0">
+    </div>
     <div id="bottom-controls">
-        <div id="zoom-controls">
-            <label for="zoom-slider">ZOOM <span id="zoom-value">1x</span></label>
-            <input id="zoom-slider" type="range" min="0" max="0" step="1" value="0">
-        </div>
         <div id="action-controls">
             <!-- ビーコン配置チーム選択 -->
             <div id="beacon-controls">
@@ -226,7 +233,7 @@
     // @ts-nocheck
     const WORLD_SIZE = 720;
     const MIN_ZOOM = 0.5;
-    const ZOOM_STEPS = [0.5, 0.625, 0.75, 0.875, 1, 1.25, 1.5, 1.75, 2, 3, 4];
+    const ZOOM_STEPS = [0.4, 0.5, 0.625, 0.75, 0.875, 1, 1.25, 1.5, 1.75, 2, 3, 4];
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const infoDiv = document.getElementById('info');
@@ -1522,12 +1529,12 @@
             playerFleet = [];
             // ライトクルーザー1隻
             const playerLCX = WORLD_SIZE / 2;
-            const playerLCY = WORLD_SIZE - 100;
+            const playerLCY = WORLD_SIZE - 80;
             const playerLC = new Starship(playerLCX, playerLCY, 3, 3, '#99ddff', 'hull5', IndependentTurretB);
             playerFleet.push(playerLC);
             // デストロイヤー2隻
             const playerDStartX = WORLD_SIZE / 2 - 60;
-            const playerDStartY = WORLD_SIZE - 200;
+            const playerDStartY = WORLD_SIZE - 180;
             const playerDSpacing = 80;
             for (let i = 0; i < 2; i++) {
                 const x = playerDStartX + i * playerDSpacing;
@@ -1541,7 +1548,7 @@
             }
             // コルベット8隻（4x2グリッド）
             const playerCStartX = WORLD_SIZE / 2 - 60;
-            const playerCStartY = WORLD_SIZE - 280;
+            const playerCStartY = WORLD_SIZE - 260;
             const playerCSpacing = 40;
             for (let row = 0; row < 2; row++) {
                 for (let col = 0; col < 4; col++) {
@@ -1727,13 +1734,13 @@
             // チームB：画面左上（L1D4C16構成）
             enemies = [];
             // ライトクルーザー1隻
-            const enemyLCX = 100;
-            const enemyLCY = 100;
+            const enemyLCX = 70;
+            const enemyLCY = 80;
             const enemyLC = new Starship(enemyLCX, enemyLCY, 3, 3, '#ffccdd', 'hull5', IndependentTurretB);
             enemies.push(enemyLC);
             // デストロイヤー4隻
-            const enemyDStartX = 80;
-            const enemyDStartY = 180;
+            const enemyDStartX = 55;
+            const enemyDStartY = 140;
             const enemyDSpacing = 60;
             for (let i = 0; i < 4; i++) {
                 const x = enemyDStartX;
@@ -1746,8 +1753,8 @@
                 enemies.push(destroyer);
             }
             // コルベット16隻（4x4グリッド）
-            const enemyCStartX = 150;
-            const enemyCStartY = 180;
+            const enemyCStartX = 105;
+            const enemyCStartY = 140;
             const enemyCSpacing = 40;
             for (let row = 0; row < 4; row++) {
                 for (let col = 0; col < 4; col++) {
@@ -1759,13 +1766,13 @@
             // チームC：画面右上（L1D4C16構成）
             teamC = [];
             // ライトクルーザー1隻
-            const teamCLCX = WORLD_SIZE - 100;
-            const teamCLCY = 100;
+            const teamCLCX = WORLD_SIZE - 70;
+            const teamCLCY = 80;
             const teamCLC = new Starship(teamCLCX, teamCLCY, 3, 3, '#ffd24d', 'hull5', IndependentTurretB);
             teamC.push(teamCLC);
             // デストロイヤー4隻
-            const teamCDStartX = WORLD_SIZE - 80;
-            const teamCDStartY = 180;
+            const teamCDStartX = WORLD_SIZE - 55;
+            const teamCDStartY = 140;
             const teamCDSpacing = 60;
             for (let i = 0; i < 4; i++) {
                 const x = teamCDStartX;
@@ -1778,8 +1785,8 @@
                 teamC.push(destroyer);
             }
             // コルベット16隻（4x4グリッド）
-            const teamCCorvetteStartX = WORLD_SIZE - 250;
-            const teamCCorvetteStartY = 180;
+            const teamCCorvetteStartX = WORLD_SIZE - 205;
+            const teamCCorvetteStartY = 140;
             const teamCCorvetteSpacing = 40;
             for (let row = 0; row < 4; row++) {
                 for (let col = 0; col < 4; col++) {
