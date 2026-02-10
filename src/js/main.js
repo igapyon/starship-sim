@@ -25,6 +25,11 @@ function updateZoomControls() {
     const levels = ZOOM_STEPS.filter((zoom) => zoom <= maxFittableZoom + 0.000001);
     if (levels.length === 0)
         levels.push(MIN_ZOOM);
+    if (levels.length === 1) {
+        const nextLevel = ZOOM_STEPS.find((zoom) => zoom > levels[0]);
+        if (nextLevel !== undefined)
+            levels.push(nextLevel);
+    }
     renderState.zoomLevels = levels;
     zoomSlider.min = '0';
     zoomSlider.max = String(levels.length - 1);
@@ -131,7 +136,6 @@ beaconTeamButtons.forEach((button) => {
         updateBeaconTeamSelection(button.dataset.team);
     });
 });
-updateBeaconTeamSelection('A');
 function placeBeaconFromEvent(e) {
     const rect = canvas.getBoundingClientRect();
     let screenX;
