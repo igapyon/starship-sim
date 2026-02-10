@@ -113,8 +113,6 @@ class Starship {
         return this.weapons.reduce((sum, w) => sum + w.maxHp, 0);
     }
     update(targetX, targetY, skipDetectionCheck = false) {
-        const canvasWidth = canvas.width / window.devicePixelRatio;
-        const canvasHeight = canvas.height / window.devicePixelRatio;
         // 認識距離チェック（目標が指定された場合）
         if (this.weapons.length > 0 && !skipDetectionCheck) {
             const dx = targetX - this.x;
@@ -127,17 +125,17 @@ class Starship {
                 this.detectedTarget = true;
                 this.targetX = targetX;
                 this.targetY = targetY;
-                const centerX = canvasWidth / 2;
-                const centerY = canvasHeight / 2;
+                const centerX = WORLD_SIZE / 2;
+                const centerY = WORLD_SIZE / 2;
                 const margin = 100;
                 const correction = 0.6;
                 if (this.x < margin)
                     this.targetX += (centerX - this.targetX) * correction;
-                else if (this.x > canvasWidth - margin)
+                else if (this.x > WORLD_SIZE - margin)
                     this.targetX += (centerX - this.targetX) * correction;
                 if (this.y < margin)
                     this.targetY += (centerY - this.targetY) * correction;
-                else if (this.y > canvasHeight - margin)
+                else if (this.y > WORLD_SIZE - margin)
                     this.targetY += (centerY - this.targetY) * correction;
             }
             else {
@@ -236,16 +234,16 @@ class Starship {
             const distRatio = 1 - (this.x / margin);
             this.vx += maxRepelStrength * distRatio;
         }
-        if (this.x > canvasWidth - margin) {
-            const distRatio = 1 - ((canvasWidth - this.x) / margin);
+        if (this.x > WORLD_SIZE - margin) {
+            const distRatio = 1 - ((WORLD_SIZE - this.x) / margin);
             this.vx -= maxRepelStrength * distRatio;
         }
         if (this.y < margin) {
             const distRatio = 1 - (this.y / margin);
             this.vy += maxRepelStrength * distRatio;
         }
-        if (this.y > canvasHeight - margin) {
-            const distRatio = 1 - ((canvasHeight - this.y) / margin);
+        if (this.y > WORLD_SIZE - margin) {
+            const distRatio = 1 - ((WORLD_SIZE - this.y) / margin);
             this.vy -= maxRepelStrength * distRatio;
         }
         // 最高速度制限
@@ -258,13 +256,13 @@ class Starship {
         this.x += this.vx;
         this.y += this.vy;
         // 画面端での反射
-        if (this.x < 0 || this.x > canvasWidth) {
+        if (this.x < 0 || this.x > WORLD_SIZE) {
             this.vx *= -1;
-            this.x = Math.max(0, Math.min(canvasWidth, this.x));
+            this.x = Math.max(0, Math.min(WORLD_SIZE, this.x));
         }
-        if (this.y < 0 || this.y > canvasHeight) {
+        if (this.y < 0 || this.y > WORLD_SIZE) {
             this.vy *= -1;
-            this.y = Math.max(0, Math.min(canvasHeight, this.y));
+            this.y = Math.max(0, Math.min(WORLD_SIZE, this.y));
         }
         // 摩擦
         this.vx *= 0.98;
