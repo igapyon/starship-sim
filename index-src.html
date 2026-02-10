@@ -22,14 +22,43 @@
             <label for="zoom-slider">ZOOM <span id="zoom-value">1x</span></label>
             <input id="zoom-slider" type="range" min="0" max="0" step="1" value="0">
         </div>
-        <!-- ビーコン配置チーム選択 -->
-        <div id="beacon-controls">
-            <button class="beacon-team-btn active" data-team="A">Beacon-A</button>
-            <button class="beacon-team-btn" data-team="B">Beacon-B</button>
-            <button class="beacon-team-btn" data-team="C">Beacon-C</button>
+        <div id="action-controls">
+            <!-- ビーコン配置チーム選択 -->
+            <div id="beacon-controls">
+                <button class="beacon-team-btn active" data-team="A" aria-label="Beacon team A">
+                    <svg class="beacon-icon" viewBox="0 0 16 16" aria-hidden="true">
+                        <circle cx="8" cy="8" r="1.5"></circle>
+                        <path d="M8 4.5a3.5 3.5 0 0 1 0 7"></path>
+                        <path d="M8 2a6 6 0 0 1 0 12"></path>
+                        <path d="M8 4.5a3.5 3.5 0 0 0 0 7"></path>
+                        <path d="M8 2a6 6 0 0 0 0 12"></path>
+                    </svg>
+                    <span class="beacon-label">A</span>
+                </button>
+                <button class="beacon-team-btn" data-team="B" aria-label="Beacon team B">
+                    <svg class="beacon-icon" viewBox="0 0 16 16" aria-hidden="true">
+                        <circle cx="8" cy="8" r="1.5"></circle>
+                        <path d="M8 4.5a3.5 3.5 0 0 1 0 7"></path>
+                        <path d="M8 2a6 6 0 0 1 0 12"></path>
+                        <path d="M8 4.5a3.5 3.5 0 0 0 0 7"></path>
+                        <path d="M8 2a6 6 0 0 0 0 12"></path>
+                    </svg>
+                    <span class="beacon-label">B</span>
+                </button>
+                <button class="beacon-team-btn" data-team="C" aria-label="Beacon team C">
+                    <svg class="beacon-icon" viewBox="0 0 16 16" aria-hidden="true">
+                        <circle cx="8" cy="8" r="1.5"></circle>
+                        <path d="M8 4.5a3.5 3.5 0 0 1 0 7"></path>
+                        <path d="M8 2a6 6 0 0 1 0 12"></path>
+                        <path d="M8 4.5a3.5 3.5 0 0 0 0 7"></path>
+                        <path d="M8 2a6 6 0 0 0 0 12"></path>
+                    </svg>
+                    <span class="beacon-label">C</span>
+                </button>
+            </div>
+            <!-- 残骸攻撃トグルボタン -->
+            <button id="wreckage-toggle">残骸を無視する</button>
         </div>
-        <!-- 残骸攻撃トグルボタン -->
-        <button id="wreckage-toggle">残骸を無視する</button>
     </div>
 
     <script src="src/js/main.js"></script>
