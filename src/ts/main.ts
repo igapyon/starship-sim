@@ -5,6 +5,8 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const infoDiv = document.getElementById('info');
+        const testButtons = document.getElementById('test-buttons');
+        const bottomControls = document.getElementById('bottom-controls');
         const zoomSlider = document.getElementById('zoom-slider');
         const zoomValueLabel = document.getElementById('zoom-value');
         const renderState = {
@@ -54,6 +56,35 @@
             renderState.offsetY = Math.floor((renderState.viewportHeight - worldPixelSize) / 2);
         }
 
+        function clamp(value, min, max) {
+            return Math.max(min, Math.min(max, value));
+        }
+
+        function layoutUi() {
+            const worldPixelSize = WORLD_SIZE * renderState.worldScale;
+            const worldLeft = renderState.offsetX;
+            const worldTop = renderState.offsetY;
+            const worldRight = worldLeft + worldPixelSize;
+            const worldBottom = worldTop + worldPixelSize;
+            const margin = 8;
+
+            const testWidth = testButtons.offsetWidth;
+            const testHeight = testButtons.offsetHeight;
+            const testLeft = clamp(worldRight - testWidth, margin, renderState.viewportWidth - testWidth - margin);
+            const testTopPreferred = worldTop - testHeight - margin;
+            const testTop = clamp(testTopPreferred, margin, renderState.viewportHeight - testHeight - margin);
+            testButtons.style.left = `${Math.round(testLeft)}px`;
+            testButtons.style.top = `${Math.round(testTop)}px`;
+
+            const bottomWidth = bottomControls.offsetWidth;
+            const bottomHeight = bottomControls.offsetHeight;
+            const bottomLeft = clamp(worldRight - bottomWidth, margin, renderState.viewportWidth - bottomWidth - margin);
+            const bottomTopPreferred = worldBottom + margin;
+            const bottomTop = clamp(bottomTopPreferred, margin, renderState.viewportHeight - bottomHeight - margin);
+            bottomControls.style.left = `${Math.round(bottomLeft)}px`;
+            bottomControls.style.top = `${Math.round(bottomTop)}px`;
+        }
+
         function resizeCanvas() {
             renderState.dpr = window.devicePixelRatio || 1;
             renderState.viewportWidth = window.innerWidth;
@@ -64,6 +95,7 @@
             canvas.style.height = `${renderState.viewportHeight}px`;
             updateZoomControls();
             recomputeRenderState();
+            requestAnimationFrame(layoutUi);
         }
         resizeCanvas();
         window.addEventListener('resize', resizeCanvas);
@@ -179,6 +211,7 @@
             renderState.zoom = nextZoom;
             zoomValueLabel.textContent = formatZoomLabel(nextZoom);
             recomputeRenderState();
+            layoutUi();
         });
 
         document.addEventListener('contextmenu', (e) => e.preventDefault());

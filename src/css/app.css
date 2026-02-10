@@ -36,8 +36,6 @@
         }
         #test-buttons {
             position: absolute;
-            top: 10px;
-            right: 10px;
             display: flex;
             flex-direction: column;
             gap: 8px;
@@ -57,10 +55,16 @@
             background: rgba(0, 100, 150, 0.9);
             box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
         }
-        #wreckage-toggle {
+        #bottom-controls {
             position: absolute;
-            bottom: 10px;
-            right: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+            width: min(340px, 92vw);
+            z-index: 10;
+        }
+        #wreckage-toggle {
             padding: 8px 12px;
             background: rgba(0, 50, 100, 0.7);
             color: #0f0;
@@ -69,7 +73,6 @@
             font-size: 11px;
             font-family: 'Courier New', monospace;
             transition: all 0.2s;
-            z-index: 10;
         }
         #wreckage-toggle:hover {
             background: rgba(0, 100, 150, 0.9);
@@ -82,12 +85,11 @@
             box-shadow: 0 0 10px rgba(255, 150, 0, 0.6);
         }
         #beacon-controls {
-            position: absolute;
-            bottom: 50px;
-            right: 10px;
             display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
             gap: 6px;
-            z-index: 10;
+            width: 100%;
         }
         .beacon-team-btn {
             padding: 8px 10px;
@@ -110,17 +112,13 @@
             box-shadow: 0 0 10px rgba(153, 221, 255, 0.6);
         }
         #zoom-controls {
-            position: absolute;
-            bottom: 90px;
-            right: 10px;
-            width: 160px;
+            width: 100%;
             padding: 8px 10px;
             background: rgba(0, 0, 0, 0.8);
             border: 1px solid #0f0;
             color: #0f0;
             font-size: 11px;
             font-family: 'Courier New', monospace;
-            z-index: 10;
         }
         #zoom-controls label {
             display: block;
