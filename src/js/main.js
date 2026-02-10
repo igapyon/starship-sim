@@ -1,7 +1,7 @@
 // @ts-nocheck
 const WORLD_SIZE = 720;
 const MIN_ZOOM = 0.5;
-const ZOOM_STEPS = [0.5, 0.625, 0.75, 0.875, 1, 1.25, 1.5, 1.75, 2, 3, 4];
+const ZOOM_STEPS = [0.4, 0.5, 0.625, 0.75, 0.875, 1, 1.25, 1.5, 1.75, 2, 3, 4];
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const infoDiv = document.getElementById('info');

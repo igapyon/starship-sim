@@ -23,31 +23,32 @@
         }
         #info {
             position: absolute;
-            bottom: 10px;
-            left: 10px;
+            bottom: 8px;
+            left: 8px;
             color: #0f0;
-            font-size: 11px;
-            line-height: 1.4;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 10px;
+            font-size: 9px;
+            line-height: 1.25;
+            background: rgba(0, 0, 0, 0.45);
+            padding: 6px 7px;
             border: 1px solid #0f0;
             z-index: 10;
-            max-width: 200px;
+            max-width: 150px;
         }
         #test-buttons {
             position: absolute;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             z-index: 10;
         }
         .test-btn {
-            padding: 8px 12px;
+            padding: 6px 10px;
             background: rgba(0, 50, 100, 0.7);
             color: #0f0;
             border: 1px solid #0f0;
             cursor: pointer;
-            font-size: 11px;
+            font-size: 10px;
+            line-height: 1.1;
             font-family: 'Courier New', monospace;
             transition: all 0.2s;
         }
@@ -142,19 +143,25 @@
             box-shadow: 0 0 10px rgba(153, 221, 255, 0.6);
         }
         #zoom-controls {
+            position: absolute;
+            top: 8px;
+            left: 8px;
             width: min(260px, calc(100vw - 16px));
-            padding: 8px 10px;
+            padding: 5px 8px;
             background: rgba(0, 0, 0, 0.8);
             border: 1px solid #0f0;
             color: #0f0;
-            font-size: 11px;
+            font-size: 10px;
+            line-height: 1.1;
             font-family: 'Courier New', monospace;
+            z-index: 10;
         }
         #zoom-controls label {
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 3px;
         }
         #zoom-slider {
             width: 100%;
             cursor: pointer;
+            height: 14px;
         }

@@ -181,13 +181,13 @@
                 playerFleet = [];
                 // ライトクルーザー1隻
                 const playerLCX = WORLD_SIZE / 2;
-                const playerLCY = WORLD_SIZE - 100;
+                const playerLCY = WORLD_SIZE - 80;
                 const playerLC = new Starship(playerLCX, playerLCY, 3, 3, '#99ddff', 'hull5', IndependentTurretB);
                 playerFleet.push(playerLC);
 
                 // デストロイヤー2隻
                 const playerDStartX = WORLD_SIZE / 2 - 60;
-                const playerDStartY = WORLD_SIZE - 200;
+                const playerDStartY = WORLD_SIZE - 180;
                 const playerDSpacing = 80;
                 for (let i = 0; i < 2; i++) {
                     const x = playerDStartX + i * playerDSpacing;
@@ -202,7 +202,7 @@
 
                 // コルベット8隻（4x2グリッド）
                 const playerCStartX = WORLD_SIZE / 2 - 60;
-                const playerCStartY = WORLD_SIZE - 280;
+                const playerCStartY = WORLD_SIZE - 260;
                 const playerCSpacing = 40;
                 for (let row = 0; row < 2; row++) {
                     for (let col = 0; col < 4; col++) {
@@ -407,14 +407,14 @@
                 // チームB：画面左上（L1D4C16構成）
                 enemies = [];
                 // ライトクルーザー1隻
-                const enemyLCX = 100;
-                const enemyLCY = 100;
+                const enemyLCX = 70;
+                const enemyLCY = 80;
                 const enemyLC = new Starship(enemyLCX, enemyLCY, 3, 3, '#ffccdd', 'hull5', IndependentTurretB);
                 enemies.push(enemyLC);
 
                 // デストロイヤー4隻
-                const enemyDStartX = 80;
-                const enemyDStartY = 180;
+                const enemyDStartX = 55;
+                const enemyDStartY = 140;
                 const enemyDSpacing = 60;
                 for (let i = 0; i < 4; i++) {
                     const x = enemyDStartX;
@@ -428,8 +428,8 @@
                 }
 
                 // コルベット16隻（4x4グリッド）
-                const enemyCStartX = 150;
-                const enemyCStartY = 180;
+                const enemyCStartX = 105;
+                const enemyCStartY = 140;
                 const enemyCSpacing = 40;
                 for (let row = 0; row < 4; row++) {
                     for (let col = 0; col < 4; col++) {
@@ -442,14 +442,14 @@
                 // チームC：画面右上（L1D4C16構成）
                 teamC = [];
                 // ライトクルーザー1隻
-                const teamCLCX = WORLD_SIZE - 100;
-                const teamCLCY = 100;
+                const teamCLCX = WORLD_SIZE - 70;
+                const teamCLCY = 80;
                 const teamCLC = new Starship(teamCLCX, teamCLCY, 3, 3, '#ffd24d', 'hull5', IndependentTurretB);
                 teamC.push(teamCLC);
 
                 // デストロイヤー4隻
-                const teamCDStartX = WORLD_SIZE - 80;
-                const teamCDStartY = 180;
+                const teamCDStartX = WORLD_SIZE - 55;
+                const teamCDStartY = 140;
                 const teamCDSpacing = 60;
                 for (let i = 0; i < 4; i++) {
                     const x = teamCDStartX;
@@ -463,8 +463,8 @@
                 }
 
                 // コルベット16隻（4x4グリッド）
-                const teamCCorvetteStartX = WORLD_SIZE - 250;
-                const teamCCorvetteStartY = 180;
+                const teamCCorvetteStartX = WORLD_SIZE - 205;
+                const teamCCorvetteStartY = 140;
                 const teamCCorvetteSpacing = 40;
                 for (let row = 0; row < 4; row++) {
                     for (let col = 0; col < 4; col++) {
