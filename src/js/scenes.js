@@ -65,6 +65,7 @@ function initializeGame(config = 'destroyer1') {
         // 船種Dの独立砲塔設定
         destroyer.weapons.forEach(weapon => {
             weapon.detectionRange = 180; // 船種C150の1.2倍
+            weapon.maxRange = 270; // 独立砲塔Aの設計射程
             weapon.mass = 2; // 独立砲塔は重量2
         });
         playerFleet.push(destroyer);
@@ -75,6 +76,7 @@ function initializeGame(config = 'destroyer1') {
         // 船種Dの独立砲塔設定
         destroyer.weapons.forEach(weapon => {
             weapon.detectionRange = 180; // 船種C150の1.2倍
+            weapon.maxRange = 270; // 独立砲塔Aの設計射程
             weapon.mass = 2; // 独立砲塔は重量2
         });
         playerFleet.push(destroyer);
@@ -85,6 +87,7 @@ function initializeGame(config = 'destroyer1') {
         // 船種Dの独立砲塔設定
         destroyer.weapons.forEach(weapon => {
             weapon.detectionRange = 180; // 船種C150の1.2倍
+            weapon.maxRange = 270; // 独立砲塔Aの設計射程
             weapon.mass = 2; // 独立砲塔は重量2
         });
         playerFleet.push(destroyer);
@@ -112,6 +115,7 @@ function initializeGame(config = 'destroyer1') {
         const destroyer = new Starship(x, y, 2, 2, '#ffccdd', 'large');
         destroyer.weapons.forEach(weapon => {
             weapon.detectionRange = 180; // 船種C150の1.2倍
+            weapon.maxRange = 270; // 独立砲塔Aの設計射程
             weapon.mass = 2; // 独立砲塔は重量2
         });
         enemies.push(destroyer);
@@ -130,6 +134,7 @@ function initializeGame(config = 'destroyer1') {
             const destroyer = new Starship(x, enemyStartY, 2, 2, '#ffccdd', 'large');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180; // 船種C150の1.2倍
+                weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2; // 独立砲塔は重量2
             });
             enemies.push(destroyer);
@@ -159,6 +164,7 @@ function initializeGame(config = 'destroyer1') {
             const destroyer = new Starship(x, y, 2, 2, '#ffccdd', 'large');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180; // 船種C150の1.2倍
+                weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2; // 独立砲塔は重量2
             });
             enemies.push(destroyer);
@@ -183,6 +189,7 @@ function initializeGame(config = 'destroyer1') {
             const destroyer = new Starship(x, y, 2, 2, '#99ddff', 'large');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180;
+                weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2;
             });
             playerFleet.push(destroyer);
@@ -215,6 +222,7 @@ function initializeGame(config = 'destroyer1') {
             const destroyer = new Starship(x, y, 2, 2, '#ffccdd', 'large');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180;
+                weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2;
             });
             enemies.push(destroyer);
@@ -247,6 +255,7 @@ function initializeGame(config = 'destroyer1') {
             const destroyer = new Starship(x, y, 2, 2, '#ffd24d', 'large');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180;
+                weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2;
             });
             teamC.push(destroyer);
@@ -288,6 +297,7 @@ function initializeGame(config = 'destroyer1') {
             const destroyer = new Starship(centerX, centerY + 90, 2, 2, '#99ddff', 'large');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180;
+                weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2;
             });
             playerFleet.push(destroyer);
@@ -313,6 +323,7 @@ function initializeGame(config = 'destroyer1') {
             const destroyer = new Starship(centerX, centerY, 2, 2, '#ffccdd', 'large');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180;
+                weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2;
             });
             enemies.push(destroyer);
@@ -357,6 +368,7 @@ function initializeGame(config = 'destroyer1') {
             const destroyer = new Starship(x, y, 2, 2, '#99ddff', 'large');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180;
+                weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2;
             });
             playerFleet.push(destroyer);
@@ -389,6 +401,7 @@ function initializeGame(config = 'destroyer1') {
             const destroyer = new Starship(x, y, 2, 2, '#ffccdd', 'large');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180;
+                weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2;
             });
             enemies.push(destroyer);
@@ -421,6 +434,7 @@ function initializeGame(config = 'destroyer1') {
             const destroyer = new Starship(x, y, 2, 2, '#ffd24d', 'large');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180;
+                weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2;
             });
             teamC.push(destroyer);

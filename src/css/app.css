@@ -34,6 +34,30 @@
             z-index: 10;
             max-width: 150px;
         }
+        #github-link {
+            position: absolute;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 6px;
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid #0f0;
+            color: #0f0;
+            text-decoration: none;
+            font-size: 10px;
+            line-height: 1;
+            font-family: 'Courier New', monospace;
+            z-index: 10;
+        }
+        #github-link:hover {
+            background: rgba(0, 100, 150, 0.9);
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        .github-icon {
+            width: 12px;
+            height: 12px;
+            display: block;
+        }
         #test-buttons {
             position: absolute;
             display: flex;
