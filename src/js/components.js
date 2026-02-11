@@ -2,37 +2,40 @@
 // ========================================
 // コンポーネント定義
 // ========================================
-// 標準船体（Standard Hull）
-class Hull {
+// 船体A（HullA / Standard Hull）
+class HullA {
     constructor() {
-        this.mass = 1;
-        this.hp = 100;
-        this.maxHp = 100;
-        this.size = 12;
+        const spec = COMPONENT_CATALOG.hulls.hullA;
+        this.mass = spec.mass;
+        this.hp = spec.hp;
+        this.maxHp = spec.maxHp;
+        this.size = spec.size;
     }
     getCost() {
         return this.mass;
     }
 }
-// 大型船体（Large Hull）
-class LargeHull {
+// 船体B（HullB / Large Hull）
+class HullB {
     constructor() {
-        this.mass = 3;
-        this.hp = 300;
-        this.maxHp = 300;
-        this.size = 28;
+        const spec = COMPONENT_CATALOG.hulls.hullB;
+        this.mass = spec.mass;
+        this.hp = spec.hp;
+        this.maxHp = spec.maxHp;
+        this.size = spec.size;
     }
     getCost() {
         return this.mass;
     }
 }
-// 船体5（Light Cruiser Hull）
-class Hull5 {
+// 船体C（HullC / Light Cruiser Hull）
+class HullC {
     constructor() {
-        this.mass = 5;
-        this.hp = 500;
-        this.maxHp = 500;
-        this.size = 47;
+        const spec = COMPONENT_CATALOG.hulls.hullC;
+        this.mass = spec.mass;
+        this.hp = spec.hp;
+        this.maxHp = spec.maxHp;
+        this.size = spec.size;
     }
     getCost() {
         return this.mass;
@@ -41,20 +44,22 @@ class Hull5 {
 // 標準推進エンジン（Standard Thruster）
 class ThrusterEngine {
     constructor() {
-        this.mass = 1;
-        this.thrust = 0.15; // 推進力
-        this.rotationSpeed = 0.1; // 旋回速度（2倍速）
+        const spec = COMPONENT_CATALOG.thrusters.thrusterA;
+        this.mass = spec.mass;
+        this.thrust = spec.thrust; // 推進力
+        this.rotationSpeed = spec.rotationSpeed; // 旋回速度（2倍速）
     }
     getCost() {
         return this.mass;
     }
 }
-// 高性能レーダー（Advanced Radar）
+// 標準レーダー（Standard Radar）
 // レーダーA（Radar A）
 class RadarA {
     constructor() {
-        this.mass = 1;
-        this.detectionBonus = 30; // 索敵範囲ボーナス（ピクセル）
+        const spec = COMPONENT_CATALOG.radars.radarA;
+        this.mass = spec.mass;
+        this.detectionBonus = spec.detectionBonus; // 基準値（ボーナスなし）
     }
     getCost() {
         return this.mass;
@@ -63,27 +68,40 @@ class RadarA {
 // レーダーB（Radar B）
 class RadarB {
     constructor() {
-        this.mass = 2;
-        this.detectionBonus = 45; // 索敵範囲ボーナス（ピクセル）
+        const spec = COMPONENT_CATALOG.radars.radarB;
+        this.mass = spec.mass;
+        this.detectionBonus = spec.detectionBonus; // 索敵範囲ボーナス（ピクセル）
     }
     getCost() {
         return this.mass;
     }
 }
-// 標準射撃ユニット（Standard Weapon System）
-class WeaponUnit {
+// レーダーC（Radar C）
+class RadarC {
     constructor() {
-        this.mass = 1;
-        this.hp = 150;
-        this.maxHp = 150;
-        this.fireInterval = 60;
+        const spec = COMPONENT_CATALOG.radars.radarC;
+        this.mass = spec.mass;
+        this.detectionBonus = spec.detectionBonus; // 索敵範囲ボーナス（ピクセル）
+    }
+    getCost() {
+        return this.mass;
+    }
+}
+// 独立砲塔射撃ユニットA（Independent Turret Weapon System A）
+class IndependentTurretA {
+    constructor() {
+        const spec = COMPONENT_CATALOG.turrets.turretA;
+        this.mass = spec.mass;
+        this.hp = spec.hp;
+        this.maxHp = spec.maxHp;
+        this.fireInterval = spec.fireInterval;
         this.fireCounter = 0;
-        this.fireAngle = Math.PI / 12; // 前方15度
-        this.detectionRange = 150;
-        this.bulletSpeed = 5;
-        this.bulletDamage = 10;
-        this.maxRange = 225; // 索敇範囲の1.5倍
-        this.rotationSpeed = 0.1; // 砲塔の旋回速度（2倍速）
+        this.fireAngle = spec.fireAngle; // 前方15度
+        this.detectionRange = spec.detectionRange;
+        this.bulletSpeed = spec.bulletSpeed;
+        this.bulletDamage = spec.bulletDamage;
+        this.maxRange = spec.maxRange; // 索敇範囲の1.5倍
+        this.rotationSpeed = spec.rotationSpeed; // 砲塔の旋回速度（2倍速）
         this.angle = 0; // 砲塔独自の角度
         this.targetX = 0; // 砲塔独自の目標X
         this.targetY = 0; // 砲塔独自の目標Y
@@ -129,15 +147,16 @@ class WeaponUnit {
     }
 }
 // 独立砲塔射撃ユニットB（Independent Turret Weapon System B）
-class IndependentTurretB extends WeaponUnit {
+class IndependentTurretB extends IndependentTurretA {
     constructor() {
         super();
-        this.mass = 4;
-        this.hp = 200;
-        this.maxHp = 200;
-        this.fireInterval = 90;
-        this.detectionRange = 225; // 船種C150の1.5倍
-        this.maxRange = 338; // 索敵範囲の1.5倍
-        this.bulletDamage = 20;
+        const spec = COMPONENT_CATALOG.turrets.turretB;
+        this.mass = spec.mass;
+        this.hp = spec.hp;
+        this.maxHp = spec.maxHp;
+        this.fireInterval = spec.fireInterval;
+        this.detectionRange = spec.detectionRange; // 船種C150の1.5倍
+        this.maxRange = spec.maxRange; // 索敵範囲の1.5倍
+        this.bulletDamage = spec.bulletDamage;
     }
 }

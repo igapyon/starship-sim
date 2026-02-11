@@ -5,19 +5,19 @@
 
 ## 船体（Hull）
 
-### 船体1（Standard Hull）
+### 船体A（HullA / Standard Hull）
 - サイズ: 12
 - HP: 100
 - 重さ: 1
 - 形状: 三角形
 
-### 船体3（Large Hull）
+### 船体B（HullB / Large Hull）
 - サイズ: 28
 - HP: 300
 - 重さ: 3
 - 形状: 縦長カプセル型
 
-### 船体5（Light Cruiser Hull）
+### 船体C（HullC / Light Cruiser Hull）
 - サイズ: 47
 - HP: 500
 - 重さ: 5
@@ -53,7 +53,7 @@
 - 旋回速度: 0.1
 
 ### 独立砲塔射撃ユニットA（Independent Turret Weapon System A）
-注: 専用クラスは未実装。`WeaponUnit` をベースにシーン初期化時に `mass=2` / `detectionRange=180` を上書きして運用。
+注: 実装クラスは `IndependentTurretA`。一部シーンでは初期化時に `mass=2` / `detectionRange=180` を上書きして運用。
 - 重さ: 2
 - HP: 150
 - 射撃間隔: 60

@@ -10,8 +10,8 @@
                 weaponCount,
                 engineCount,
                 color = TEAM_COLORS.A,
-                hullType = 'standard',
-                weaponClass = WeaponUnit
+                hullType = 'hullA',
+                weaponClass = IndependentTurretA
             ) {
                 this.x = x;
                 this.y = y;
@@ -30,12 +30,12 @@
                 this.detectedTarget = false;
 
                 // コンポーネント構成
-                if (hullType === 'hull5') {
-                    this.hull = new Hull5();
-                } else if (hullType === 'large') {
-                    this.hull = new LargeHull();
+                if (hullType === 'hullC') {
+                    this.hull = new HullC();
+                } else if (hullType === 'hullB') {
+                    this.hull = new HullB();
                 } else {
-                    this.hull = new Hull();
+                    this.hull = new HullA();
                 }
                 this.weapons = [];
                 this.engines = [];
@@ -49,12 +49,15 @@
                     this.engines.push(new ThrusterEngine());
                 }
 
-                // 大型船体にはレーダーAを搭載
-                if (hullType === 'large') {
-                    this.radar = new RadarA();
-                    this.radarCount = 1;
-                } else if (hullType === 'hull5') {
+                // 船体タイプごとにレーダーを搭載
+                if (hullType === 'hullB') {
                     this.radar = new RadarB();
+                    this.radarCount = 1;
+                } else if (hullType === 'hullC') {
+                    this.radar = new RadarC();
+                    this.radarCount = 1;
+                } else {
+                    this.radar = new RadarA();
                     this.radarCount = 1;
                 }
 
@@ -89,9 +92,9 @@
 
             // 船体見た目に寄せた当たり判定半径
             getCollisionRadius() {
-                if (this.hull.size === 47) return 31;  // Hull5
-                if (this.hull.size === 28) return 20;  // LargeHull
-                return 11;  // Standard Hull
+                if (this.hull.size === 47) return 31;  // HullC
+                if (this.hull.size === 28) return 20;  // HullB
+                return 11;  // HullA
             }
 
             // コストを計算（重量と一致）
