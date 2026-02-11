@@ -48,16 +48,16 @@
 ### レーダー
 - RadarA
   - mass: 0
-  - detectionBonus: 0
+  - detectionRange: 150
 - RadarB
   - mass: 1
-  - detectionBonus: 30
+  - detectionRange: 180
 - RadarC
   - mass: 2
-  - detectionBonus: 45
+  - detectionRange: 225
 
 注記:
-- 現行実装では、レーダーの `detectionBonus` は索敵ロジックに未反映です。
+- 現行実装では、レーダーの `detectionRange` は索敵ロジックに未反映です。
 - レーダーは主に艦種差分の質量（=コスト）として効いています。
 
 ### 射撃ユニット

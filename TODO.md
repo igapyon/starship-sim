@@ -14,23 +14,24 @@
 
 ### レーダーシステムの実装乖離を修正
 
-[ ] RadarA/RadarB/RadarC の detectionBonus を索敇ロジックに統合する
-  - 現状：RadarA/RadarB/RadarC クラスは存在し質量（mass）はコスト計算に含まれるが、detectionBonus は未使用
-  - 目標：RadarA/RadarB/RadarC の detectionBonus を実際の索敇範囲計算に反映させる
+[ ] RadarA/RadarB/RadarC の detectionRange を索敇ロジックに統合する
+  - 現状：RadarA/RadarB/RadarC クラスは存在し質量（mass）はコスト計算に含まれるが、detectionRange は未使用
+  - 目標：RadarA/RadarB/RadarC の detectionRange を実際の索敇範囲計算に反映させる
 
-[ ] selectTarget() メソッドを修正して、weapon.detectionRange ではなく radar.detectionBonus を使用
+[ ] selectTarget() メソッドを修正して、weapon.detectionRange ではなく radar.detectionRange を使用
   - 現状：1135行で `distance < this.weapons[0].detectionRange` を使用
   - 目標：レーダーコンポーネントベースの索敇範囲を使用
 
 [ ] 全シーンの detectionRange 後付け設定を改善
   - 現状：初期化時に `weapon.detectionRange = 180` などと後から上書き
   - 目標：レーダーコンポーネントで統一管理
+  - 方針：`scenes.ts` で `weapon.mass / detectionRange / maxRange` を直接上書きしない（カタログ/クラス定義側に寄せる）
 
 [ ] SHIP_TYPES.md のドキュメントを修正：レーダーコンポーネントが索敇範囲を決定することを明記
 
 ### コンポーネント抽象化と命名統一
 
-[ ] 現行実装では、レーダーの `detectionBonus` は索敵ロジックに未反映です。
+[ ] 現行実装では、レーダーの `detectionRange` は索敵ロジックに未反映です。
 [ ] レーダーは主に艦種差分の質量（=コスト）として効いています。
 [ ] 上記を抽象化・一般化し、コンポーネント定義の横並びを揃える。
 

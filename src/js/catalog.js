@@ -12,31 +12,40 @@ const COMPONENT_CATALOG = {
         thrusterA: { mass: 1, thrust: 0.15, rotationSpeed: 0.1 }
     },
     radars: {
-        radarA: { mass: 0, detectionBonus: 0 },
-        radarB: { mass: 1, detectionBonus: 30 },
-        radarC: { mass: 2, detectionBonus: 45 }
+        radarA: { mass: 0, detectionRange: 150 },
+        radarB: { mass: 1, detectionRange: 180 },
+        radarC: { mass: 2, detectionRange: 225 }
     },
     turrets: {
         turretA: {
             mass: 1,
+            hp: 100,
+            maxHp: 100,
+            fireInterval: 60,
+            bulletSpeed: 5,
+            bulletDamage: 10,
+            maxRange: 180,
+            rotationSpeed: 0
+        },
+        turretB: {
+            mass: 2,
             hp: 150,
             maxHp: 150,
             fireInterval: 60,
-            fireAngle: Math.PI / 12,
-            detectionRange: 150,
             bulletSpeed: 5,
             bulletDamage: 10,
             maxRange: 225,
             rotationSpeed: 0.1
         },
-        turretB: {
+        turretC: {
             mass: 4,
             hp: 200,
             maxHp: 200,
             fireInterval: 90,
-            detectionRange: 225,
+            bulletSpeed: 5,
             bulletDamage: 20,
-            maxRange: 338
+            maxRange: 338,
+            rotationSpeed: 0.1
         }
     }
 };

@@ -11,7 +11,7 @@
                 engineCount,
                 color = TEAM_COLORS.A,
                 hullType = 'hullA',
-                weaponClass = IndependentTurretA
+                weaponClass = IndependentTurretB
             ) {
                 this.x = x;
                 this.y = y;
@@ -129,15 +129,21 @@
                 return this.weapons.reduce((sum, w) => sum + w.maxHp, 0);
             }
 
+            // 索敵距離はレーダー基準。互換のため未搭載時のみ武装値へフォールバック。
+            getDetectionRange() {
+                return this.radar.detectionRange;
+            }
+
             update(targetX, targetY, skipDetectionCheck = false) {
                 // 認識距離チェック（目標が指定された場合）
                 if (this.weapons.length > 0 && !skipDetectionCheck) {
                     const dx = targetX - this.x;
                     const dy = targetY - this.y;
                     const distanceToTarget = Math.hypot(dx, dy);
+                    const detectionRange = this.getDetectionRange();
 
                     // 索敵範囲内なら目標を設定
-                    if (distanceToTarget < this.weapons[0].detectionRange) {
+                    if (distanceToTarget < detectionRange) {
                         // 索敇範囲内に入ったらスラスターONと検出フラグをON
                         this.thrustersActive = true;
                         this.detectedTarget = true;
@@ -182,9 +188,14 @@
                         const weaponX = this.x + rotatedX;
                         const weaponY = this.y + rotatedY;
 
-                        // 砲塔の位置から共通の目標への角度を計算（偏差撃ち対応）
-                        // 敵が索敇範囲外の場合、this.targetは自身の位置のため砲塔は旋回しない
-                        weapon.updateAngle(this.targetX, this.targetY, weaponX, weaponY, this.targetVx, this.targetVy);
+                        // 旋回速度0の砲塔は固定砲として船体角に同期させる
+                        if (weapon.rotationSpeed === 0) {
+                            weapon.angle = this.angle;
+                        } else {
+                            // 砲塔の位置から共通の目標への角度を計算（偏差撃ち対応）
+                            // 敵が索敇範囲外の場合、this.targetは自身の位置のため砲塔は旋回しない
+                            weapon.updateAngle(this.targetX, this.targetY, weaponX, weaponY, this.targetVx, this.targetVy);
+                        }
                     });
                 } else {
                     // 標準船体の場合、射撃ユニットの角度を船体の角度に同期
@@ -506,7 +517,7 @@
                     ctx.strokeStyle = 'rgba(0, 255, 0, 0.15)';
                     ctx.lineWidth = 1;
                     ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.weapons[0].detectionRange, 0, Math.PI * 2);
+                    ctx.arc(this.x, this.y, this.getDetectionRange(), 0, Math.PI * 2);
                     ctx.stroke();
                 }
                 
@@ -547,7 +558,7 @@
                         }
 
                         // 全ての砲塔が共通の目標を使用
-                        if (weapon.canFire(this.targetX, this.targetY, weaponX, weaponY)) {
+                        if (weapon.canFire(this.targetX, this.targetY, weaponX, weaponY, this.getDetectionRange())) {
                             weapon.fireCounter = 0;
                             this.nextFireWeaponIndex = i;
                             return true;
@@ -676,13 +687,14 @@
                 let closestDebrisDistance = Infinity;
 
                 if (this.weapons.length > 0) {
+                    const detectionRange = this.getDetectionRange();
                     opponents.forEach(opponent => {
                         const isWreck = opponent.weapons.length === 0;
                         const dx = opponent.x - this.x;
                         const dy = opponent.y - this.y;
                         const distance = Math.hypot(dx, dy);
 
-                        if (distance < this.weapons[0].detectionRange) {
+                        if (distance < detectionRange) {
                             if (isWreck) {
                                 // 残骸：attackWrecks 設定に従う
                                 if (attackWrecks && distance < closestDebrisDistance) {

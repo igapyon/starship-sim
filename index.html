@@ -679,31 +679,40 @@
             thrusterA: { mass: 1, thrust: 0.15, rotationSpeed: 0.1 }
         },
         radars: {
-            radarA: { mass: 0, detectionBonus: 0 },
-            radarB: { mass: 1, detectionBonus: 30 },
-            radarC: { mass: 2, detectionBonus: 45 }
+            radarA: { mass: 0, detectionRange: 150 },
+            radarB: { mass: 1, detectionRange: 180 },
+            radarC: { mass: 2, detectionRange: 225 }
         },
         turrets: {
             turretA: {
                 mass: 1,
+                hp: 100,
+                maxHp: 100,
+                fireInterval: 60,
+                bulletSpeed: 5,
+                bulletDamage: 10,
+                maxRange: 180,
+                rotationSpeed: 0
+            },
+            turretB: {
+                mass: 2,
                 hp: 150,
                 maxHp: 150,
                 fireInterval: 60,
-                fireAngle: Math.PI / 12,
-                detectionRange: 150,
                 bulletSpeed: 5,
                 bulletDamage: 10,
                 maxRange: 225,
                 rotationSpeed: 0.1
             },
-            turretB: {
+            turretC: {
                 mass: 4,
                 hp: 200,
                 maxHp: 200,
                 fireInterval: 90,
-                detectionRange: 225,
+                bulletSpeed: 5,
                 bulletDamage: 20,
-                maxRange: 338
+                maxRange: 338,
+                rotationSpeed: 0.1
             }
         }
     };
@@ -769,7 +778,7 @@
         constructor() {
             const spec = COMPONENT_CATALOG.radars.radarA;
             this.mass = spec.mass;
-            this.detectionBonus = spec.detectionBonus; // 基準値（ボーナスなし）
+            this.detectionRange = spec.detectionRange; // 探知可能距離
         }
         getCost() {
             return this.mass;
@@ -780,7 +789,7 @@
         constructor() {
             const spec = COMPONENT_CATALOG.radars.radarB;
             this.mass = spec.mass;
-            this.detectionBonus = spec.detectionBonus; // 索敵範囲ボーナス（ピクセル）
+            this.detectionRange = spec.detectionRange; // 探知可能距離
         }
         getCost() {
             return this.mass;
@@ -791,7 +800,7 @@
         constructor() {
             const spec = COMPONENT_CATALOG.radars.radarC;
             this.mass = spec.mass;
-            this.detectionBonus = spec.detectionBonus; // 索敵範囲ボーナス（ピクセル）
+            this.detectionRange = spec.detectionRange; // 探知可能距離
         }
         getCost() {
             return this.mass;
@@ -806,8 +815,6 @@
             this.maxHp = spec.maxHp;
             this.fireInterval = spec.fireInterval;
             this.fireCounter = 0;
-            this.fireAngle = spec.fireAngle; // 前方15度
-            this.detectionRange = spec.detectionRange;
             this.bulletSpeed = spec.bulletSpeed;
             this.bulletDamage = spec.bulletDamage;
             this.maxRange = spec.maxRange; // 索敇範囲の1.5倍
@@ -831,6 +838,11 @@
             const predDx = predictedX - currentX;
             const predDy = predictedY - currentY;
             const targetAngle = Math.atan2(predDy, predDx);
+            // rotationSpeed=0 は固定砲ではなく「瞬時照準」として扱う
+            if (this.rotationSpeed === 0) {
+                this.angle = targetAngle;
+                return;
+            }
             let angleDiff = targetAngle - this.angle;
             if (angleDiff > Math.PI)
                 angleDiff -= 2 * Math.PI;
@@ -838,12 +850,12 @@
                 angleDiff += 2 * Math.PI;
             this.angle += angleDiff * this.rotationSpeed;
         }
-        canFire(targetX, targetY, shipX, shipY) {
+        canFire(targetX, targetY, shipX, shipY, detectionRange) {
             // 索敵範囲チェックのみ（敵がいれば角度関係なく射撃）
             const dx = targetX - shipX;
             const dy = targetY - shipY;
             const distance = Math.hypot(dx, dy);
-            return distance <= this.detectionRange;
+            return distance <= detectionRange;
         }
         fire(x, y) {
             const bulletVx = Math.cos(this.angle) * this.bulletSpeed;
@@ -865,9 +877,25 @@
             this.hp = spec.hp;
             this.maxHp = spec.maxHp;
             this.fireInterval = spec.fireInterval;
-            this.detectionRange = spec.detectionRange; // 船種C150の1.5倍
+            this.bulletSpeed = spec.bulletSpeed;
             this.maxRange = spec.maxRange; // 索敵範囲の1.5倍
             this.bulletDamage = spec.bulletDamage;
+            this.rotationSpeed = spec.rotationSpeed;
+        }
+    }
+    // 独立砲塔射撃ユニットC（Independent Turret Weapon System C）
+    class IndependentTurretC extends IndependentTurretA {
+        constructor() {
+            super();
+            const spec = COMPONENT_CATALOG.turrets.turretC;
+            this.mass = spec.mass;
+            this.hp = spec.hp;
+            this.maxHp = spec.maxHp;
+            this.fireInterval = spec.fireInterval;
+            this.bulletSpeed = spec.bulletSpeed;
+            this.maxRange = spec.maxRange; // 索敵範囲の1.5倍
+            this.bulletDamage = spec.bulletDamage;
+            this.rotationSpeed = spec.rotationSpeed;
         }
     }
     
@@ -1001,7 +1029,7 @@
     // 艦船クラス（モジュラー構成）
     // ========================================
     class Starship {
-        constructor(x, y, weaponCount, engineCount, color = TEAM_COLORS.A, hullType = 'hullA', weaponClass = IndependentTurretA) {
+        constructor(x, y, weaponCount, engineCount, color = TEAM_COLORS.A, hullType = 'hullA', weaponClass = IndependentTurretB) {
             this.x = x;
             this.y = y;
             this.vx = 0;
@@ -1114,14 +1142,19 @@
             }
             return this.weapons.reduce((sum, w) => sum + w.maxHp, 0);
         }
+        // 索敵距離はレーダー基準。互換のため未搭載時のみ武装値へフォールバック。
+        getDetectionRange() {
+            return this.radar.detectionRange;
+        }
         update(targetX, targetY, skipDetectionCheck = false) {
             // 認識距離チェック（目標が指定された場合）
             if (this.weapons.length > 0 && !skipDetectionCheck) {
                 const dx = targetX - this.x;
                 const dy = targetY - this.y;
                 const distanceToTarget = Math.hypot(dx, dy);
+                const detectionRange = this.getDetectionRange();
                 // 索敵範囲内なら目標を設定
-                if (distanceToTarget < this.weapons[0].detectionRange) {
+                if (distanceToTarget < detectionRange) {
                     // 索敇範囲内に入ったらスラスターONと検出フラグをON
                     this.thrustersActive = true;
                     this.detectedTarget = true;
@@ -1168,9 +1201,15 @@
                     const rotatedY = Math.sin(rotatedAngle) * 0 + Math.cos(rotatedAngle) * offsetY;
                     const weaponX = this.x + rotatedX;
                     const weaponY = this.y + rotatedY;
-                    // 砲塔の位置から共通の目標への角度を計算（偏差撃ち対応）
-                    // 敵が索敇範囲外の場合、this.targetは自身の位置のため砲塔は旋回しない
-                    weapon.updateAngle(this.targetX, this.targetY, weaponX, weaponY, this.targetVx, this.targetVy);
+                    // 旋回速度0の砲塔は固定砲として船体角に同期させる
+                    if (weapon.rotationSpeed === 0) {
+                        weapon.angle = this.angle;
+                    }
+                    else {
+                        // 砲塔の位置から共通の目標への角度を計算（偏差撃ち対応）
+                        // 敵が索敇範囲外の場合、this.targetは自身の位置のため砲塔は旋回しない
+                        weapon.updateAngle(this.targetX, this.targetY, weaponX, weaponY, this.targetVx, this.targetVy);
+                    }
                 });
             }
             else {
@@ -1450,7 +1489,7 @@
                 ctx.strokeStyle = 'rgba(0, 255, 0, 0.15)';
                 ctx.lineWidth = 1;
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.weapons[0].detectionRange, 0, Math.PI * 2);
+                ctx.arc(this.x, this.y, this.getDetectionRange(), 0, Math.PI * 2);
                 ctx.stroke();
             }
             // 残骸円（常に表示）
@@ -1488,7 +1527,7 @@
                         weaponY += rotatedY;
                     }
                     // 全ての砲塔が共通の目標を使用
-                    if (weapon.canFire(this.targetX, this.targetY, weaponX, weaponY)) {
+                    if (weapon.canFire(this.targetX, this.targetY, weaponX, weaponY, this.getDetectionRange())) {
                         weapon.fireCounter = 0;
                         this.nextFireWeaponIndex = i;
                         return true;
@@ -1597,12 +1636,13 @@
             let closestDebris = null;
             let closestDebrisDistance = Infinity;
             if (this.weapons.length > 0) {
+                const detectionRange = this.getDetectionRange();
                 opponents.forEach(opponent => {
                     const isWreck = opponent.weapons.length === 0;
                     const dx = opponent.x - this.x;
                     const dy = opponent.y - this.y;
                     const distance = Math.hypot(dx, dy);
-                    if (distance < this.weapons[0].detectionRange) {
+                    if (distance < detectionRange) {
                         if (isWreck) {
                             // 残骸：attackWrecks 設定に従う
                             if (attackWrecks && distance < closestDebrisDistance) {
@@ -1680,9 +1720,7 @@
             const destroyer = new Starship(WORLD_SIZE / 2, WORLD_SIZE / 2, 2, 2, TEAM_COLORS.A, 'hullB');
             // 船種Dの独立砲塔設定
             destroyer.weapons.forEach(weapon => {
-                weapon.detectionRange = 180; // 船種C150の1.2倍
                 weapon.maxRange = 270; // 独立砲塔Aの設計射程
-                weapon.mass = 2; // 独立砲塔は重量2
             });
             teamShips.A.push(destroyer);
         }
@@ -1691,9 +1729,7 @@
             const destroyer = new Starship(WORLD_SIZE / 2, WORLD_SIZE / 2, 2, 2, TEAM_COLORS.A, 'hullB');
             // 船種Dの独立砲塔設定
             destroyer.weapons.forEach(weapon => {
-                weapon.detectionRange = 180; // 船種C150の1.2倍
                 weapon.maxRange = 270; // 独立砲塔Aの設計射程
-                weapon.mass = 2; // 独立砲塔は重量2
             });
             teamShips.A.push(destroyer);
         }
@@ -1702,9 +1738,7 @@
             const destroyer = new Starship(WORLD_SIZE / 2, WORLD_SIZE - 80, 2, 2, TEAM_COLORS.A, 'hullB');
             // 船種Dの独立砲塔設定
             destroyer.weapons.forEach(weapon => {
-                weapon.detectionRange = 180; // 船種C150の1.2倍
                 weapon.maxRange = 270; // 独立砲塔Aの設計射程
-                weapon.mass = 2; // 独立砲塔は重量2
             });
             teamShips.A.push(destroyer);
         }
@@ -1730,9 +1764,7 @@
             const y = 80;
             const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.B, 'hullB');
             destroyer.weapons.forEach(weapon => {
-                weapon.detectionRange = 180; // 船種C150の1.2倍
                 weapon.maxRange = 270; // 独立砲塔Aの設計射程
-                weapon.mass = 2; // 独立砲塔は重量2
             });
             teamShips.B.push(destroyer);
         }
@@ -1740,7 +1772,7 @@
             // 軽巡洋艦 1隻 vs 駆逐艦 2隻
             setTeamShips('A', []);
             setTeamShips('B', []);
-            const playerCruiser = new Starship(WORLD_SIZE / 2, WORLD_SIZE - 120, 3, 3, TEAM_COLORS.A, 'hullC', IndependentTurretB);
+            const playerCruiser = new Starship(WORLD_SIZE / 2, WORLD_SIZE - 120, 3, 3, TEAM_COLORS.A, 'hullC', IndependentTurretC);
             teamShips.A.push(playerCruiser);
             const enemyStartX = WORLD_SIZE / 2 - 60;
             const enemyStartY = 80;
@@ -1749,9 +1781,7 @@
                 const x = enemyStartX + i * enemySpacing;
                 const destroyer = new Starship(x, enemyStartY, 2, 2, TEAM_COLORS.B, 'hullB');
                 destroyer.weapons.forEach(weapon => {
-                    weapon.detectionRange = 180; // 船種C150の1.2倍
                     weapon.maxRange = 270; // 独立砲塔Aの設計射程
-                    weapon.mass = 2; // 独立砲塔は重量2
                 });
                 teamShips.B.push(destroyer);
             }
@@ -1779,9 +1809,7 @@
                 const y = enemyStartY;
                 const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.B, 'hullB');
                 destroyer.weapons.forEach(weapon => {
-                    weapon.detectionRange = 180; // 船種C150の1.2倍
                     weapon.maxRange = 270; // 独立砲塔Aの設計射程
-                    weapon.mass = 2; // 独立砲塔は重量2
                 });
                 teamShips.B.push(destroyer);
             }
@@ -1793,7 +1821,7 @@
             // ライトクルーザー1隻
             const playerLCX = WORLD_SIZE / 2;
             const playerLCY = WORLD_SIZE - 80;
-            const playerLC = new Starship(playerLCX, playerLCY, 3, 3, TEAM_COLORS.A, 'hullC', IndependentTurretB);
+            const playerLC = new Starship(playerLCX, playerLCY, 3, 3, TEAM_COLORS.A, 'hullC', IndependentTurretC);
             teamShips.A.push(playerLC);
             // デストロイヤー2隻
             const playerDStartX = WORLD_SIZE / 2 - 60;
@@ -1804,9 +1832,7 @@
                 const y = playerDStartY;
                 const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.A, 'hullB');
                 destroyer.weapons.forEach(weapon => {
-                    weapon.detectionRange = 180;
                     weapon.maxRange = 270; // 独立砲塔Aの設計射程
-                    weapon.mass = 2;
                 });
                 teamShips.A.push(destroyer);
             }
@@ -1826,7 +1852,7 @@
             // ライトクルーザー1隻
             const enemyLCX = 100;
             const enemyLCY = 100;
-            const enemyLC = new Starship(enemyLCX, enemyLCY, 3, 3, TEAM_COLORS.B, 'hullC', IndependentTurretB);
+            const enemyLC = new Starship(enemyLCX, enemyLCY, 3, 3, TEAM_COLORS.B, 'hullC', IndependentTurretC);
             teamShips.B.push(enemyLC);
             // デストロイヤー2隻
             const enemyDStartX = 80;
@@ -1837,9 +1863,7 @@
                 const y = enemyDStartY + i * enemyDSpacing;
                 const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.B, 'hullB');
                 destroyer.weapons.forEach(weapon => {
-                    weapon.detectionRange = 180;
                     weapon.maxRange = 270; // 独立砲塔Aの設計射程
-                    weapon.mass = 2;
                 });
                 teamShips.B.push(destroyer);
             }
@@ -1859,7 +1883,7 @@
             // ライトクルーザー1隻
             const teamCLCX = WORLD_SIZE - 100;
             const teamCLCY = 100;
-            const teamCLC = new Starship(teamCLCX, teamCLCY, 3, 3, TEAM_COLORS.C, 'hullC', IndependentTurretB);
+            const teamCLC = new Starship(teamCLCX, teamCLCY, 3, 3, TEAM_COLORS.C, 'hullC', IndependentTurretC);
             teamShips.C.push(teamCLC);
             // デストロイヤー2隻
             const teamCDStartX = WORLD_SIZE - 80;
@@ -1870,9 +1894,7 @@
                 const y = teamCDStartY + i * teamCDSpacing;
                 const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.C, 'hullB');
                 destroyer.weapons.forEach(weapon => {
-                    weapon.detectionRange = 180;
                     weapon.maxRange = 270; // 独立砲塔Aの設計射程
-                    weapon.mass = 2;
                 });
                 teamShips.C.push(destroyer);
             }
@@ -1903,7 +1925,7 @@
             const bottomStartX = topStartX;
             const bottomStartY = WORLD_SIZE - (rows - 1) * groupSpacingY - 260;
             // チームA（下側）- ライトクルーザー1隻を追加
-            const playerLC = new Starship(WORLD_SIZE / 2, WORLD_SIZE - 100, 3, 3, TEAM_COLORS.A, 'hullC', IndependentTurretB);
+            const playerLC = new Starship(WORLD_SIZE / 2, WORLD_SIZE - 100, 3, 3, TEAM_COLORS.A, 'hullC', IndependentTurretC);
             teamShips.A.push(playerLC);
             for (let i = 0; i < groupsPerSide; i++) {
                 const col = i % columns;
@@ -1912,9 +1934,7 @@
                 const centerY = bottomStartY + row * groupSpacingY;
                 const destroyer = new Starship(centerX, centerY + 90, 2, 2, TEAM_COLORS.A, 'hullB');
                 destroyer.weapons.forEach(weapon => {
-                    weapon.detectionRange = 180;
                     weapon.maxRange = 270; // 独立砲塔Aの設計射程
-                    weapon.mass = 2;
                 });
                 teamShips.A.push(destroyer);
                 const corvetteStartX = centerX - 60;
@@ -1929,7 +1949,7 @@
                 }
             }
             // チームB（上側）- ライトクルーザー1隻を追加
-            const enemyLC = new Starship(WORLD_SIZE / 2, 100, 3, 3, TEAM_COLORS.B, 'hullC', IndependentTurretB);
+            const enemyLC = new Starship(WORLD_SIZE / 2, 100, 3, 3, TEAM_COLORS.B, 'hullC', IndependentTurretC);
             teamShips.B.push(enemyLC);
             for (let i = 0; i < groupsPerSide; i++) {
                 const col = i % columns;
@@ -1938,9 +1958,7 @@
                 const centerY = topStartY + row * groupSpacingY;
                 const destroyer = new Starship(centerX, centerY, 2, 2, TEAM_COLORS.B, 'hullB');
                 destroyer.weapons.forEach(weapon => {
-                    weapon.detectionRange = 180;
                     weapon.maxRange = 270; // 独立砲塔Aの設計射程
-                    weapon.mass = 2;
                 });
                 teamShips.B.push(destroyer);
                 const corvetteStartX = centerX - 60;
@@ -1972,7 +1990,7 @@
             // ライトクルーザー1隻
             const playerLCX = WORLD_SIZE / 2 + 100;
             const playerLCY = WORLD_SIZE - 100;
-            const playerLC = new Starship(playerLCX, playerLCY, 3, 3, TEAM_COLORS.A, 'hullC', IndependentTurretB);
+            const playerLC = new Starship(playerLCX, playerLCY, 3, 3, TEAM_COLORS.A, 'hullC', IndependentTurretC);
             teamShips.A.push(playerLC);
             // デストロイヤー4隻
             const playerDStartX = WORLD_SIZE / 2 - 50;
@@ -1983,9 +2001,7 @@
                 const y = playerDStartY;
                 const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.A, 'hullB');
                 destroyer.weapons.forEach(weapon => {
-                    weapon.detectionRange = 180;
                     weapon.maxRange = 270; // 独立砲塔Aの設計射程
-                    weapon.mass = 2;
                 });
                 teamShips.A.push(destroyer);
             }
@@ -2005,7 +2021,7 @@
             // ライトクルーザー1隻
             const enemyLCX = 70;
             const enemyLCY = 80;
-            const enemyLC = new Starship(enemyLCX, enemyLCY, 3, 3, TEAM_COLORS.B, 'hullC', IndependentTurretB);
+            const enemyLC = new Starship(enemyLCX, enemyLCY, 3, 3, TEAM_COLORS.B, 'hullC', IndependentTurretC);
             teamShips.B.push(enemyLC);
             // デストロイヤー4隻
             const enemyDStartX = 55;
@@ -2016,9 +2032,7 @@
                 const y = enemyDStartY + i * enemyDSpacing;
                 const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.B, 'hullB');
                 destroyer.weapons.forEach(weapon => {
-                    weapon.detectionRange = 180;
                     weapon.maxRange = 270; // 独立砲塔Aの設計射程
-                    weapon.mass = 2;
                 });
                 teamShips.B.push(destroyer);
             }
@@ -2038,7 +2052,7 @@
             // ライトクルーザー1隻
             const teamCLCX = WORLD_SIZE - 70;
             const teamCLCY = 80;
-            const teamCLC = new Starship(teamCLCX, teamCLCY, 3, 3, TEAM_COLORS.C, 'hullC', IndependentTurretB);
+            const teamCLC = new Starship(teamCLCX, teamCLCY, 3, 3, TEAM_COLORS.C, 'hullC', IndependentTurretC);
             teamShips.C.push(teamCLC);
             // デストロイヤー4隻
             const teamCDStartX = WORLD_SIZE - 55;
@@ -2049,9 +2063,7 @@
                 const y = teamCDStartY + i * teamCDSpacing;
                 const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.C, 'hullB');
                 destroyer.weapons.forEach(weapon => {
-                    weapon.detectionRange = 180;
                     weapon.maxRange = 270; // 独立砲塔Aの設計射程
-                    weapon.mass = 2;
                 });
                 teamShips.C.push(destroyer);
             }

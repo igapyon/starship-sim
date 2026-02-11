@@ -59,7 +59,7 @@ class RadarA {
     constructor() {
         const spec = COMPONENT_CATALOG.radars.radarA;
         this.mass = spec.mass;
-        this.detectionBonus = spec.detectionBonus; // 基準値（ボーナスなし）
+        this.detectionRange = spec.detectionRange; // 探知可能距離
     }
     getCost() {
         return this.mass;
@@ -70,7 +70,7 @@ class RadarB {
     constructor() {
         const spec = COMPONENT_CATALOG.radars.radarB;
         this.mass = spec.mass;
-        this.detectionBonus = spec.detectionBonus; // 索敵範囲ボーナス（ピクセル）
+        this.detectionRange = spec.detectionRange; // 探知可能距離
     }
     getCost() {
         return this.mass;
@@ -81,7 +81,7 @@ class RadarC {
     constructor() {
         const spec = COMPONENT_CATALOG.radars.radarC;
         this.mass = spec.mass;
-        this.detectionBonus = spec.detectionBonus; // 索敵範囲ボーナス（ピクセル）
+        this.detectionRange = spec.detectionRange; // 探知可能距離
     }
     getCost() {
         return this.mass;
@@ -96,8 +96,6 @@ class IndependentTurretA {
         this.maxHp = spec.maxHp;
         this.fireInterval = spec.fireInterval;
         this.fireCounter = 0;
-        this.fireAngle = spec.fireAngle; // 前方15度
-        this.detectionRange = spec.detectionRange;
         this.bulletSpeed = spec.bulletSpeed;
         this.bulletDamage = spec.bulletDamage;
         this.maxRange = spec.maxRange; // 索敇範囲の1.5倍
@@ -121,6 +119,11 @@ class IndependentTurretA {
         const predDx = predictedX - currentX;
         const predDy = predictedY - currentY;
         const targetAngle = Math.atan2(predDy, predDx);
+        // rotationSpeed=0 は固定砲ではなく「瞬時照準」として扱う
+        if (this.rotationSpeed === 0) {
+            this.angle = targetAngle;
+            return;
+        }
         let angleDiff = targetAngle - this.angle;
         if (angleDiff > Math.PI)
             angleDiff -= 2 * Math.PI;
@@ -128,12 +131,12 @@ class IndependentTurretA {
             angleDiff += 2 * Math.PI;
         this.angle += angleDiff * this.rotationSpeed;
     }
-    canFire(targetX, targetY, shipX, shipY) {
+    canFire(targetX, targetY, shipX, shipY, detectionRange) {
         // 索敵範囲チェックのみ（敵がいれば角度関係なく射撃）
         const dx = targetX - shipX;
         const dy = targetY - shipY;
         const distance = Math.hypot(dx, dy);
-        return distance <= this.detectionRange;
+        return distance <= detectionRange;
     }
     fire(x, y) {
         const bulletVx = Math.cos(this.angle) * this.bulletSpeed;
@@ -155,8 +158,24 @@ class IndependentTurretB extends IndependentTurretA {
         this.hp = spec.hp;
         this.maxHp = spec.maxHp;
         this.fireInterval = spec.fireInterval;
-        this.detectionRange = spec.detectionRange; // 船種C150の1.5倍
+        this.bulletSpeed = spec.bulletSpeed;
         this.maxRange = spec.maxRange; // 索敵範囲の1.5倍
         this.bulletDamage = spec.bulletDamage;
+        this.rotationSpeed = spec.rotationSpeed;
+    }
+}
+// 独立砲塔射撃ユニットC（Independent Turret Weapon System C）
+class IndependentTurretC extends IndependentTurretA {
+    constructor() {
+        super();
+        const spec = COMPONENT_CATALOG.turrets.turretC;
+        this.mass = spec.mass;
+        this.hp = spec.hp;
+        this.maxHp = spec.maxHp;
+        this.fireInterval = spec.fireInterval;
+        this.bulletSpeed = spec.bulletSpeed;
+        this.maxRange = spec.maxRange; // 索敵範囲の1.5倍
+        this.bulletDamage = spec.bulletDamage;
+        this.rotationSpeed = spec.rotationSpeed;
     }
 }
