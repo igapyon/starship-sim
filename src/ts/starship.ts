@@ -9,7 +9,7 @@
                 y,
                 weaponCount,
                 engineCount,
-                color = '#99ddff',
+                color = TEAM_COLORS.A,
                 hullType = 'standard',
                 weaponClass = WeaponUnit
             ) {
@@ -476,7 +476,7 @@
                             ctx.fillStyle = hpRatio > 0.3 ? '#0f0' : '#f00';
                             ctx.fillRect(hpBarX, hpBarY, hpBarWidth * hpRatio, hpBarHeight);
 
-                            ctx.strokeStyle = '#99ddff';
+                            ctx.strokeStyle = TEAM_COLORS.A;
                             ctx.lineWidth = 1;
                             ctx.strokeRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
                         });
@@ -492,7 +492,7 @@
                         ctx.fillStyle = '#888888';
                         ctx.fillRect(hpBarX, hpBarY, hpBarWidth * hpRatio, hpBarHeight);
 
-                        ctx.strokeStyle = '#99ddff';
+                        ctx.strokeStyle = TEAM_COLORS.A;
                         ctx.lineWidth = 1;
                         ctx.strokeRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
                     }

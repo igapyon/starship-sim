@@ -3,7 +3,7 @@
 // 弾丸クラス
 // ========================================
 class Bullet {
-    constructor(x, y, vx, vy, originX, originY, damage, maxRange, color = '#99ddff') {
+    constructor(x, y, vx, vy, originX, originY, damage, maxRange, color = TEAM_COLORS.A) {
         this.x = x;
         this.y = y;
         this.vx = vx;
@@ -102,7 +102,7 @@ class DetectionBeacon {
     }
     draw() {
         const alpha = this.life / this.maxLife;
-        const color = teamMetadata[this.teamId].color;
+        const color = TEAM_DEFINITIONS[this.teamId].color;
         // 16進数カラーをrgbaに変換
         const r = parseInt(color.substr(1, 2), 16);
         const g = parseInt(color.substr(3, 2), 16);

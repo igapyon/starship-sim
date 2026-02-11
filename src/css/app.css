@@ -163,7 +163,7 @@
         .beacon-team-btn.active {
             background: rgba(100, 200, 255, 0.8);
             border: 2px solid rgba(153, 221, 255, 0.9);
-            color: rgba(153, 221, 255, 1);
+            color: rgba(51, 181, 255, 1);
             box-shadow: 0 0 10px rgba(153, 221, 255, 0.6);
         }
         #zoom-controls {
