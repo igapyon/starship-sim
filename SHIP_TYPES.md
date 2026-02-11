@@ -26,15 +26,15 @@
 ## コンポーネント定義（実装値）
 
 ### 船体
-- Standard Hull (`Hull`)
+- HullA (`HullA`)
   - mass: 1
   - hp/maxHp: 100/100
   - size: 12
-- Large Hull (`LargeHull`)
+- HullB (`HullB`)
   - mass: 3
   - hp/maxHp: 300/300
   - size: 28
-- Hull5 (`Hull5`)
+- HullC (`HullC`)
   - mass: 5
   - hp/maxHp: 500/500
   - size: 47
@@ -47,9 +47,12 @@
 
 ### レーダー
 - RadarA
+  - mass: 0
+  - detectionBonus: 0
+- RadarB
   - mass: 1
   - detectionBonus: 30
-- RadarB
+- RadarC
   - mass: 2
   - detectionBonus: 45
 
@@ -58,7 +61,7 @@
 - レーダーは主に艦種差分の質量（=コスト）として効いています。
 
 ### 射撃ユニット
-- Standard Weapon (`WeaponUnit`)
+- Independent Turret A (`IndependentTurretA`)
   - mass: 1
   - hp/maxHp: 150/150
   - fireInterval: 60
@@ -80,10 +83,10 @@
 ### 船種C（Corvette）
 
 構成:
-- Standard Hull x1
+- HullA x1
 - Standard Thruster x1
-- Standard Weapon x1
-- Radarなし
+- Independent Turret A x1
+- RadarA x1
 
 統合値:
 - 総質量: `1 + 1 + 1 = 3`
@@ -100,13 +103,13 @@
 ### 船種D（Destroyer）
 
 構成:
-- Large Hull x1
+- HullB x1
 - Standard Thruster x2
-- 独立砲塔A相当 x2（`WeaponUnit`をシーン初期化時に上書き）
-- RadarA x1
+- Independent Turret A x2（シーン初期化時に `mass=2` / `detectionRange=180` / `maxRange=270` を上書き）
+- RadarB x1
 
 独立砲塔A相当の実体:
-- ベース: `WeaponUnit`
+- ベース: `IndependentTurretA`
 - 上書き: `mass = 2`, `detectionRange = 180`, `maxRange = 270`
 - それ以外（hp=150, fireInterval=60, bulletDamage=10 など）は標準準拠
 
@@ -126,10 +129,10 @@
 ### 船種L（Light Cruiser）
 
 構成:
-- Hull5 x1
+- HullC x1
 - Standard Thruster x3
 - Independent Turret B x3
-- RadarB x1
+- RadarC x1
 
 統合値:
 - 総質量: `5 + 3 + 12 + 2 = 22`
@@ -172,12 +175,13 @@
 
 ## コスト一覧（実装値）
 
-- Hull: 1
-- LargeHull: 3
-- Hull5: 5
+- HullA: 1
+- HullB: 3
+- HullC: 5
 - ThrusterEngine: 1
-- WeaponUnit: 1
-- 独立砲塔A相当（上書きWeaponUnit）: 2
+- IndependentTurretA: 1
+- 独立砲塔A相当（上書きIndependentTurretA）: 2
 - IndependentTurretB: 4
-- RadarA: 1
-- RadarB: 2
+- RadarA: 0
+- RadarB: 1
+- RadarC: 2

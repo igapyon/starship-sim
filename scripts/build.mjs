@@ -20,6 +20,8 @@ const expectedJsOrder = [
   'src/js/main.js',
   // チーム定義（ID/表示名/色/関係）
   'src/js/teams.js',
+  // コンポーネントのパラメータ定義
+  'src/js/catalog.js',
   // Hull/Engine/Radar/Weapon の基礎クラス定義
   'src/js/components.js',
   // Bullet/Particle/DetectionBeacon。TEAM_DEFINITIONS を実行時参照
@@ -35,6 +37,7 @@ const expectedJsOrder = [
 const moduleNames = [
   'main',
   'teams',
+  'catalog',
   'components',
   'projectiles-effects',
   'starship',

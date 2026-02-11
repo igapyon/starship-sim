@@ -14,9 +14,9 @@
 
 ### レーダーシステムの実装乖離を修正
 
-[ ] RadarA/RadarB の detectionBonus を索敇ロジックに統合する
-  - 現状：RadarA/RadarB クラスは存在し質量（mass）はコスト計算に含まれるが、detectionBonus は未使用
-  - 目標：RadarA/RadarB の detectionBonus を実際の索敇範囲計算に反映させる
+[ ] RadarA/RadarB/RadarC の detectionBonus を索敇ロジックに統合する
+  - 現状：RadarA/RadarB/RadarC クラスは存在し質量（mass）はコスト計算に含まれるが、detectionBonus は未使用
+  - 目標：RadarA/RadarB/RadarC の detectionBonus を実際の索敇範囲計算に反映させる
 
 [ ] selectTarget() メソッドを修正して、weapon.detectionRange ではなく radar.detectionBonus を使用
   - 現状：1135行で `distance < this.weapons[0].detectionRange` を使用
@@ -34,10 +34,10 @@
 [ ] レーダーは主に艦種差分の質量（=コスト）として効いています。
 [ ] 上記を抽象化・一般化し、コンポーネント定義の横並びを揃える。
 
-[ ] `Standard Hull (Hull)` を `Hull1` に名称変更する。
-[ ] `Large Hull (LargeHull)` を `Hull3` に名称変更する。
+[x] `Standard Hull (Hull)` を `HullA` に名称変更する。
+[x] `Large Hull (LargeHull)` を `HullB` に名称変更する。
 
-[ ] `独立砲塔A相当（上書きWeaponUnit）: 2` を抽象化・一般化し、他コンポーネントと同様に横並びを揃える。
+[ ] `独立砲塔A相当（上書きIndependentTurretA）: 2` を抽象化・一般化し、他コンポーネントと同様に横並びを揃える。
 
 ### シーン定義のデータ化
 

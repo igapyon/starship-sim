@@ -3,22 +3,13 @@
 // ゲーム初期化
 // ========================================
 let mouseControlTeam = 'A'; // マウス操作対象チーム（デフォルト：チームA）
-let playerFleet = [];
-let enemies = [];
-let teamC = [];
 const teamShips = {
-    A: playerFleet,
-    B: enemies,
-    C: teamC
+    A: [],
+    B: [],
+    C: []
 };
 function setTeamShips(teamId, ships) {
     teamShips[teamId] = ships;
-    if (teamId === 'A')
-        playerFleet = ships;
-    else if (teamId === 'B')
-        enemies = ships;
-    else if (teamId === 'C')
-        teamC = ships;
 }
 const bullets = [];
 const particles = [];
@@ -47,48 +38,48 @@ function initializeGame(config = 'destroyer1') {
     setTeamShips('C', []);
     if (config === 'weapon1') {
         // 船種C1つ：射撃ユニット1、標準船体
-        playerFleet.push(new Starship(WORLD_SIZE / 2, WORLD_SIZE / 2, 1, 1, TEAM_COLORS.A, 'standard'));
+        teamShips.A.push(new Starship(WORLD_SIZE / 2, WORLD_SIZE / 2, 1, 1, TEAM_COLORS.A, 'hullA'));
     }
     else if (config === 'weapon4') {
         // 船種C4つ：それぞれ射撃ユニット1、標準船体
         const spacing = 60;
-        playerFleet.push(new Starship(WORLD_SIZE / 2 - spacing, WORLD_SIZE / 2 - spacing, 1, 1, TEAM_COLORS.A, 'standard'));
-        playerFleet.push(new Starship(WORLD_SIZE / 2 + spacing, WORLD_SIZE / 2 - spacing, 1, 1, TEAM_COLORS.A, 'standard'));
-        playerFleet.push(new Starship(WORLD_SIZE / 2 - spacing, WORLD_SIZE / 2 + spacing, 1, 1, TEAM_COLORS.A, 'standard'));
-        playerFleet.push(new Starship(WORLD_SIZE / 2 + spacing, WORLD_SIZE / 2 + spacing, 1, 1, TEAM_COLORS.A, 'standard'));
+        teamShips.A.push(new Starship(WORLD_SIZE / 2 - spacing, WORLD_SIZE / 2 - spacing, 1, 1, TEAM_COLORS.A, 'hullA'));
+        teamShips.A.push(new Starship(WORLD_SIZE / 2 + spacing, WORLD_SIZE / 2 - spacing, 1, 1, TEAM_COLORS.A, 'hullA'));
+        teamShips.A.push(new Starship(WORLD_SIZE / 2 - spacing, WORLD_SIZE / 2 + spacing, 1, 1, TEAM_COLORS.A, 'hullA'));
+        teamShips.A.push(new Starship(WORLD_SIZE / 2 + spacing, WORLD_SIZE / 2 + spacing, 1, 1, TEAM_COLORS.A, 'hullA'));
     }
     else if (config === 'destroyer1') {
         // 船種D1つ：独立砲塔射撃ユニット2、大型船体、エンジン2
-        const destroyer = new Starship(WORLD_SIZE / 2, WORLD_SIZE / 2, 2, 2, TEAM_COLORS.A, 'large');
+        const destroyer = new Starship(WORLD_SIZE / 2, WORLD_SIZE / 2, 2, 2, TEAM_COLORS.A, 'hullB');
         // 船種Dの独立砲塔設定
         destroyer.weapons.forEach(weapon => {
             weapon.detectionRange = 180; // 船種C150の1.2倍
             weapon.maxRange = 270; // 独立砲塔Aの設計射程
             weapon.mass = 2; // 独立砲塔は重量2
         });
-        playerFleet.push(destroyer);
+        teamShips.A.push(destroyer);
     }
     else if (config === 'destroyer1v6') {
         // 船種D1つ：独立砲塔射撃ユニット2、大型船体、エンジン2
-        const destroyer = new Starship(WORLD_SIZE / 2, WORLD_SIZE / 2, 2, 2, TEAM_COLORS.A, 'large');
+        const destroyer = new Starship(WORLD_SIZE / 2, WORLD_SIZE / 2, 2, 2, TEAM_COLORS.A, 'hullB');
         // 船種Dの独立砲塔設定
         destroyer.weapons.forEach(weapon => {
             weapon.detectionRange = 180; // 船種C150の1.2倍
             weapon.maxRange = 270; // 独立砲塔Aの設計射程
             weapon.mass = 2; // 独立砲塔は重量2
         });
-        playerFleet.push(destroyer);
+        teamShips.A.push(destroyer);
     }
     else if (config === 'destroyervsdestroyer') {
         // 駆逐艦1つ（チームA）：独立砲塔射撃ユニット2、大型船体、エンジン2
-        const destroyer = new Starship(WORLD_SIZE / 2, WORLD_SIZE - 80, 2, 2, TEAM_COLORS.A, 'large');
+        const destroyer = new Starship(WORLD_SIZE / 2, WORLD_SIZE - 80, 2, 2, TEAM_COLORS.A, 'hullB');
         // 船種Dの独立砲塔設定
         destroyer.weapons.forEach(weapon => {
             weapon.detectionRange = 180; // 船種C150の1.2倍
             weapon.maxRange = 270; // 独立砲塔Aの設計射程
             weapon.mass = 2; // 独立砲塔は重量2
         });
-        playerFleet.push(destroyer);
+        teamShips.A.push(destroyer);
     }
     // 敵：シーンに応じた配置
     if (config === 'destroyer1v6') {
@@ -101,7 +92,7 @@ function initializeGame(config = 'destroyer1') {
             for (let col = 0; col < 2; col++) {
                 const x = startX + col * spacing;
                 const y = startY + row * spacing;
-                enemies.push(new Starship(x, y, 1, 1, TEAM_COLORS.B, true));
+                teamShips.B.push(new Starship(x, y, 1, 1, TEAM_COLORS.B, true));
             }
         }
     }
@@ -110,32 +101,32 @@ function initializeGame(config = 'destroyer1') {
         setTeamShips('B', []);
         const x = WORLD_SIZE / 2;
         const y = 80;
-        const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.B, 'large');
+        const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.B, 'hullB');
         destroyer.weapons.forEach(weapon => {
             weapon.detectionRange = 180; // 船種C150の1.2倍
             weapon.maxRange = 270; // 独立砲塔Aの設計射程
             weapon.mass = 2; // 独立砲塔は重量2
         });
-        enemies.push(destroyer);
+        teamShips.B.push(destroyer);
     }
     else if (config === 'lightcruiser1vsdestroyer2') {
         // 軽巡洋艦 1隻 vs 駆逐艦 2隻
         setTeamShips('A', []);
         setTeamShips('B', []);
-        const playerCruiser = new Starship(WORLD_SIZE / 2, WORLD_SIZE - 120, 3, 3, TEAM_COLORS.A, 'hull5', IndependentTurretB);
-        playerFleet.push(playerCruiser);
+        const playerCruiser = new Starship(WORLD_SIZE / 2, WORLD_SIZE - 120, 3, 3, TEAM_COLORS.A, 'hullC', IndependentTurretB);
+        teamShips.A.push(playerCruiser);
         const enemyStartX = WORLD_SIZE / 2 - 60;
         const enemyStartY = 80;
         const enemySpacing = 120;
         for (let i = 0; i < 2; i++) {
             const x = enemyStartX + i * enemySpacing;
-            const destroyer = new Starship(x, enemyStartY, 2, 2, TEAM_COLORS.B, 'large');
+            const destroyer = new Starship(x, enemyStartY, 2, 2, TEAM_COLORS.B, 'hullB');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180; // 船種C150の1.2倍
                 weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2; // 独立砲塔は重量2
             });
-            enemies.push(destroyer);
+            teamShips.B.push(destroyer);
         }
     }
     else if (config === 'corvette8vsdestroyer2') {
@@ -148,7 +139,7 @@ function initializeGame(config = 'destroyer1') {
             for (let col = 0; col < 4; col++) {
                 const x = playerStartX + col * playerSpacing;
                 const y = playerStartY + row * playerSpacing;
-                playerFleet.push(new Starship(x, y, 1, 1, TEAM_COLORS.A, 'standard'));
+                teamShips.A.push(new Starship(x, y, 1, 1, TEAM_COLORS.A, 'hullA'));
             }
         }
         // 敵陣営：船種D 2隻を画面上部中央に横並び配置
@@ -159,13 +150,13 @@ function initializeGame(config = 'destroyer1') {
         for (let i = 0; i < 2; i++) {
             const x = enemyStartX + i * enemySpacing;
             const y = enemyStartY;
-            const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.B, 'large');
+            const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.B, 'hullB');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180; // 船種C150の1.2倍
                 weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2; // 独立砲塔は重量2
             });
-            enemies.push(destroyer);
+            teamShips.B.push(destroyer);
         }
     }
     else if (config === 'mixed1c8vsmixed1c8') {
@@ -175,8 +166,8 @@ function initializeGame(config = 'destroyer1') {
         // ライトクルーザー1隻
         const playerLCX = WORLD_SIZE / 2;
         const playerLCY = WORLD_SIZE - 80;
-        const playerLC = new Starship(playerLCX, playerLCY, 3, 3, TEAM_COLORS.A, 'hull5', IndependentTurretB);
-        playerFleet.push(playerLC);
+        const playerLC = new Starship(playerLCX, playerLCY, 3, 3, TEAM_COLORS.A, 'hullC', IndependentTurretB);
+        teamShips.A.push(playerLC);
         // デストロイヤー2隻
         const playerDStartX = WORLD_SIZE / 2 - 60;
         const playerDStartY = WORLD_SIZE - 180;
@@ -184,13 +175,13 @@ function initializeGame(config = 'destroyer1') {
         for (let i = 0; i < 2; i++) {
             const x = playerDStartX + i * playerDSpacing;
             const y = playerDStartY;
-            const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.A, 'large');
+            const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.A, 'hullB');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180;
                 weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2;
             });
-            playerFleet.push(destroyer);
+            teamShips.A.push(destroyer);
         }
         // コルベット8隻（4x2グリッド）
         const playerCStartX = WORLD_SIZE / 2 - 60;
@@ -200,7 +191,7 @@ function initializeGame(config = 'destroyer1') {
             for (let col = 0; col < 4; col++) {
                 const x = playerCStartX + col * playerCSpacing;
                 const y = playerCStartY + row * playerCSpacing;
-                playerFleet.push(new Starship(x, y, 1, 1, TEAM_COLORS.A, 'standard'));
+                teamShips.A.push(new Starship(x, y, 1, 1, TEAM_COLORS.A, 'hullA'));
             }
         }
         // チームB：画面左上（L1D2C8構成）
@@ -208,8 +199,8 @@ function initializeGame(config = 'destroyer1') {
         // ライトクルーザー1隻
         const enemyLCX = 100;
         const enemyLCY = 100;
-        const enemyLC = new Starship(enemyLCX, enemyLCY, 3, 3, TEAM_COLORS.B, 'hull5', IndependentTurretB);
-        enemies.push(enemyLC);
+        const enemyLC = new Starship(enemyLCX, enemyLCY, 3, 3, TEAM_COLORS.B, 'hullC', IndependentTurretB);
+        teamShips.B.push(enemyLC);
         // デストロイヤー2隻
         const enemyDStartX = 80;
         const enemyDStartY = 180;
@@ -217,13 +208,13 @@ function initializeGame(config = 'destroyer1') {
         for (let i = 0; i < 2; i++) {
             const x = enemyDStartX;
             const y = enemyDStartY + i * enemyDSpacing;
-            const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.B, 'large');
+            const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.B, 'hullB');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180;
                 weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2;
             });
-            enemies.push(destroyer);
+            teamShips.B.push(destroyer);
         }
         // コルベット8隻（4x2グリッド）
         const enemyCStartX = 150;
@@ -233,7 +224,7 @@ function initializeGame(config = 'destroyer1') {
             for (let col = 0; col < 4; col++) {
                 const x = enemyCStartX + col * enemyCSpacing;
                 const y = enemyCStartY + row * enemyCSpacing;
-                enemies.push(new Starship(x, y, 1, 1, TEAM_COLORS.B, 'standard'));
+                teamShips.B.push(new Starship(x, y, 1, 1, TEAM_COLORS.B, 'hullA'));
             }
         }
         // チームC：画面右上（L1D2C8構成）
@@ -241,8 +232,8 @@ function initializeGame(config = 'destroyer1') {
         // ライトクルーザー1隻
         const teamCLCX = WORLD_SIZE - 100;
         const teamCLCY = 100;
-        const teamCLC = new Starship(teamCLCX, teamCLCY, 3, 3, TEAM_COLORS.C, 'hull5', IndependentTurretB);
-        teamC.push(teamCLC);
+        const teamCLC = new Starship(teamCLCX, teamCLCY, 3, 3, TEAM_COLORS.C, 'hullC', IndependentTurretB);
+        teamShips.C.push(teamCLC);
         // デストロイヤー2隻
         const teamCDStartX = WORLD_SIZE - 80;
         const teamCDStartY = 180;
@@ -250,13 +241,13 @@ function initializeGame(config = 'destroyer1') {
         for (let i = 0; i < 2; i++) {
             const x = teamCDStartX;
             const y = teamCDStartY + i * teamCDSpacing;
-            const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.C, 'large');
+            const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.C, 'hullB');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180;
                 weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2;
             });
-            teamC.push(destroyer);
+            teamShips.C.push(destroyer);
         }
         // コルベット8隻（4x2グリッド）
         const teamCCorvetteStartX = WORLD_SIZE - 250;
@@ -266,7 +257,7 @@ function initializeGame(config = 'destroyer1') {
             for (let col = 0; col < 4; col++) {
                 const x = teamCCorvetteStartX + col * teamCCorvetteSpacing;
                 const y = teamCCorvetteStartY + row * teamCCorvetteSpacing;
-                teamC.push(new Starship(x, y, 1, 1, TEAM_COLORS.C, 'standard'));
+                teamShips.C.push(new Starship(x, y, 1, 1, TEAM_COLORS.C, 'hullA'));
             }
         }
     }
@@ -285,20 +276,20 @@ function initializeGame(config = 'destroyer1') {
         const bottomStartX = topStartX;
         const bottomStartY = WORLD_SIZE - (rows - 1) * groupSpacingY - 260;
         // チームA（下側）- ライトクルーザー1隻を追加
-        const playerLC = new Starship(WORLD_SIZE / 2, WORLD_SIZE - 100, 3, 3, TEAM_COLORS.A, 'hull5', IndependentTurretB);
-        playerFleet.push(playerLC);
+        const playerLC = new Starship(WORLD_SIZE / 2, WORLD_SIZE - 100, 3, 3, TEAM_COLORS.A, 'hullC', IndependentTurretB);
+        teamShips.A.push(playerLC);
         for (let i = 0; i < groupsPerSide; i++) {
             const col = i % columns;
             const row = Math.floor(i / columns);
             const centerX = bottomStartX + col * groupSpacingX;
             const centerY = bottomStartY + row * groupSpacingY;
-            const destroyer = new Starship(centerX, centerY + 90, 2, 2, TEAM_COLORS.A, 'large');
+            const destroyer = new Starship(centerX, centerY + 90, 2, 2, TEAM_COLORS.A, 'hullB');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180;
                 weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2;
             });
-            playerFleet.push(destroyer);
+            teamShips.A.push(destroyer);
             const corvetteStartX = centerX - 60;
             const corvetteStartY = centerY;
             const corvetteSpacing = 40;
@@ -306,25 +297,25 @@ function initializeGame(config = 'destroyer1') {
                 for (let c = 0; c < 4; c++) {
                     const x = corvetteStartX + c * corvetteSpacing;
                     const y = corvetteStartY + r * corvetteSpacing;
-                    playerFleet.push(new Starship(x, y, 1, 1, TEAM_COLORS.A, 'standard'));
+                    teamShips.A.push(new Starship(x, y, 1, 1, TEAM_COLORS.A, 'hullA'));
                 }
             }
         }
         // チームB（上側）- ライトクルーザー1隻を追加
-        const enemyLC = new Starship(WORLD_SIZE / 2, 100, 3, 3, TEAM_COLORS.B, 'hull5', IndependentTurretB);
-        enemies.push(enemyLC);
+        const enemyLC = new Starship(WORLD_SIZE / 2, 100, 3, 3, TEAM_COLORS.B, 'hullC', IndependentTurretB);
+        teamShips.B.push(enemyLC);
         for (let i = 0; i < groupsPerSide; i++) {
             const col = i % columns;
             const row = Math.floor(i / columns);
             const centerX = topStartX + col * groupSpacingX;
             const centerY = topStartY + row * groupSpacingY;
-            const destroyer = new Starship(centerX, centerY, 2, 2, TEAM_COLORS.B, 'large');
+            const destroyer = new Starship(centerX, centerY, 2, 2, TEAM_COLORS.B, 'hullB');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180;
                 weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2;
             });
-            enemies.push(destroyer);
+            teamShips.B.push(destroyer);
             const corvetteStartX = centerX - 60;
             const corvetteStartY = centerY + 70;
             const corvetteSpacing = 40;
@@ -332,7 +323,7 @@ function initializeGame(config = 'destroyer1') {
                 for (let c = 0; c < 4; c++) {
                     const x = corvetteStartX + c * corvetteSpacing;
                     const y = corvetteStartY + r * corvetteSpacing;
-                    enemies.push(new Starship(x, y, 1, 1, TEAM_COLORS.B, 'standard'));
+                    teamShips.B.push(new Starship(x, y, 1, 1, TEAM_COLORS.B, 'hullA'));
                 }
             }
         }
@@ -354,8 +345,8 @@ function initializeGame(config = 'destroyer1') {
         // ライトクルーザー1隻
         const playerLCX = WORLD_SIZE / 2 + 100;
         const playerLCY = WORLD_SIZE - 100;
-        const playerLC = new Starship(playerLCX, playerLCY, 3, 3, TEAM_COLORS.A, 'hull5', IndependentTurretB);
-        playerFleet.push(playerLC);
+        const playerLC = new Starship(playerLCX, playerLCY, 3, 3, TEAM_COLORS.A, 'hullC', IndependentTurretB);
+        teamShips.A.push(playerLC);
         // デストロイヤー4隻
         const playerDStartX = WORLD_SIZE / 2 - 50;
         const playerDStartY = WORLD_SIZE - 200;
@@ -363,13 +354,13 @@ function initializeGame(config = 'destroyer1') {
         for (let i = 0; i < 4; i++) {
             const x = playerDStartX + i * playerDSpacing;
             const y = playerDStartY;
-            const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.A, 'large');
+            const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.A, 'hullB');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180;
                 weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2;
             });
-            playerFleet.push(destroyer);
+            teamShips.A.push(destroyer);
         }
         // コルベット16隻（4x4グリッド）
         const playerCStartX = WORLD_SIZE / 2 - 20;
@@ -379,7 +370,7 @@ function initializeGame(config = 'destroyer1') {
             for (let col = 0; col < 4; col++) {
                 const x = playerCStartX + col * playerCSpacing;
                 const y = playerCStartY + row * playerCSpacing;
-                playerFleet.push(new Starship(x, y, 1, 1, TEAM_COLORS.A, 'standard'));
+                teamShips.A.push(new Starship(x, y, 1, 1, TEAM_COLORS.A, 'hullA'));
             }
         }
         // チームB：画面左上（L1D4C16構成）
@@ -387,8 +378,8 @@ function initializeGame(config = 'destroyer1') {
         // ライトクルーザー1隻
         const enemyLCX = 70;
         const enemyLCY = 80;
-        const enemyLC = new Starship(enemyLCX, enemyLCY, 3, 3, TEAM_COLORS.B, 'hull5', IndependentTurretB);
-        enemies.push(enemyLC);
+        const enemyLC = new Starship(enemyLCX, enemyLCY, 3, 3, TEAM_COLORS.B, 'hullC', IndependentTurretB);
+        teamShips.B.push(enemyLC);
         // デストロイヤー4隻
         const enemyDStartX = 55;
         const enemyDStartY = 140;
@@ -396,13 +387,13 @@ function initializeGame(config = 'destroyer1') {
         for (let i = 0; i < 4; i++) {
             const x = enemyDStartX;
             const y = enemyDStartY + i * enemyDSpacing;
-            const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.B, 'large');
+            const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.B, 'hullB');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180;
                 weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2;
             });
-            enemies.push(destroyer);
+            teamShips.B.push(destroyer);
         }
         // コルベット16隻（4x4グリッド）
         const enemyCStartX = 105;
@@ -412,7 +403,7 @@ function initializeGame(config = 'destroyer1') {
             for (let col = 0; col < 4; col++) {
                 const x = enemyCStartX + col * enemyCSpacing;
                 const y = enemyCStartY + row * enemyCSpacing;
-                enemies.push(new Starship(x, y, 1, 1, TEAM_COLORS.B, 'standard'));
+                teamShips.B.push(new Starship(x, y, 1, 1, TEAM_COLORS.B, 'hullA'));
             }
         }
         // チームC：画面右上（L1D4C16構成）
@@ -420,8 +411,8 @@ function initializeGame(config = 'destroyer1') {
         // ライトクルーザー1隻
         const teamCLCX = WORLD_SIZE - 70;
         const teamCLCY = 80;
-        const teamCLC = new Starship(teamCLCX, teamCLCY, 3, 3, TEAM_COLORS.C, 'hull5', IndependentTurretB);
-        teamC.push(teamCLC);
+        const teamCLC = new Starship(teamCLCX, teamCLCY, 3, 3, TEAM_COLORS.C, 'hullC', IndependentTurretB);
+        teamShips.C.push(teamCLC);
         // デストロイヤー4隻
         const teamCDStartX = WORLD_SIZE - 55;
         const teamCDStartY = 140;
@@ -429,13 +420,13 @@ function initializeGame(config = 'destroyer1') {
         for (let i = 0; i < 4; i++) {
             const x = teamCDStartX;
             const y = teamCDStartY + i * teamCDSpacing;
-            const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.C, 'large');
+            const destroyer = new Starship(x, y, 2, 2, TEAM_COLORS.C, 'hullB');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180;
                 weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2;
             });
-            teamC.push(destroyer);
+            teamShips.C.push(destroyer);
         }
         // コルベット16隻（4x4グリッド）
         const teamCCorvetteStartX = WORLD_SIZE - 205;
@@ -445,7 +436,7 @@ function initializeGame(config = 'destroyer1') {
             for (let col = 0; col < 4; col++) {
                 const x = teamCCorvetteStartX + col * teamCCorvetteSpacing;
                 const y = teamCCorvetteStartY + row * teamCCorvetteSpacing;
-                teamC.push(new Starship(x, y, 1, 1, TEAM_COLORS.C, 'standard'));
+                teamShips.C.push(new Starship(x, y, 1, 1, TEAM_COLORS.C, 'hullA'));
             }
         }
     }

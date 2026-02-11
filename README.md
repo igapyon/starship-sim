@@ -163,13 +163,14 @@ npm run typecheck
 
 | クラス | 用途 | 主なパラメータ |
 |--------|------|---------|
-| `Hull` | 標準船体 | HP: 100, 重さ: 1 |
-| `LargeHull` | 大型船体 | HP: 300, 重さ: 3 |
-| `Hull5` | 軽巡船体 | HP: 500, 重さ: 5 |
-| `ThrusterEngine` | 推進エンジン | 推進力: 0.5, 旋回: 0.1 rad/frame |
-| `AdvancedRadar` | 索敇ユニット A | 範囲: +30px |
-| `RadarB` | 索敇ユニット B | 範囲: +45px |
-| `WeaponUnit` | 標準射撃ユニット | HP: 100, 射撃間隔: 60f |
+| `HullA` | 標準船体 | HP: 100, 重さ: 1 |
+| `HullB` | 大型船体 | HP: 300, 重さ: 3 |
+| `HullC` | 軽巡船体 | HP: 500, 重さ: 5 |
+| `ThrusterEngine` | 推進エンジン | 推進力: 0.15, 旋回: 0.1 rad/frame |
+| `RadarA` | 標準レーダー | 範囲ボーナス: +0px |
+| `RadarB` | 索敵ユニット B | 範囲ボーナス: +30px |
+| `RadarC` | 索敵ユニット C | 範囲ボーナス: +45px |
+| `IndependentTurretA` | 標準砲塔 | HP: 150, 射撃間隔: 60f |
 | `IndependentTurretB` | 高火力砲塔 | HP: 200, 射撃間隔: 90f |
 
 ### その他の要素
