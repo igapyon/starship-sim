@@ -15,7 +15,7 @@ const bullets = [];
 const particles = [];
 let mouseX = WORLD_SIZE / 2;
 let mouseY = WORLD_SIZE / 2;
-let attackWrecks = false; // 残骸を攻撃するか（デフォルト：しない）
+let attackWrecks = SIMULATION_SETTINGS.ai.attackWrecksDefault; // 残骸を攻撃するか（デフォルト設定）
 const detectionBeacons = []; // 検出ビーコン配列
 let selectedBeaconTeam = 'A'; // 現在選択されているビーコン配置チーム
 // チーム統計

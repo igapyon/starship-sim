@@ -716,6 +716,20 @@
             }
         }
     };
+    const SIMULATION_SETTINGS = {
+        physics: {
+            maxSpeed: 2,
+            friction: 0.98,
+            edgeRepulsionMargin: 50,
+            edgeRepulsionStrength: 0.05
+        },
+        ai: {
+            edgeTargetCorrectionMargin: 100,
+            edgeTargetCorrectionFactor: 0.6,
+            attackWrecksDefault: false,
+            beaconRangeDefault: 160
+        }
+    };
     
     // @ts-nocheck
     // ========================================
@@ -983,11 +997,11 @@
     // 検出ビーコンクラス
     // ========================================
     class DetectionBeacon {
-        constructor(x, y, teamId, range = 150, duration = 180) {
+        constructor(x, y, teamId, range = SIMULATION_SETTINGS.ai.beaconRangeDefault, duration = 180) {
             this.x = x;
             this.y = y;
             this.teamId = teamId;
-            this.range = range; // 検出範囲（150px、船種C相当）
+            this.range = range; // 検出範囲（設定値）
             this.life = duration; // フレーム数（約3秒）
             this.maxLife = duration;
         }
@@ -1040,7 +1054,7 @@
             this.targetY = y;
             this.targetVx = 0; // 目標の速度X（偏差撃ち用）
             this.targetVy = 0; // 目標の速度Y（偏差撃ち用）
-            this.maxSpeed = 2;
+            this.maxSpeed = SIMULATION_SETTINGS.physics.maxSpeed;
             // 初期状態ではスラスターOFF（索敇範囲内に入ったらON）
             this.thrustersActive = false;
             // 相手を検出しているか（索敇範囲内にいるか）
@@ -1162,8 +1176,8 @@
                     this.targetY = targetY;
                     const centerX = WORLD_SIZE / 2;
                     const centerY = WORLD_SIZE / 2;
-                    const margin = 100;
-                    const correction = 0.6;
+                    const margin = SIMULATION_SETTINGS.ai.edgeTargetCorrectionMargin;
+                    const correction = SIMULATION_SETTINGS.ai.edgeTargetCorrectionFactor;
                     if (this.x < margin)
                         this.targetX += (centerX - this.targetX) * correction;
                     else if (this.x > WORLD_SIZE - margin)
@@ -1269,8 +1283,8 @@
                 this.vy += Math.sin(this.angle) * acceleration * thrustFactor;
             }
             // 画面端の斥力
-            const margin = 50;
-            const maxRepelStrength = 0.05;
+            const margin = SIMULATION_SETTINGS.physics.edgeRepulsionMargin;
+            const maxRepelStrength = SIMULATION_SETTINGS.physics.edgeRepulsionStrength;
             if (this.x < margin) {
                 const distRatio = 1 - (this.x / margin);
                 this.vx += maxRepelStrength * distRatio;
@@ -1306,8 +1320,8 @@
                 this.y = Math.max(0, Math.min(WORLD_SIZE, this.y));
             }
             // 摩擦
-            this.vx *= 0.98;
-            this.vy *= 0.98;
+            this.vx *= SIMULATION_SETTINGS.physics.friction;
+            this.vy *= SIMULATION_SETTINGS.physics.friction;
             // 射撃カウンター更新
             this.weapons.forEach(w => w.fireCounter++);
         }
@@ -1718,7 +1732,7 @@
     const particles = [];
     let mouseX = WORLD_SIZE / 2;
     let mouseY = WORLD_SIZE / 2;
-    let attackWrecks = false; // 残骸を攻撃するか（デフォルト：しない）
+    let attackWrecks = SIMULATION_SETTINGS.ai.attackWrecksDefault; // 残骸を攻撃するか（デフォルト設定）
     const detectionBeacons = []; // 検出ビーコン配列
     let selectedBeaconTeam = 'A'; // 現在選択されているビーコン配置チーム
     // チーム統計
@@ -2106,9 +2120,28 @@
                     ship.vy *= -1;
                     ship.y = Math.max(0, Math.min(WORLD_SIZE, ship.y));
                 }
+                // 目標なし（残骸含む）でも、見た目半径ぶんは最終的に画面内へ戻す
+                const visualRadius = ship.getCollisionRadius();
+                const settleStrength = SIMULATION_SETTINGS.physics.edgeRepulsionStrength;
+                if (ship.x < visualRadius) {
+                    const ratio = (visualRadius - ship.x) / Math.max(visualRadius, 1);
+                    ship.vx += settleStrength * ratio;
+                }
+                else if (ship.x > WORLD_SIZE - visualRadius) {
+                    const ratio = (ship.x - (WORLD_SIZE - visualRadius)) / Math.max(visualRadius, 1);
+                    ship.vx -= settleStrength * ratio;
+                }
+                if (ship.y < visualRadius) {
+                    const ratio = (visualRadius - ship.y) / Math.max(visualRadius, 1);
+                    ship.vy += settleStrength * ratio;
+                }
+                else if (ship.y > WORLD_SIZE - visualRadius) {
+                    const ratio = (ship.y - (WORLD_SIZE - visualRadius)) / Math.max(visualRadius, 1);
+                    ship.vy -= settleStrength * ratio;
+                }
                 // 摩擦
-                ship.vx *= 0.98;
-                ship.vy *= 0.98;
+                ship.vx *= SIMULATION_SETTINGS.physics.friction;
+                ship.vy *= SIMULATION_SETTINGS.physics.friction;
             }
             if (target && ship.shouldFire()) {
                 const bullet = ship.fire();

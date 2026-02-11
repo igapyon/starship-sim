@@ -14,7 +14,7 @@ class Starship {
         this.targetY = y;
         this.targetVx = 0; // 目標の速度X（偏差撃ち用）
         this.targetVy = 0; // 目標の速度Y（偏差撃ち用）
-        this.maxSpeed = 2;
+        this.maxSpeed = SIMULATION_SETTINGS.physics.maxSpeed;
         // 初期状態ではスラスターOFF（索敇範囲内に入ったらON）
         this.thrustersActive = false;
         // 相手を検出しているか（索敇範囲内にいるか）
@@ -136,8 +136,8 @@ class Starship {
                 this.targetY = targetY;
                 const centerX = WORLD_SIZE / 2;
                 const centerY = WORLD_SIZE / 2;
-                const margin = 100;
-                const correction = 0.6;
+                const margin = SIMULATION_SETTINGS.ai.edgeTargetCorrectionMargin;
+                const correction = SIMULATION_SETTINGS.ai.edgeTargetCorrectionFactor;
                 if (this.x < margin)
                     this.targetX += (centerX - this.targetX) * correction;
                 else if (this.x > WORLD_SIZE - margin)
@@ -243,8 +243,8 @@ class Starship {
             this.vy += Math.sin(this.angle) * acceleration * thrustFactor;
         }
         // 画面端の斥力
-        const margin = 50;
-        const maxRepelStrength = 0.05;
+        const margin = SIMULATION_SETTINGS.physics.edgeRepulsionMargin;
+        const maxRepelStrength = SIMULATION_SETTINGS.physics.edgeRepulsionStrength;
         if (this.x < margin) {
             const distRatio = 1 - (this.x / margin);
             this.vx += maxRepelStrength * distRatio;
@@ -280,8 +280,8 @@ class Starship {
             this.y = Math.max(0, Math.min(WORLD_SIZE, this.y));
         }
         // 摩擦
-        this.vx *= 0.98;
-        this.vy *= 0.98;
+        this.vx *= SIMULATION_SETTINGS.physics.friction;
+        this.vy *= SIMULATION_SETTINGS.physics.friction;
         // 射撃カウンター更新
         this.weapons.forEach(w => w.fireCounter++);
     }

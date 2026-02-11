@@ -96,11 +96,11 @@
         // ========================================
 
         class DetectionBeacon {
-            constructor(x, y, teamId, range = 150, duration = 180) {
+            constructor(x, y, teamId, range = SIMULATION_SETTINGS.ai.beaconRangeDefault, duration = 180) {
                 this.x = x;
                 this.y = y;
                 this.teamId = teamId;
-                this.range = range;  // 検出範囲（150px、船種C相当）
+                this.range = range;  // 検出範囲（設定値）
                 this.life = duration;  // フレーム数（約3秒）
                 this.maxLife = duration;
             }

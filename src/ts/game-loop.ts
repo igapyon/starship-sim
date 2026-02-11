@@ -114,9 +114,27 @@
                         ship.y = Math.max(0, Math.min(WORLD_SIZE, ship.y));
                     }
 
+                    // 目標なし（残骸含む）でも、見た目半径ぶんは最終的に画面内へ戻す
+                    const visualRadius = ship.getCollisionRadius();
+                    const settleStrength = SIMULATION_SETTINGS.physics.edgeRepulsionStrength;
+                    if (ship.x < visualRadius) {
+                        const ratio = (visualRadius - ship.x) / Math.max(visualRadius, 1);
+                        ship.vx += settleStrength * ratio;
+                    } else if (ship.x > WORLD_SIZE - visualRadius) {
+                        const ratio = (ship.x - (WORLD_SIZE - visualRadius)) / Math.max(visualRadius, 1);
+                        ship.vx -= settleStrength * ratio;
+                    }
+                    if (ship.y < visualRadius) {
+                        const ratio = (visualRadius - ship.y) / Math.max(visualRadius, 1);
+                        ship.vy += settleStrength * ratio;
+                    } else if (ship.y > WORLD_SIZE - visualRadius) {
+                        const ratio = (ship.y - (WORLD_SIZE - visualRadius)) / Math.max(visualRadius, 1);
+                        ship.vy -= settleStrength * ratio;
+                    }
+
                     // 摩擦
-                    ship.vx *= 0.98;
-                    ship.vy *= 0.98;
+                    ship.vx *= SIMULATION_SETTINGS.physics.friction;
+                    ship.vy *= SIMULATION_SETTINGS.physics.friction;
                 }
 
                 if (target && ship.shouldFire()) {
