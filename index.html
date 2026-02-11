@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>starship-sim : Starship Simulation</title>
     <style>
+            html, body {
+                width: 100%;
+                height: 100%;
+                overflow: hidden;
+            }
             * {
                 margin: 0;
                 padding: 0;
@@ -18,8 +23,14 @@
                 font-family: 'Courier New', monospace;
                 overflow: hidden;
                 width: 100%;
-                height: 100%;
+                height: 100dvh;
+                min-height: 100dvh;
                 position: fixed;
+                inset: 0;
+                padding-top: env(safe-area-inset-top, 0px);
+                padding-right: env(safe-area-inset-right, 0px);
+                padding-bottom: env(safe-area-inset-bottom, 0px);
+                padding-left: env(safe-area-inset-left, 0px);
             }
             canvas {
                 display: block;
@@ -652,9 +663,10 @@
         githubLink.style.top = `${Math.round(githubTop)}px`;
     }
     function resizeCanvas() {
+        const viewport = window.visualViewport;
         renderState.dpr = window.devicePixelRatio || 1;
-        renderState.viewportWidth = window.innerWidth;
-        renderState.viewportHeight = window.innerHeight;
+        renderState.viewportWidth = Math.floor(viewport ? viewport.width : window.innerWidth);
+        renderState.viewportHeight = Math.floor(viewport ? viewport.height : window.innerHeight);
         canvas.width = Math.floor(renderState.viewportWidth * renderState.dpr);
         canvas.height = Math.floor(renderState.viewportHeight * renderState.dpr);
         canvas.style.width = `${renderState.viewportWidth}px`;
@@ -676,6 +688,10 @@
     }
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', resizeCanvas);
+        window.visualViewport.addEventListener('scroll', resizeCanvas);
+    }
     function screenToWorld(screenX, screenY) {
         const worldX = (screenX - renderState.offsetX) / renderState.worldScale;
         const worldY = (screenY - renderState.offsetY) / renderState.worldScale;
