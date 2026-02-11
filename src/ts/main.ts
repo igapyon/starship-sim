@@ -14,6 +14,8 @@
         const zoomOutButton = document.getElementById('zoom-out');
         const zoomInButton = document.getElementById('zoom-in');
         const zoomValueLabel = document.getElementById('zoom-value');
+        let hasInitializedZoom = false;
+        let hasUserAdjustedZoom = false;
         const renderState = {
             dpr: 1,
             viewportWidth: 0,
@@ -188,6 +190,14 @@
             zoomValueLabel.textContent = formatZoomLabel(renderState.zoom);
         }
 
+        function getInitialFitZoom() {
+            const maxFittableZoom = Math.min(renderState.viewportWidth, renderState.viewportHeight) / WORLD_SIZE;
+            const fitLevels = ZOOM_STEPS.filter((zoom) => zoom <= maxFittableZoom + 0.000001);
+            if (fitLevels.length > 0) return fitLevels[fitLevels.length - 1];
+            // 画面が極端に小さい場合は最小ズームで開始
+            return ZOOM_STEPS[0];
+        }
+
         function recomputeRenderState() {
             const worldPixelSize = WORLD_SIZE * renderState.zoom;
             renderState.worldScale = renderState.zoom;
@@ -343,6 +353,15 @@
             canvas.style.width = `${renderState.viewportWidth}px`;
             canvas.style.height = `${renderState.viewportHeight}px`;
             updateZoomControls();
+            if (!hasInitializedZoom) {
+                renderState.zoom = getInitialFitZoom();
+                hasInitializedZoom = true;
+                updateZoomControls();
+            } else if (!hasUserAdjustedZoom) {
+                // 初回の手動操作前は、リサイズ時も画面に収まる倍率へ追従
+                renderState.zoom = getInitialFitZoom();
+                updateZoomControls();
+            }
             recomputeRenderState();
             requestAnimationFrame(layoutUi);
         }
@@ -502,6 +521,8 @@
             if (targetIndex < 0 || targetIndex >= renderState.zoomLevels.length) return;
             const nextZoom = renderState.zoomLevels[targetIndex];
             if (!nextZoom) return;
+            hasInitializedZoom = true;
+            hasUserAdjustedZoom = true;
             renderState.zoom = nextZoom;
             updateZoomControls();
             recomputeRenderState();
@@ -514,5 +535,13 @@
         zoomInButton.addEventListener('click', () => {
             shiftZoom(1);
         });
+        zoomOutButton.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            shiftZoom(-1);
+        }, { passive: false });
+        zoomInButton.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            shiftZoom(1);
+        }, { passive: false });
 
         document.addEventListener('contextmenu', (e) => e.preventDefault());
