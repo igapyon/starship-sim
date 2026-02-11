@@ -93,3 +93,4 @@ UIは固定四隅ではなく、**正方形戦場にできるだけ寄せる**�
 - スタイル: `src/css/app.css`
 - レイアウト/入力/ズーム: `src/ts/main.ts`
 - シーン定義: `src/ts/scenes.ts`
+- 追従モード仕様: [FOLLOW_MODE_SPEC.md](FOLLOW_MODE_SPEC.md)

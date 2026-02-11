@@ -1,6 +1,8 @@
 // @ts-nocheck
 const WORLD_SIZE = 720;
 const MIN_ZOOM = 0.5;
+const AUTO_FOCUS_DELAY_MS = 3000;
+const SHIP_PICK_TOLERANCE = 8;
 const ZOOM_STEPS = [0.4, 0.5, 0.625, 0.75, 0.875, 1, 1.25, 1.5, 1.75, 2, 3, 4];
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
@@ -22,12 +24,142 @@ const renderState = {
     zoomLevels: [MIN_ZOOM, 1],
     zoom: 1
 };
+const followState = {
+    selectedShip: null,
+    preferredTeamId: null,
+    lastKnownX: WORLD_SIZE / 2,
+    lastKnownY: WORLD_SIZE / 2,
+    pendingAutoFocusAt: 0,
+    forceCenterOnNextFrame: false
+};
+function getAllShips() {
+    if (typeof TEAM_IDS === 'undefined' || typeof teamShips === 'undefined')
+        return [];
+    return TEAM_IDS.flatMap((teamId) => teamShips[teamId] || []);
+}
+function getShipTeamId(ship) {
+    if (!ship || typeof TEAM_IDS === 'undefined' || typeof teamShips === 'undefined')
+        return null;
+    for (const teamId of TEAM_IDS) {
+        const ships = teamShips[teamId] || [];
+        if (ships.includes(ship))
+            return teamId;
+    }
+    if (typeof TEAM_COLORS !== 'undefined') {
+        for (const teamId of TEAM_IDS) {
+            if (TEAM_COLORS[teamId] === ship.color)
+                return teamId;
+        }
+    }
+    return null;
+}
+function getPreferredAliveShip(preferredTeamId) {
+    const hasPropulsion = (ship) => ship && ship.isAlive() && ship.engines && ship.engines.length > 0;
+    if (preferredTeamId && typeof teamShips !== 'undefined') {
+        const preferredShips = teamShips[preferredTeamId] || [];
+        for (const ship of preferredShips) {
+            if (hasPropulsion(ship))
+                return ship;
+        }
+    }
+    // 同陣営に候補がいない場合でも、まずは推進力ありを優先
+    const allShips = getAllShips();
+    for (const ship of allShips) {
+        if (hasPropulsion(ship))
+            return ship;
+    }
+    return null;
+}
+function selectFollowShip(ship, forceCenter = true) {
+    followState.selectedShip = ship || null;
+    if (ship) {
+        followState.lastKnownX = ship.x;
+        followState.lastKnownY = ship.y;
+        const teamId = getShipTeamId(ship);
+        if (teamId)
+            followState.preferredTeamId = teamId;
+    }
+    followState.pendingAutoFocusAt = 0;
+    followState.forceCenterOnNextFrame = forceCenter;
+}
+function isShipFollowable(ship) {
+    if (!ship || !ship.isAlive())
+        return false;
+    if (!ship.engines || ship.engines.length === 0)
+        return false;
+    return getAllShips().includes(ship);
+}
+function isWorldFullyVisible() {
+    const worldPixelSize = WORLD_SIZE * renderState.zoom;
+    return worldPixelSize <= renderState.viewportWidth && worldPixelSize <= renderState.viewportHeight;
+}
+function isShipFollowModeActive() {
+    if (typeof selectedBeaconTeam === 'undefined')
+        return false;
+    return selectedBeaconTeam === null && !isWorldFullyVisible();
+}
+function getFocusPoint() {
+    const followModeActive = isShipFollowModeActive();
+    if (!followModeActive) {
+        followState.pendingAutoFocusAt = 0;
+        return null;
+    }
+    // 追尾モード開始時に選択がない場合は、生存船先頭へ自動フォーカスする
+    if (!followState.selectedShip) {
+        const nextShip = getPreferredAliveShip(followState.preferredTeamId);
+        if (nextShip) {
+            selectFollowShip(nextShip, true);
+            return { x: nextShip.x, y: nextShip.y };
+        }
+    }
+    if (isShipFollowable(followState.selectedShip)) {
+        followState.pendingAutoFocusAt = 0;
+        followState.lastKnownX = followState.selectedShip.x;
+        followState.lastKnownY = followState.selectedShip.y;
+        const selectedTeamId = getShipTeamId(followState.selectedShip);
+        if (selectedTeamId)
+            followState.preferredTeamId = selectedTeamId;
+        return { x: followState.selectedShip.x, y: followState.selectedShip.y };
+    }
+    if (followState.selectedShip) {
+        followState.lastKnownX = followState.selectedShip.x;
+        followState.lastKnownY = followState.selectedShip.y;
+    }
+    const now = performance.now();
+    if (followState.pendingAutoFocusAt === 0) {
+        followState.pendingAutoFocusAt = now + AUTO_FOCUS_DELAY_MS;
+        return { x: followState.lastKnownX, y: followState.lastKnownY };
+    }
+    if (now < followState.pendingAutoFocusAt) {
+        return { x: followState.lastKnownX, y: followState.lastKnownY };
+    }
+    const nextShip = getPreferredAliveShip(followState.preferredTeamId);
+    if (nextShip) {
+        selectFollowShip(nextShip, true);
+        return { x: nextShip.x, y: nextShip.y };
+    }
+    followState.pendingAutoFocusAt = 0;
+    followState.selectedShip = null;
+    return { x: followState.lastKnownX, y: followState.lastKnownY };
+}
+function computeCenteredOffset(viewportSize, worldPixelSize, targetWorldPos) {
+    const desiredOffset = Math.floor(viewportSize / 2 - targetWorldPos * renderState.worldScale);
+    const minOffset = Math.floor(viewportSize - worldPixelSize);
+    if (minOffset <= 0) {
+        return clamp(desiredOffset, minOffset, 0);
+    }
+    return Math.floor((viewportSize - worldPixelSize) / 2);
+}
 function formatZoomLabel(zoom) {
     return `${Math.round(zoom * 100)}%`;
 }
 function updateZoomControls() {
     const maxFittableZoom = Math.min(renderState.viewportWidth, renderState.viewportHeight) / WORLD_SIZE;
-    const levels = ZOOM_STEPS.filter((zoom) => zoom <= maxFittableZoom + 0.000001);
+    const alwaysMinZoom = 0.4;
+    const alwaysMaxZoom = 2;
+    const selectableMaxZoom = Math.max(maxFittableZoom, alwaysMaxZoom);
+    const levels = ZOOM_STEPS.filter((zoom) => (zoom >= alwaysMinZoom && zoom <= alwaysMaxZoom) ||
+        (zoom > alwaysMaxZoom && zoom <= selectableMaxZoom + 0.000001));
     if (levels.length === 0)
         levels.push(MIN_ZOOM);
     if (levels.length === 1) {
@@ -48,8 +180,33 @@ function updateZoomControls() {
 function recomputeRenderState() {
     const worldPixelSize = WORLD_SIZE * renderState.zoom;
     renderState.worldScale = renderState.zoom;
-    renderState.offsetX = Math.floor((renderState.viewportWidth - worldPixelSize) / 2);
-    renderState.offsetY = Math.floor((renderState.viewportHeight - worldPixelSize) / 2);
+    const focusPoint = getFocusPoint();
+    if (!focusPoint) {
+        renderState.offsetX = Math.floor((renderState.viewportWidth - worldPixelSize) / 2);
+        renderState.offsetY = Math.floor((renderState.viewportHeight - worldPixelSize) / 2);
+        return;
+    }
+    const focusX = clamp(focusPoint.x, 0, WORLD_SIZE);
+    const focusY = clamp(focusPoint.y, 0, WORLD_SIZE);
+    if (followState.forceCenterOnNextFrame) {
+        renderState.offsetX = computeCenteredOffset(renderState.viewportWidth, worldPixelSize, focusX);
+        renderState.offsetY = computeCenteredOffset(renderState.viewportHeight, worldPixelSize, focusY);
+        followState.forceCenterOnNextFrame = false;
+        return;
+    }
+    // 追尾モード中は選択船を常時センタリング（全体が収まる場合はcomputeCenteredOffset内で固定表示）
+    renderState.offsetX = computeCenteredOffset(renderState.viewportWidth, worldPixelSize, focusX);
+    renderState.offsetY = computeCenteredOffset(renderState.viewportHeight, worldPixelSize, focusY);
+}
+function resetFollowSelectionState() {
+    followState.selectedShip = null;
+    followState.preferredTeamId = null;
+    followState.lastKnownX = WORLD_SIZE / 2;
+    followState.lastKnownY = WORLD_SIZE / 2;
+    followState.pendingAutoFocusAt = 0;
+    followState.forceCenterOnNextFrame = false;
+    recomputeRenderState();
+    requestAnimationFrame(layoutUi);
 }
 function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
@@ -233,19 +390,53 @@ document.getElementById('wreckage-toggle').addEventListener('click', () => {
 // ビーコンチームボタンのイベントハンドラ
 const beaconTeamButtons = document.querySelectorAll('.beacon-team-btn');
 function updateBeaconTeamSelection(teamId) {
-    selectedBeaconTeam = teamId;
+    const previousBeaconTeam = selectedBeaconTeam;
+    if (selectedBeaconTeam === teamId) {
+        selectedBeaconTeam = null;
+    }
+    else {
+        selectedBeaconTeam = teamId;
+    }
     beaconTeamButtons.forEach((button) => {
         if (button.dataset.team === teamId)
             button.classList.add('active');
         else
             button.classList.remove('active');
     });
+    if (selectedBeaconTeam === null) {
+        beaconTeamButtons.forEach((button) => button.classList.remove('active'));
+        // Beaconモード解除時は、記憶している追尾対象に1回だけ再センタリングする
+        if (previousBeaconTeam !== null && followState.selectedShip) {
+            followState.forceCenterOnNextFrame = true;
+            followState.pendingAutoFocusAt = 0;
+        }
+    }
+    recomputeRenderState();
+    layoutUi();
 }
 beaconTeamButtons.forEach((button) => {
     button.addEventListener('click', () => {
         updateBeaconTeamSelection(button.dataset.team);
     });
 });
+function pickShipAt(worldX, worldY) {
+    const allShips = getAllShips();
+    let selected = null;
+    let closestDistance = Infinity;
+    for (const ship of allShips) {
+        if (!ship || !ship.isAlive())
+            continue;
+        const dx = ship.x - worldX;
+        const dy = ship.y - worldY;
+        const distance = Math.hypot(dx, dy);
+        const pickRadius = ship.getCollisionRadius() + SHIP_PICK_TOLERANCE;
+        if (distance <= pickRadius && distance < closestDistance) {
+            selected = ship;
+            closestDistance = distance;
+        }
+    }
+    return selected;
+}
 function placeBeaconFromEvent(e) {
     const rect = canvas.getBoundingClientRect();
     let screenX;
@@ -265,8 +456,18 @@ function placeBeaconFromEvent(e) {
     const worldPoint = screenToWorld(screenX, screenY);
     if (!worldPoint)
         return;
-    // ビーコンを配置
-    detectionBeacons.push(new DetectionBeacon(worldPoint.x, worldPoint.y, selectedBeaconTeam));
+    if (typeof selectedBeaconTeam !== 'undefined' && selectedBeaconTeam) {
+        // ビーコン配置モード
+        detectionBeacons.push(new DetectionBeacon(worldPoint.x, worldPoint.y, selectedBeaconTeam));
+        return;
+    }
+    // 追従モード（A/B/C すべてOFF）ではクリック/タップで船を選択
+    const selectedShip = pickShipAt(worldPoint.x, worldPoint.y);
+    if (!selectedShip)
+        return;
+    selectFollowShip(selectedShip, true);
+    recomputeRenderState();
+    layoutUi();
 }
 // キャンバスクリック/タップでビーコン配置
 canvas.addEventListener('click', (e) => {

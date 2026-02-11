@@ -293,6 +293,11 @@
 
             // ビーコンをリセット
             detectionBeacons.length = 0;
+
+            // 追従対象をリセット
+            if (typeof resetFollowSelectionState === 'function') {
+                resetFollowSelectionState();
+            }
         }
 
         // 初期化実行（デフォルトはD1C8vsD1C8）
