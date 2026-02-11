@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Starship Simulation v2 - Modular Design</title>
+    <title>starship-sim : Starship Simulation</title>
     <style>
             * {
                 margin: 0;
@@ -40,6 +40,30 @@
                 border: 1px solid #0f0;
                 z-index: 10;
                 max-width: 150px;
+            }
+            #github-link {
+                position: absolute;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                padding: 4px 6px;
+                background: rgba(0, 0, 0, 0.45);
+                border: 1px solid #0f0;
+                color: #0f0;
+                text-decoration: none;
+                font-size: 10px;
+                line-height: 1;
+                font-family: 'Courier New', monospace;
+                z-index: 10;
+            }
+            #github-link:hover {
+                background: rgba(0, 100, 150, 0.9);
+                box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            }
+            .github-icon {
+                width: 12px;
+                height: 12px;
+                display: block;
             }
             #test-buttons {
                 position: absolute;
@@ -216,6 +240,18 @@
 </head>
 <body>
     <canvas id="canvas"></canvas>
+    <a
+        id="github-link"
+        href="https://github.com/igapyon/starship-sim"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="GitHub repository"
+    >
+        <svg aria-hidden="true" viewBox="0 0 16 16" class="github-icon" fill="currentColor">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/>
+        </svg>
+        <span>GitHub</span>
+    </a>
     <!-- 左下：情報パネル（チームA：水色の情報表示） -->
     <div id="info"></div>
     <div id="test-buttons">
@@ -293,8 +329,10 @@
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const infoDiv = document.getElementById('info');
+    const githubLink = document.getElementById('github-link');
     const testButtons = document.getElementById('test-buttons');
     const bottomControls = document.getElementById('bottom-controls');
+    const zoomControls = document.getElementById('zoom-controls');
     const zoomOutButton = document.getElementById('zoom-out');
     const zoomInButton = document.getElementById('zoom-in');
     const zoomValueLabel = document.getElementById('zoom-value');
@@ -341,27 +379,109 @@
         return Math.max(min, Math.min(max, value));
     }
     function layoutUi() {
+        const margin = 8;
         const worldPixelSize = WORLD_SIZE * renderState.worldScale;
         const worldLeft = renderState.offsetX;
         const worldTop = renderState.offsetY;
         const worldRight = worldLeft + worldPixelSize;
         const worldBottom = worldTop + worldPixelSize;
-        const margin = 8;
+        const leftGutter = worldLeft - margin;
         const rightGutter = renderState.viewportWidth - worldRight - margin;
         const topGutter = worldTop - margin;
         const bottomGutter = renderState.viewportHeight - worldBottom - margin;
-        const testWidth = testButtons.offsetWidth;
-        const testHeight = testButtons.offsetHeight;
-        const testLeft = clamp(renderState.viewportWidth - testWidth - margin, margin, renderState.viewportWidth - testWidth - margin);
-        const testTop = margin;
-        testButtons.style.left = `${Math.round(testLeft)}px`;
-        testButtons.style.top = `${Math.round(testTop)}px`;
-        const bottomWidth = bottomControls.offsetWidth;
-        const bottomHeight = bottomControls.offsetHeight;
-        const bottomLeft = clamp(renderState.viewportWidth - bottomWidth - margin, margin, renderState.viewportWidth - bottomWidth - margin);
-        const bottomTop = clamp(renderState.viewportHeight - bottomHeight - margin, margin, renderState.viewportHeight - bottomHeight - margin);
-        bottomControls.style.left = `${Math.round(bottomLeft)}px`;
-        bottomControls.style.top = `${Math.round(bottomTop)}px`;
+        function placeTopLeft(element) {
+            const width = element.offsetWidth;
+            const height = element.offsetHeight;
+            let left;
+            let top;
+            if (leftGutter >= width) {
+                left = worldLeft - width - margin;
+                top = worldTop;
+            }
+            else if (topGutter >= height) {
+                left = worldLeft;
+                top = worldTop - height - margin;
+            }
+            else {
+                left = margin;
+                top = margin;
+            }
+            element.style.left = `${Math.round(clamp(left, margin, renderState.viewportWidth - width - margin))}px`;
+            element.style.top = `${Math.round(clamp(top, margin, renderState.viewportHeight - height - margin))}px`;
+        }
+        function placeTopRight(element) {
+            const width = element.offsetWidth;
+            const height = element.offsetHeight;
+            let left;
+            let top;
+            if (rightGutter >= width) {
+                left = worldRight + margin;
+                top = worldTop;
+            }
+            else if (topGutter >= height) {
+                left = worldRight - width;
+                top = worldTop - height - margin;
+            }
+            else {
+                left = renderState.viewportWidth - width - margin;
+                top = margin;
+            }
+            element.style.left = `${Math.round(clamp(left, margin, renderState.viewportWidth - width - margin))}px`;
+            element.style.top = `${Math.round(clamp(top, margin, renderState.viewportHeight - height - margin))}px`;
+        }
+        function placeBottomRight(element) {
+            const width = element.offsetWidth;
+            const height = element.offsetHeight;
+            let left;
+            let top;
+            if (rightGutter >= width) {
+                left = worldRight + margin;
+                top = worldBottom - height;
+            }
+            else if (bottomGutter >= height) {
+                left = worldRight - width;
+                top = worldBottom + margin;
+            }
+            else {
+                left = renderState.viewportWidth - width - margin;
+                top = renderState.viewportHeight - height - margin;
+            }
+            element.style.left = `${Math.round(clamp(left, margin, renderState.viewportWidth - width - margin))}px`;
+            element.style.top = `${Math.round(clamp(top, margin, renderState.viewportHeight - height - margin))}px`;
+        }
+        function placeBottomLeft(element) {
+            const width = element.offsetWidth;
+            const height = element.offsetHeight;
+            let left;
+            let top;
+            if (leftGutter >= width) {
+                left = worldLeft - width - margin;
+                top = worldBottom - height;
+            }
+            else if (bottomGutter >= height) {
+                left = worldLeft;
+                top = worldBottom + margin;
+            }
+            else {
+                left = margin;
+                top = renderState.viewportHeight - height - margin;
+            }
+            element.style.left = `${Math.round(clamp(left, margin, renderState.viewportWidth - width - margin))}px`;
+            element.style.top = `${Math.round(clamp(top, margin, renderState.viewportHeight - height - margin))}px`;
+        }
+        infoDiv.style.bottom = 'auto';
+        infoDiv.style.right = 'auto';
+        githubLink.style.bottom = 'auto';
+        githubLink.style.right = 'auto';
+        placeTopLeft(testButtons);
+        placeTopRight(bottomControls);
+        placeBottomRight(zoomControls);
+        placeBottomLeft(infoDiv);
+        const githubGap = 6;
+        const githubLeft = infoDiv.offsetLeft;
+        const githubTop = clamp(infoDiv.offsetTop - githubLink.offsetHeight - githubGap, margin, renderState.viewportHeight - githubLink.offsetHeight - margin);
+        githubLink.style.left = `${Math.round(githubLeft)}px`;
+        githubLink.style.top = `${Math.round(githubTop)}px`;
     }
     function resizeCanvas() {
         renderState.dpr = window.devicePixelRatio || 1;
@@ -1462,6 +1582,7 @@
             // 船種Dの独立砲塔設定
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180; // 船種C150の1.2倍
+                weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2; // 独立砲塔は重量2
             });
             playerFleet.push(destroyer);
@@ -1472,6 +1593,7 @@
             // 船種Dの独立砲塔設定
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180; // 船種C150の1.2倍
+                weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2; // 独立砲塔は重量2
             });
             playerFleet.push(destroyer);
@@ -1482,6 +1604,7 @@
             // 船種Dの独立砲塔設定
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180; // 船種C150の1.2倍
+                weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2; // 独立砲塔は重量2
             });
             playerFleet.push(destroyer);
@@ -1509,6 +1632,7 @@
             const destroyer = new Starship(x, y, 2, 2, '#ffccdd', 'large');
             destroyer.weapons.forEach(weapon => {
                 weapon.detectionRange = 180; // 船種C150の1.2倍
+                weapon.maxRange = 270; // 独立砲塔Aの設計射程
                 weapon.mass = 2; // 独立砲塔は重量2
             });
             enemies.push(destroyer);
@@ -1527,6 +1651,7 @@
                 const destroyer = new Starship(x, enemyStartY, 2, 2, '#ffccdd', 'large');
                 destroyer.weapons.forEach(weapon => {
                     weapon.detectionRange = 180; // 船種C150の1.2倍
+                    weapon.maxRange = 270; // 独立砲塔Aの設計射程
                     weapon.mass = 2; // 独立砲塔は重量2
                 });
                 enemies.push(destroyer);
@@ -1556,6 +1681,7 @@
                 const destroyer = new Starship(x, y, 2, 2, '#ffccdd', 'large');
                 destroyer.weapons.forEach(weapon => {
                     weapon.detectionRange = 180; // 船種C150の1.2倍
+                    weapon.maxRange = 270; // 独立砲塔Aの設計射程
                     weapon.mass = 2; // 独立砲塔は重量2
                 });
                 enemies.push(destroyer);
@@ -1580,6 +1706,7 @@
                 const destroyer = new Starship(x, y, 2, 2, '#99ddff', 'large');
                 destroyer.weapons.forEach(weapon => {
                     weapon.detectionRange = 180;
+                    weapon.maxRange = 270; // 独立砲塔Aの設計射程
                     weapon.mass = 2;
                 });
                 playerFleet.push(destroyer);
@@ -1612,6 +1739,7 @@
                 const destroyer = new Starship(x, y, 2, 2, '#ffccdd', 'large');
                 destroyer.weapons.forEach(weapon => {
                     weapon.detectionRange = 180;
+                    weapon.maxRange = 270; // 独立砲塔Aの設計射程
                     weapon.mass = 2;
                 });
                 enemies.push(destroyer);
@@ -1644,6 +1772,7 @@
                 const destroyer = new Starship(x, y, 2, 2, '#ffd24d', 'large');
                 destroyer.weapons.forEach(weapon => {
                     weapon.detectionRange = 180;
+                    weapon.maxRange = 270; // 独立砲塔Aの設計射程
                     weapon.mass = 2;
                 });
                 teamC.push(destroyer);
@@ -1685,6 +1814,7 @@
                 const destroyer = new Starship(centerX, centerY + 90, 2, 2, '#99ddff', 'large');
                 destroyer.weapons.forEach(weapon => {
                     weapon.detectionRange = 180;
+                    weapon.maxRange = 270; // 独立砲塔Aの設計射程
                     weapon.mass = 2;
                 });
                 playerFleet.push(destroyer);
@@ -1710,6 +1840,7 @@
                 const destroyer = new Starship(centerX, centerY, 2, 2, '#ffccdd', 'large');
                 destroyer.weapons.forEach(weapon => {
                     weapon.detectionRange = 180;
+                    weapon.maxRange = 270; // 独立砲塔Aの設計射程
                     weapon.mass = 2;
                 });
                 enemies.push(destroyer);
@@ -1754,6 +1885,7 @@
                 const destroyer = new Starship(x, y, 2, 2, '#99ddff', 'large');
                 destroyer.weapons.forEach(weapon => {
                     weapon.detectionRange = 180;
+                    weapon.maxRange = 270; // 独立砲塔Aの設計射程
                     weapon.mass = 2;
                 });
                 playerFleet.push(destroyer);
@@ -1786,6 +1918,7 @@
                 const destroyer = new Starship(x, y, 2, 2, '#ffccdd', 'large');
                 destroyer.weapons.forEach(weapon => {
                     weapon.detectionRange = 180;
+                    weapon.maxRange = 270; // 独立砲塔Aの設計射程
                     weapon.mass = 2;
                 });
                 enemies.push(destroyer);
@@ -1818,6 +1951,7 @@
                 const destroyer = new Starship(x, y, 2, 2, '#ffd24d', 'large');
                 destroyer.weapons.forEach(weapon => {
                     weapon.detectionRange = 180;
+                    weapon.maxRange = 270; // 独立砲塔Aの設計射程
                     weapon.mass = 2;
                 });
                 teamC.push(destroyer);

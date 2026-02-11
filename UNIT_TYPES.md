@@ -44,7 +44,7 @@
 
 ### 標準射撃ユニット（Standard Weapon System）
 - 重さ: 1
-- HP: 100
+- HP: 150
 - 射撃間隔: 60
 - 索敵範囲: 150
 - 弾速: 5
@@ -53,6 +53,7 @@
 - 旋回速度: 0.1
 
 ### 独立砲塔射撃ユニットA（Independent Turret Weapon System A）
+注: 専用クラスは未実装。`WeaponUnit` をベースにシーン初期化時に `mass=2` / `detectionRange=180` を上書きして運用。
 - 重さ: 2
 - HP: 150
 - 射撃間隔: 60

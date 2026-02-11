@@ -15,7 +15,7 @@
 
 ## 🎬 ゲーム画面
 
-![Starship Sim Screenshot](screenshot20260204.png)
+![Starship Sim Screenshot](screenshot20260211.png)
 
 *3チームの艦隊が同時に自動戦闘を繰り広げる様子。右上でテストシーンを選択、右下でビーコン操作チームを選択し、画面をクリックしてビーコンを配置することでシミュレーションを制御します。*
 
@@ -101,6 +101,11 @@ TypeScript 型チェック:
 ```bash
 npm run typecheck
 ```
+
+### 運用ルール（タイトル固定）
+
+- HTML の `<title>` は `starship-sim : Starship Simulation` を固定値とする
+- `index-src.html` / `index.html` のタイトルは、明示的な合意がない限り変更しない
 
 ---
 

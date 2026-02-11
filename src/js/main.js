@@ -5,8 +5,10 @@ const ZOOM_STEPS = [0.4, 0.5, 0.625, 0.75, 0.875, 1, 1.25, 1.5, 1.75, 2, 3, 4];
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const infoDiv = document.getElementById('info');
+const githubLink = document.getElementById('github-link');
 const testButtons = document.getElementById('test-buttons');
 const bottomControls = document.getElementById('bottom-controls');
+const zoomControls = document.getElementById('zoom-controls');
 const zoomOutButton = document.getElementById('zoom-out');
 const zoomInButton = document.getElementById('zoom-in');
 const zoomValueLabel = document.getElementById('zoom-value');
@@ -53,27 +55,109 @@ function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
 }
 function layoutUi() {
+    const margin = 8;
     const worldPixelSize = WORLD_SIZE * renderState.worldScale;
     const worldLeft = renderState.offsetX;
     const worldTop = renderState.offsetY;
     const worldRight = worldLeft + worldPixelSize;
     const worldBottom = worldTop + worldPixelSize;
-    const margin = 8;
+    const leftGutter = worldLeft - margin;
     const rightGutter = renderState.viewportWidth - worldRight - margin;
     const topGutter = worldTop - margin;
     const bottomGutter = renderState.viewportHeight - worldBottom - margin;
-    const testWidth = testButtons.offsetWidth;
-    const testHeight = testButtons.offsetHeight;
-    const testLeft = clamp(renderState.viewportWidth - testWidth - margin, margin, renderState.viewportWidth - testWidth - margin);
-    const testTop = margin;
-    testButtons.style.left = `${Math.round(testLeft)}px`;
-    testButtons.style.top = `${Math.round(testTop)}px`;
-    const bottomWidth = bottomControls.offsetWidth;
-    const bottomHeight = bottomControls.offsetHeight;
-    const bottomLeft = clamp(renderState.viewportWidth - bottomWidth - margin, margin, renderState.viewportWidth - bottomWidth - margin);
-    const bottomTop = clamp(renderState.viewportHeight - bottomHeight - margin, margin, renderState.viewportHeight - bottomHeight - margin);
-    bottomControls.style.left = `${Math.round(bottomLeft)}px`;
-    bottomControls.style.top = `${Math.round(bottomTop)}px`;
+    function placeTopLeft(element) {
+        const width = element.offsetWidth;
+        const height = element.offsetHeight;
+        let left;
+        let top;
+        if (leftGutter >= width) {
+            left = worldLeft - width - margin;
+            top = worldTop;
+        }
+        else if (topGutter >= height) {
+            left = worldLeft;
+            top = worldTop - height - margin;
+        }
+        else {
+            left = margin;
+            top = margin;
+        }
+        element.style.left = `${Math.round(clamp(left, margin, renderState.viewportWidth - width - margin))}px`;
+        element.style.top = `${Math.round(clamp(top, margin, renderState.viewportHeight - height - margin))}px`;
+    }
+    function placeTopRight(element) {
+        const width = element.offsetWidth;
+        const height = element.offsetHeight;
+        let left;
+        let top;
+        if (rightGutter >= width) {
+            left = worldRight + margin;
+            top = worldTop;
+        }
+        else if (topGutter >= height) {
+            left = worldRight - width;
+            top = worldTop - height - margin;
+        }
+        else {
+            left = renderState.viewportWidth - width - margin;
+            top = margin;
+        }
+        element.style.left = `${Math.round(clamp(left, margin, renderState.viewportWidth - width - margin))}px`;
+        element.style.top = `${Math.round(clamp(top, margin, renderState.viewportHeight - height - margin))}px`;
+    }
+    function placeBottomRight(element) {
+        const width = element.offsetWidth;
+        const height = element.offsetHeight;
+        let left;
+        let top;
+        if (rightGutter >= width) {
+            left = worldRight + margin;
+            top = worldBottom - height;
+        }
+        else if (bottomGutter >= height) {
+            left = worldRight - width;
+            top = worldBottom + margin;
+        }
+        else {
+            left = renderState.viewportWidth - width - margin;
+            top = renderState.viewportHeight - height - margin;
+        }
+        element.style.left = `${Math.round(clamp(left, margin, renderState.viewportWidth - width - margin))}px`;
+        element.style.top = `${Math.round(clamp(top, margin, renderState.viewportHeight - height - margin))}px`;
+    }
+    function placeBottomLeft(element) {
+        const width = element.offsetWidth;
+        const height = element.offsetHeight;
+        let left;
+        let top;
+        if (leftGutter >= width) {
+            left = worldLeft - width - margin;
+            top = worldBottom - height;
+        }
+        else if (bottomGutter >= height) {
+            left = worldLeft;
+            top = worldBottom + margin;
+        }
+        else {
+            left = margin;
+            top = renderState.viewportHeight - height - margin;
+        }
+        element.style.left = `${Math.round(clamp(left, margin, renderState.viewportWidth - width - margin))}px`;
+        element.style.top = `${Math.round(clamp(top, margin, renderState.viewportHeight - height - margin))}px`;
+    }
+    infoDiv.style.bottom = 'auto';
+    infoDiv.style.right = 'auto';
+    githubLink.style.bottom = 'auto';
+    githubLink.style.right = 'auto';
+    placeTopLeft(testButtons);
+    placeTopRight(bottomControls);
+    placeBottomRight(zoomControls);
+    placeBottomLeft(infoDiv);
+    const githubGap = 6;
+    const githubLeft = infoDiv.offsetLeft;
+    const githubTop = clamp(infoDiv.offsetTop - githubLink.offsetHeight - githubGap, margin, renderState.viewportHeight - githubLink.offsetHeight - margin);
+    githubLink.style.left = `${Math.round(githubLeft)}px`;
+    githubLink.style.top = `${Math.round(githubTop)}px`;
 }
 function resizeCanvas() {
     renderState.dpr = window.devicePixelRatio || 1;
