@@ -45,6 +45,31 @@
 [ ] シーン定義のバリデーション層を追加する（未知unit/欠損/負数など）
 [ ] `@ts-nocheck` を段階的に撤去し、まず `scenes.ts` の型定義を導入する
 
+### catalog拡張の検討
+
+[ ] `catalog.ts` の値が実装へ期待通り反映されているか、項目ごとの参照先マップを作成する（仕様確認用）
+
+[ ] `SIMULATION_SETTINGS`（仮）を追加し、コンポーネント値以外の調整値を集約する
+  - 例: `edgeRepulsionMargin`, `edgeRepulsionStrength`, `friction`, `maxSpeed`
+  - 例: `edgeTargetCorrectionMargin`, `edgeTargetCorrectionFactor`, `attackWrecksDefault`
+
+[x] `projectiles` 系設定を `catalog.ts` へ寄せるか検討する
+  - 結論（現時点）: 優先度低のため対象外。バランス調整の主軸ではないため現状維持
+  - 例: `bulletLife`, `bulletSize`, `outOfBoundsPadding`
+
+[x] `effects` 系設定を `catalog.ts` へ寄せるか検討する
+  - 結論（現時点）: 優先度低のため対象外。演出定数はバランス設定と分離して扱う
+  - 例: 爆発パーティクル数、寿命、色セット
+
+[x] `ui/debug` 系設定の集約可否を検討する
+  - 結論（現時点）: 優先度低のため対象外。必要になれば将来 `VISUAL_SETTINGS` などへ分離検討
+  - 例: 索敵円の色・太さ、残骸破線スタイル
+
+[X] `COMPONENT_CATALOG` と `SIMULATION_SETTINGS` を分離する設計方針を検討する
+  - 目的: `catalog.ts` 肥大化防止、責務の明確化
+  - 方針: 「頻繁に調整する値」から段階的に移行（まず `physics` と `ai`）
+  - 一旦スコープ外
+
 ## 今後の拡張予定
 
 ### シミュレーション機能の強化

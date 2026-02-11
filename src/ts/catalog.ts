@@ -50,3 +50,18 @@ const COMPONENT_CATALOG = {
         }
     }
 };
+
+const SIMULATION_SETTINGS = {
+    physics: {
+        maxSpeed: 2,
+        friction: 0.98,
+        edgeRepulsionMargin: 50,
+        edgeRepulsionStrength: 0.05
+    },
+    ai: {
+        edgeTargetCorrectionMargin: 100,
+        edgeTargetCorrectionFactor: 0.6,
+        attackWrecksDefault: false,
+        beaconRangeDefault: 160
+    }
+};
