@@ -3,7 +3,7 @@
 // 弾丸クラス
 // ========================================
 class Bullet {
-    constructor(x, y, vx, vy, originX, originY, damage, maxRange, color = TEAM_COLORS.A) {
+    constructor(x, y, vx, vy, originX, originY, damage, maxRange, color = '#ffffff') {
         this.x = x;
         this.y = y;
         this.vx = vx;

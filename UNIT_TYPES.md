@@ -1,74 +1,114 @@
 # Unit Catalog / ユニット一覧
 
-このドキュメントは、シミュレーションで使う「基礎ユニット（コンポーネント）」を一覧化したものです。
-船体・推進・射撃ユニット・レーダーなど、艦種に共通するパーツをここに集約します。
+このドキュメントは、シミュレーションで使う基礎コンポーネントを一覧化したものです。
+
+実装参照:
+- `src/ts/catalog.ts`
+- `src/ts/components.ts`
+- `src/ts/starship.ts`
 
 ## 船体（Hull）
 
-### 船体A（HullA / Standard Hull）
-- サイズ: 12
-- HP: 100
-- 重さ: 1
-- 形状: 三角形
+### HullA
+- class: `HullA`
+- mass: 1
+- hp/maxHp: 100/100
+- size: 12
 
-### 船体B（HullB / Large Hull）
-- サイズ: 28
-- HP: 300
-- 重さ: 3
-- 形状: 縦長カプセル型
+### HullB
+- class: `HullB`
+- mass: 3
+- hp/maxHp: 300/300
+- size: 28
 
-### 船体C（HullC / Light Cruiser Hull）
-- サイズ: 47
-- HP: 500
-- 重さ: 5
-- 形状: 縦長カプセル型
+### HullC
+- class: `HullC`
+- mass: 5
+- hp/maxHp: 500/500
+- size: 47
 
 ## 推進ユニット（Thruster）
 
-### 標準推進エンジン（Standard Thruster）
-- 推進力: 0.15
-- 旋回速度: 0.1
-- 重さ: 1
+### ThrusterA
+- class: `ThrusterEngine`
+- mass: 1
+- thrust: 0.15
+- rotationSpeed: 0.1
 
 ## レーダー（Radar）
 
-### レーダーA (Radar A)
-- 索敵範囲ボーナス: +30
-- 重さ: 1
+### RadarA
+- class: `RadarA`
+- mass: 0
+- detectionRange: 120
 
-### レーダーB (Radar B)
-- 索敵範囲ボーナス: +45
-- 重さ: 2
+### RadarB
+- class: `RadarB`
+- mass: 1
+- detectionRange: 160
 
-## 射撃ユニット（Weapon）
+### RadarC
+- class: `RadarC`
+- mass: 2
+- detectionRange: 200
 
-### 標準射撃ユニット（Standard Weapon System）
-- 重さ: 1
-- HP: 150
-- 射撃間隔: 60
-- 索敵範囲: 150
-- 弾速: 5
-- ダメージ: 10
-- 最大射程: 225
-- 旋回速度: 0.1
+注記:
+- `detectionRange` は索敵判定・射撃判定・索敵円描画に反映済み
 
-### 独立砲塔射撃ユニットA（Independent Turret Weapon System A）
-注: 実装クラスは `IndependentTurretA`。一部シーンでは初期化時に `mass=2` / `detectionRange=180` を上書きして運用。
-- 重さ: 2
-- HP: 150
-- 射撃間隔: 60
-- 索敵範囲: 180
-- 弾速: 5
-- ダメージ: 10
-- 最大射程: 270
-- 旋回速度: 0.1
+## 砲塔（Turret）
 
-### 独立砲塔射撃ユニットB（Independent Turret Weapon System B）
-- 重さ: 4
-- HP: 200
-- 射撃間隔: 90
-- 索敵範囲: 225
-- 弾速: 5
-- ダメージ: 20
-- 最大射程: 338
-- 旋回速度: 0.1
+### TurretA
+- class: `IndependentTurretA`
+- mass: 1
+- hp/maxHp: 100/100
+- fireInterval: 60
+- bulletSpeed: 5
+- bulletDamage: 10
+- maxRange: 160
+- rotationSpeed: 0
+
+### TurretB
+- class: `IndependentTurretB`
+- mass: 2
+- hp/maxHp: 150/150
+- fireInterval: 60
+- bulletSpeed: 5
+- bulletDamage: 10
+- maxRange: 200
+- rotationSpeed: 0.1
+
+### TurretC
+- class: `IndependentTurretC`
+- mass: 4
+- hp/maxHp: 200/200
+- fireInterval: 90
+- bulletSpeed: 5
+- bulletDamage: 20
+- maxRange: 260
+- rotationSpeed: 0.1
+
+注記:
+- 砲塔の `canFire()` は砲塔固有の索敵値ではなく、艦のレーダー距離（`getDetectionRange()`）を使う
+
+## 艦プリセット（SHIP_PRESETS）
+
+`src/ts/starship.ts` の `SHIP_PRESETS`:
+
+### corvette
+- hullType: `hullA`
+- weaponCount: 1
+- engineCount: 1
+- weaponClass: 未指定（`Starship` デフォルト `IndependentTurretB`）
+
+### destroyer
+- hullType: `hullB`
+- weaponCount: 2
+- engineCount: 2
+- weaponClass: `turretB`
+- weaponMaxRange: 270（上書き）
+
+### lightCruiser
+- hullType: `hullC`
+- weaponCount: 3
+- engineCount: 3
+- weaponClass: `turretC`

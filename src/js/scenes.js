@@ -81,176 +81,174 @@ function buildMassD1C8Groups(side) {
     }
     return groups;
 }
-function buildSceneDefs() {
-    return {
-        weapon1: {
-            mouseControlTeam: 'A',
-            teams: {
-                A: [{ kind: 'single', unit: 'corvette', x: WORLD_SIZE / 2, y: WORLD_SIZE / 2 }],
-                B: [],
-                C: []
-            }
-        },
-        weapon4: {
-            mouseControlTeam: 'A',
-            teams: {
-                A: [{
-                        kind: 'grid',
-                        unit: 'corvette',
-                        startX: WORLD_SIZE / 2 - 60,
-                        startY: WORLD_SIZE / 2 - 60,
-                        rows: 2,
-                        cols: 2,
-                        stepX: 120,
-                        stepY: 120
-                    }],
-                B: [],
-                C: []
-            }
-        },
-        destroyer1: {
-            mouseControlTeam: 'A',
-            teams: {
-                A: [{ kind: 'single', unit: 'destroyer', x: WORLD_SIZE / 2, y: WORLD_SIZE / 2 }],
-                B: [],
-                C: []
-            }
-        },
-        destroyer1v6: {
-            mouseControlTeam: 'A',
-            teams: {
-                A: [{ kind: 'single', unit: 'destroyer', x: WORLD_SIZE / 2, y: WORLD_SIZE / 2 }],
-                B: [{
-                        kind: 'grid',
-                        unit: 'corvette',
-                        startX: WORLD_SIZE / 2 - 80,
-                        startY: 80,
-                        rows: 2,
-                        cols: 2,
-                        stepX: 120,
-                        stepY: 120
-                    }],
-                C: []
-            }
-        },
-        destroyervsdestroyer: {
-            mouseControlTeam: 'A',
-            teams: {
-                A: [{ kind: 'single', unit: 'destroyer', x: WORLD_SIZE / 2, y: WORLD_SIZE - 80 }],
-                B: [{ kind: 'single', unit: 'destroyer', x: WORLD_SIZE / 2, y: 80 }],
-                C: []
-            }
-        },
-        lightcruiser1vsdestroyer2: {
-            mouseControlTeam: 'A',
-            teams: {
-                A: [{ kind: 'single', unit: 'lightCruiser', x: WORLD_SIZE / 2, y: WORLD_SIZE - 120 }],
-                B: [{
-                        kind: 'line',
-                        unit: 'destroyer',
-                        startX: WORLD_SIZE / 2 - 60,
-                        startY: 80,
-                        count: 2,
-                        stepX: 120,
-                        stepY: 0
-                    }],
-                C: []
-            }
-        },
-        corvette8vsdestroyer2: {
-            mouseControlTeam: 'A',
-            teams: {
-                A: [{
-                        kind: 'grid',
-                        unit: 'corvette',
-                        startX: WORLD_SIZE / 2 - 60,
-                        startY: WORLD_SIZE - 100,
-                        rows: 2,
-                        cols: 4,
-                        stepX: 40,
-                        stepY: 40
-                    }],
-                B: [{
-                        kind: 'line',
-                        unit: 'destroyer',
-                        startX: WORLD_SIZE / 2 - 60,
-                        startY: 80,
-                        count: 2,
-                        stepX: 120,
-                        stepY: 0
-                    }],
-                C: []
-            }
-        },
-        mixed1c8vsmixed1c8: {
-            mouseControlTeam: 'A',
-            teams: {
-                A: [
-                    { kind: 'single', unit: 'lightCruiser', x: WORLD_SIZE / 2, y: WORLD_SIZE - 80 },
-                    { kind: 'line', unit: 'destroyer', startX: WORLD_SIZE / 2 - 60, startY: WORLD_SIZE - 180, count: 2, stepX: 80, stepY: 0 },
-                    { kind: 'grid', unit: 'corvette', startX: WORLD_SIZE / 2 - 60, startY: WORLD_SIZE - 260, rows: 2, cols: 4, stepX: 40, stepY: 40 }
-                ],
-                B: [
-                    { kind: 'single', unit: 'lightCruiser', x: 100, y: 100 },
-                    { kind: 'line', unit: 'destroyer', startX: 80, startY: 180, count: 2, stepX: 0, stepY: 80 },
-                    { kind: 'grid', unit: 'corvette', startX: 150, startY: 180, rows: 2, cols: 4, stepX: 40, stepY: 40 }
-                ],
-                C: [
-                    { kind: 'single', unit: 'lightCruiser', x: WORLD_SIZE - 100, y: 100 },
-                    { kind: 'line', unit: 'destroyer', startX: WORLD_SIZE - 80, startY: 180, count: 2, stepX: 0, stepY: 80 },
-                    { kind: 'grid', unit: 'corvette', startX: WORLD_SIZE - 250, startY: 180, rows: 2, cols: 4, stepX: 40, stepY: 40 }
-                ]
-            }
-        },
-        mass_d1c8: {
-            mouseControlTeam: 'A',
-            teams: {
-                A: [
-                    { kind: 'single', unit: 'lightCruiser', x: WORLD_SIZE / 2, y: WORLD_SIZE - 100 },
-                    ...buildMassD1C8Groups('bottom')
-                ],
-                B: [
-                    { kind: 'single', unit: 'lightCruiser', x: WORLD_SIZE / 2, y: 100 },
-                    ...buildMassD1C8Groups('top')
-                ],
-                C: []
-            }
-        },
-        threeway_l1d4c32: {
-            mouseControlTeam: 'A',
-            teams: {
-                A: [
-                    { kind: 'single', unit: 'lightCruiser', x: WORLD_SIZE / 2 + 100, y: WORLD_SIZE - 100 },
-                    { kind: 'line', unit: 'destroyer', startX: WORLD_SIZE / 2 - 50, startY: WORLD_SIZE - 200, count: 4, stepX: 60, stepY: 0 },
-                    { kind: 'grid', unit: 'corvette', startX: WORLD_SIZE / 2 - 20, startY: WORLD_SIZE - 280, rows: 4, cols: 4, stepX: 40, stepY: 40 }
-                ],
-                B: [
-                    { kind: 'single', unit: 'lightCruiser', x: 70, y: 80 },
-                    { kind: 'line', unit: 'destroyer', startX: 55, startY: 140, count: 4, stepX: 0, stepY: 60 },
-                    { kind: 'grid', unit: 'corvette', startX: 105, startY: 140, rows: 4, cols: 4, stepX: 40, stepY: 40 }
-                ],
-                C: [
-                    { kind: 'single', unit: 'lightCruiser', x: WORLD_SIZE - 70, y: 80 },
-                    { kind: 'line', unit: 'destroyer', startX: WORLD_SIZE - 55, startY: 140, count: 4, stepX: 0, stepY: 60 },
-                    { kind: 'grid', unit: 'corvette', startX: WORLD_SIZE - 205, startY: 140, rows: 4, cols: 4, stepX: 40, stepY: 40 }
-                ]
-            }
-        },
-        default: {
-            mouseControlTeam: 'A',
-            teams: {
-                A: [],
-                B: [
-                    { kind: 'single', unit: 'corvette', x: 100, y: 100 },
-                    { kind: 'single', unit: 'corvette', x: WORLD_SIZE - 100, y: 100 },
-                    { kind: 'single', unit: 'corvette', x: 100, y: WORLD_SIZE - 100 },
-                    { kind: 'single', unit: 'corvette', x: WORLD_SIZE - 100, y: WORLD_SIZE - 100 }
-                ],
-                C: []
-            }
+const SCENE_DEFS = {
+    weapon1: {
+        initialMouseControlTeam: 'A',
+        teams: {
+            A: [{ kind: 'single', unit: 'corvette', x: WORLD_SIZE / 2, y: WORLD_SIZE / 2 }],
+            B: [],
+            C: []
         }
-    };
-}
+    },
+    weapon4: {
+        initialMouseControlTeam: 'A',
+        teams: {
+            A: [{
+                    kind: 'grid',
+                    unit: 'corvette',
+                    startX: WORLD_SIZE / 2 - 60,
+                    startY: WORLD_SIZE / 2 - 60,
+                    rows: 2,
+                    cols: 2,
+                    stepX: 120,
+                    stepY: 120
+                }],
+            B: [],
+            C: []
+        }
+    },
+    destroyer1: {
+        initialMouseControlTeam: 'A',
+        teams: {
+            A: [{ kind: 'single', unit: 'destroyer', x: WORLD_SIZE / 2, y: WORLD_SIZE / 2 }],
+            B: [],
+            C: []
+        }
+    },
+    destroyer1v6: {
+        initialMouseControlTeam: 'A',
+        teams: {
+            A: [{ kind: 'single', unit: 'destroyer', x: WORLD_SIZE / 2, y: WORLD_SIZE / 2 }],
+            B: [{
+                    kind: 'grid',
+                    unit: 'corvette',
+                    startX: WORLD_SIZE / 2 - 80,
+                    startY: 80,
+                    rows: 2,
+                    cols: 2,
+                    stepX: 120,
+                    stepY: 120
+                }],
+            C: []
+        }
+    },
+    destroyervsdestroyer: {
+        initialMouseControlTeam: 'A',
+        teams: {
+            A: [{ kind: 'single', unit: 'destroyer', x: WORLD_SIZE / 2, y: WORLD_SIZE - 80 }],
+            B: [{ kind: 'single', unit: 'destroyer', x: WORLD_SIZE / 2, y: 80 }],
+            C: []
+        }
+    },
+    lightcruiser1vsdestroyer2: {
+        initialMouseControlTeam: 'A',
+        teams: {
+            A: [{ kind: 'single', unit: 'lightCruiser', x: WORLD_SIZE / 2, y: WORLD_SIZE - 120 }],
+            B: [{
+                    kind: 'line',
+                    unit: 'destroyer',
+                    startX: WORLD_SIZE / 2 - 60,
+                    startY: 80,
+                    count: 2,
+                    stepX: 120,
+                    stepY: 0
+                }],
+            C: []
+        }
+    },
+    corvette8vsdestroyer2: {
+        initialMouseControlTeam: 'A',
+        teams: {
+            A: [{
+                    kind: 'grid',
+                    unit: 'corvette',
+                    startX: WORLD_SIZE / 2 - 60,
+                    startY: WORLD_SIZE - 100,
+                    rows: 2,
+                    cols: 4,
+                    stepX: 40,
+                    stepY: 40
+                }],
+            B: [{
+                    kind: 'line',
+                    unit: 'destroyer',
+                    startX: WORLD_SIZE / 2 - 60,
+                    startY: 80,
+                    count: 2,
+                    stepX: 120,
+                    stepY: 0
+                }],
+            C: []
+        }
+    },
+    mixed1c8vsmixed1c8: {
+        initialMouseControlTeam: 'A',
+        teams: {
+            A: [
+                { kind: 'single', unit: 'lightCruiser', x: WORLD_SIZE / 2, y: WORLD_SIZE - 80 },
+                { kind: 'line', unit: 'destroyer', startX: WORLD_SIZE / 2 - 60, startY: WORLD_SIZE - 180, count: 2, stepX: 80, stepY: 0 },
+                { kind: 'grid', unit: 'corvette', startX: WORLD_SIZE / 2 - 60, startY: WORLD_SIZE - 260, rows: 2, cols: 4, stepX: 40, stepY: 40 }
+            ],
+            B: [
+                { kind: 'single', unit: 'lightCruiser', x: 100, y: 100 },
+                { kind: 'line', unit: 'destroyer', startX: 80, startY: 180, count: 2, stepX: 0, stepY: 80 },
+                { kind: 'grid', unit: 'corvette', startX: 150, startY: 180, rows: 2, cols: 4, stepX: 40, stepY: 40 }
+            ],
+            C: [
+                { kind: 'single', unit: 'lightCruiser', x: WORLD_SIZE - 100, y: 100 },
+                { kind: 'line', unit: 'destroyer', startX: WORLD_SIZE - 80, startY: 180, count: 2, stepX: 0, stepY: 80 },
+                { kind: 'grid', unit: 'corvette', startX: WORLD_SIZE - 250, startY: 180, rows: 2, cols: 4, stepX: 40, stepY: 40 }
+            ]
+        }
+    },
+    mass_d1c8: {
+        initialMouseControlTeam: 'A',
+        teams: {
+            A: [
+                { kind: 'single', unit: 'lightCruiser', x: WORLD_SIZE / 2, y: WORLD_SIZE - 100 },
+                ...buildMassD1C8Groups('bottom')
+            ],
+            B: [
+                { kind: 'single', unit: 'lightCruiser', x: WORLD_SIZE / 2, y: 100 },
+                ...buildMassD1C8Groups('top')
+            ],
+            C: []
+        }
+    },
+    threeway_l1d4c32: {
+        initialMouseControlTeam: 'A',
+        teams: {
+            A: [
+                { kind: 'single', unit: 'lightCruiser', x: WORLD_SIZE / 2 + 100, y: WORLD_SIZE - 100 },
+                { kind: 'line', unit: 'destroyer', startX: WORLD_SIZE / 2 - 50, startY: WORLD_SIZE - 200, count: 4, stepX: 60, stepY: 0 },
+                { kind: 'grid', unit: 'corvette', startX: WORLD_SIZE / 2 - 20, startY: WORLD_SIZE - 280, rows: 4, cols: 4, stepX: 40, stepY: 40 }
+            ],
+            B: [
+                { kind: 'single', unit: 'lightCruiser', x: 70, y: 80 },
+                { kind: 'line', unit: 'destroyer', startX: 55, startY: 140, count: 4, stepX: 0, stepY: 60 },
+                { kind: 'grid', unit: 'corvette', startX: 105, startY: 140, rows: 4, cols: 4, stepX: 40, stepY: 40 }
+            ],
+            C: [
+                { kind: 'single', unit: 'lightCruiser', x: WORLD_SIZE - 70, y: 80 },
+                { kind: 'line', unit: 'destroyer', startX: WORLD_SIZE - 55, startY: 140, count: 4, stepX: 0, stepY: 60 },
+                { kind: 'grid', unit: 'corvette', startX: WORLD_SIZE - 205, startY: 140, rows: 4, cols: 4, stepX: 40, stepY: 40 }
+            ]
+        }
+    },
+    default: {
+        initialMouseControlTeam: 'A',
+        teams: {
+            A: [],
+            B: [
+                { kind: 'single', unit: 'corvette', x: 100, y: 100 },
+                { kind: 'single', unit: 'corvette', x: WORLD_SIZE - 100, y: 100 },
+                { kind: 'single', unit: 'corvette', x: 100, y: WORLD_SIZE - 100 },
+                { kind: 'single', unit: 'corvette', x: WORLD_SIZE - 100, y: WORLD_SIZE - 100 }
+            ],
+            C: []
+        }
+    }
+};
 // ゲーム初期化関数
 function initializeGame(config = 'destroyer1') {
     // 統計リセット
@@ -263,9 +261,8 @@ function initializeGame(config = 'destroyer1') {
     for (const teamId of TEAM_IDS) {
         setTeamShips(teamId, []);
     }
-    const sceneDefs = buildSceneDefs();
-    const scene = sceneDefs[config] || sceneDefs.default;
-    mouseControlTeam = scene.mouseControlTeam || 'A';
+    const scene = SCENE_DEFS[config] || SCENE_DEFS.default;
+    mouseControlTeam = scene.initialMouseControlTeam || 'A';
     for (const teamId of TEAM_IDS) {
         const formations = scene.teams[teamId] || [];
         formations.forEach((formation) => spawnFormation(teamId, formation));
