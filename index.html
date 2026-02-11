@@ -175,8 +175,8 @@
             }
             #zoom-controls {
                 position: absolute;
-                top: 8px;
-                left: 8px;
+                right: 8px;
+                bottom: 8px;
                 width: fit-content;
                 max-width: calc(100vw - 16px);
                 padding: 5px 8px;
@@ -203,6 +203,7 @@
             #zoom-out, #zoom-in {
                 -webkit-appearance: none;
                 appearance: none;
+                touch-action: manipulation;
                 width: 38px;
                 height: 38px;
                 padding: 0;
@@ -670,6 +671,7 @@
             updateZoomControls();
         }
         recomputeRenderState();
+        layoutUi();
         requestAnimationFrame(layoutUi);
     }
     resizeCanvas();
@@ -836,20 +838,14 @@
         recomputeRenderState();
         layoutUi();
     }
-    zoomOutButton.addEventListener('click', () => {
-        shiftZoom(-1);
-    });
-    zoomInButton.addEventListener('click', () => {
-        shiftZoom(1);
-    });
-    zoomOutButton.addEventListener('touchstart', (e) => {
+    zoomOutButton.addEventListener('pointerdown', (e) => {
         e.preventDefault();
         shiftZoom(-1);
-    }, { passive: false });
-    zoomInButton.addEventListener('touchstart', (e) => {
+    });
+    zoomInButton.addEventListener('pointerdown', (e) => {
         e.preventDefault();
         shiftZoom(1);
-    }, { passive: false });
+    });
     document.addEventListener('contextmenu', (e) => e.preventDefault());
     
     // @ts-nocheck
