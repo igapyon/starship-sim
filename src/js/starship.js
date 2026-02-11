@@ -3,7 +3,7 @@
 // 艦船クラス（モジュラー構成）
 // ========================================
 class Starship {
-    constructor(x, y, weaponCount, engineCount, color = '#99ddff', hullType = 'standard', weaponClass = WeaponUnit) {
+    constructor(x, y, weaponCount, engineCount, color = TEAM_COLORS.A, hullType = 'standard', weaponClass = WeaponUnit) {
         this.x = x;
         this.y = y;
         this.vx = 0;
@@ -424,7 +424,7 @@ class Starship {
                     const hpRatio = weapon.hp / weapon.maxHp;
                     ctx.fillStyle = hpRatio > 0.3 ? '#0f0' : '#f00';
                     ctx.fillRect(hpBarX, hpBarY, hpBarWidth * hpRatio, hpBarHeight);
-                    ctx.strokeStyle = '#99ddff';
+                    ctx.strokeStyle = TEAM_COLORS.A;
                     ctx.lineWidth = 1;
                     ctx.strokeRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
                 });
@@ -438,7 +438,7 @@ class Starship {
                 const hpRatio = this.hull.hp / this.hull.maxHp;
                 ctx.fillStyle = '#888888';
                 ctx.fillRect(hpBarX, hpBarY, hpBarWidth * hpRatio, hpBarHeight);
-                ctx.strokeStyle = '#99ddff';
+                ctx.strokeStyle = TEAM_COLORS.A;
                 ctx.lineWidth = 1;
                 ctx.strokeRect(hpBarX, hpBarY, hpBarWidth, hpBarHeight);
             }

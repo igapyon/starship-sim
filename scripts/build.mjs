@@ -18,9 +18,11 @@ const cssFiles = [
 const expectedJsOrder = [
   // DOM参照とイベント登録のベース（canvas/ctx/resize など）
   'src/js/main.js',
+  // チーム定義（ID/表示名/色/関係）
+  'src/js/teams.js',
   // Hull/Engine/Radar/Weapon の基礎クラス定義
   'src/js/components.js',
-  // Bullet/Particle/DetectionBeacon。teamMetadata（scenes.js）を実行時参照
+  // Bullet/Particle/DetectionBeacon。TEAM_DEFINITIONS を実行時参照
   'src/js/projectiles-effects.js',
   // Starship本体。components / projectile classes に依存
   'src/js/starship.js',
@@ -32,6 +34,7 @@ const expectedJsOrder = [
 
 const moduleNames = [
   'main',
+  'teams',
   'components',
   'projectiles-effects',
   'starship',

@@ -33,7 +33,7 @@
 
         function updateTeam(ships, teamId, opponents) {
             const isControlledByMouse = teamId === mouseControlTeam;
-            const metadata = teamMetadata[teamId];
+            const metadata = TEAM_DEFINITIONS[teamId];
             const enemyShips = opponents.filter(opponent => opponent.color !== metadata.color);
             const beaconDetectedEnemies = getBeaconDetectedEnemies(teamId, enemyShips);
             const enemyInBeacon = beaconDetectedEnemies.length > 0;
@@ -172,13 +172,14 @@
                 }
             }
 
-            // 統一されたチーム更新
-            updateTeam(playerFleet, 'A', [...enemies, ...teamC]);
-            updateTeam(enemies, 'B', [...playerFleet, ...teamC]);
-            updateTeam(teamC, 'C', [...playerFleet, ...enemies]);
+            // 統一されたチーム更新（チーム定義に基づく対称処理）
+            for (const teamId of TEAM_IDS) {
+                const opponents = TEAM_DEFINITIONS[teamId].enemies.flatMap((enemyTeamId) => teamShips[enemyTeamId]);
+                updateTeam(teamShips[teamId], teamId, opponents);
+            }
 
             // 衝突判定（相互作用）- すべての船と残骸に対して統一的に斥力を適用
-            const allShips = [...playerFleet, ...enemies, ...teamC];
+            const allShips = TEAM_IDS.flatMap((teamId) => teamShips[teamId]);
             for (let i = 0; i < allShips.length; i++) {
                 for (let j = i + 1; j < allShips.length; j++) {
                     if (allShips[i].collidesWith(allShips[j])) {
@@ -198,11 +199,13 @@
             }
 
             // 弾の対象チーム選定マップ（各チームの弾が何を攻撃できるか）
-            const bulletTargetMap = {
-                '#99ddff': [{ ships: enemies, costVar: 'lostEnemyCost' }, { ships: teamC, costVar: 'lostTeamCCost' }],  // チームAの弾
-                '#ffccdd': [{ ships: playerFleet, costVar: 'lostPlayerCost' }, { ships: teamC, costVar: 'lostTeamCCost' }],  // チームBの弾
-                '#ffd24d': [{ ships: playerFleet, costVar: 'lostPlayerCost' }, { ships: enemies, costVar: 'lostEnemyCost' }]   // チームCの弾
-            };
+            const bulletTargetMap = {};
+            for (const teamId of TEAM_IDS) {
+                bulletTargetMap[TEAM_COLORS[teamId]] = TEAM_DEFINITIONS[teamId].enemies.map((enemyTeamId) => ({
+                    ships: teamShips[enemyTeamId],
+                    targetTeamId: enemyTeamId
+                }));
+            }
 
             // 弾更新
             for (let i = bullets.length - 1; i >= 0; i--) {
@@ -216,7 +219,7 @@
                         for (let targetGroup of targets) {
                             if (bulletHit) break;
                             const ships = targetGroup.ships;
-                            const costVarName = targetGroup.costVar;
+                            const targetTeamId = targetGroup.targetTeamId;
 
                             for (let j = ships.length - 1; j >= 0; j--) {
                                 if (bullets[i].collidesWith(ships[j])) {
@@ -224,15 +227,11 @@
                                     particles.push(...damageResult.particles);
 
                                     // コスト更新
-                                    if (costVarName === 'lostPlayerCost') lostPlayerCost += damageResult.cost;
-                                    else if (costVarName === 'lostEnemyCost') lostEnemyCost += damageResult.cost;
-                                    else if (costVarName === 'lostTeamCCost') lostTeamCCost += damageResult.cost;
+                                    lostCostByTeam[targetTeamId] += damageResult.cost;
 
                                     if (!ships[j].isAlive()) {
                                         particles.push(...ships[j].createExplosion());
-                                        if (costVarName === 'lostPlayerCost') lostPlayerCost += ships[j].getCost();
-                                        else if (costVarName === 'lostEnemyCost') lostEnemyCost += ships[j].getCost();
-                                        else if (costVarName === 'lostTeamCCost') lostTeamCCost += ships[j].getCost();
+                                        lostCostByTeam[targetTeamId] += ships[j].getCost();
                                         ships.splice(j, 1);
                                     }
                                     bulletHit = true;
@@ -263,27 +262,25 @@
             }
 
             // 情報表示：コスト情報
-            const currentPlayerCost = initialPlayerCost - lostPlayerCost;
-            const currentEnemyCost = initialEnemyCost - lostEnemyCost;
-            const currentTeamCCost = initialTeamCCost - lostTeamCCost;
+            const currentCostByTeam = {};
+            for (const teamId of TEAM_IDS) {
+                currentCostByTeam[teamId] = initialCostByTeam[teamId] - lostCostByTeam[teamId];
+            }
             // 破壊されたシップ（射撃ユニットなし）は除外
-            const currentPlayerShipCount = playerFleet.filter(ship => ship.weapons.length > 0).length;
-            const currentEnemyShipCount = enemies.filter(ship => ship.weapons.length > 0).length;
-            const currentTeamCShipCount = teamC.filter(ship => ship.weapons.length > 0).length;
+            const currentShipCountByTeam = {};
+            for (const teamId of TEAM_IDS) {
+                currentShipCountByTeam[teamId] = teamShips[teamId].filter((ship) => ship.weapons.length > 0).length;
+            }
 
-            infoDiv.innerHTML = `
-<strong>チームA（水色）</strong><br>
-船体 ${currentPlayerShipCount}/${initialPlayerShipCount}${currentPlayerShipCount === 0 ? ' 全滅' : ''}<br>
-コスト ${currentPlayerCost}/${initialPlayerCost}<br>
-<br>
-<strong>チームB（桃色）</strong><br>
-船体 ${currentEnemyShipCount}/${initialEnemyShipCount}${currentEnemyShipCount === 0 ? ' 全滅' : ''}<br>
-コスト ${currentEnemyCost}/${initialEnemyCost}<br>
-<br>
-<strong>チームC（黄色）</strong><br>
-船体 ${currentTeamCShipCount}/${initialTeamCShipCount}${currentTeamCShipCount === 0 ? ' 全滅' : ''}<br>
-コスト ${currentTeamCCost}/${initialTeamCCost}<br>
-            `;
+            infoDiv.innerHTML = TEAM_IDS.map((teamId) => {
+                const currentShipCount = currentShipCountByTeam[teamId];
+                const initialShipCount = initialShipCountByTeam[teamId];
+                const currentCost = currentCostByTeam[teamId];
+                const initialCost = initialCostByTeam[teamId];
+                return `<strong>${formatTeamLabel(teamId)}</strong><br>
+船体 ${currentShipCount}/${initialShipCount}${currentShipCount === 0 ? ' 全滅' : ''}<br>
+コスト ${currentCost}/${initialCost}`;
+            }).join('<br><br>');
 
             requestAnimationFrame(animate);
         }
