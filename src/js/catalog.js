@@ -12,9 +12,9 @@ const COMPONENT_CATALOG = {
         thrusterA: { mass: 1, thrust: 0.15, rotationSpeed: 0.1 }
     },
     radars: {
-        radarA: { mass: 0, detectionRange: 150 },
-        radarB: { mass: 1, detectionRange: 180 },
-        radarC: { mass: 2, detectionRange: 225 }
+        radarA: { mass: 0, detectionRange: 120 },
+        radarB: { mass: 1, detectionRange: 160 },
+        radarC: { mass: 2, detectionRange: 210 }
     },
     turrets: {
         turretA: {

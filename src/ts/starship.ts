@@ -717,3 +717,50 @@
             }
 
         }
+
+        const SHIP_PRESETS = {
+            corvette: {
+                hullType: 'hullA',
+                weaponCount: 1,
+                engineCount: 1
+            },
+            destroyer: {
+                hullType: 'hullB',
+                weaponCount: 2,
+                engineCount: 2,
+                weaponClass: 'turretB',
+                weaponMaxRange: 270
+            },
+            lightCruiser: {
+                hullType: 'hullC',
+                weaponCount: 3,
+                engineCount: 3,
+                weaponClass: 'turretC'
+            }
+        };
+
+        const SHIP_WEAPON_CLASS_BY_ID = {
+            turretA: IndependentTurretA,
+            turretB: IndependentTurretB,
+            turretC: IndependentTurretC
+        };
+
+        function createShipFromPreset(teamId, x, y, presetId, overrides = {}) {
+            const preset = { ...SHIP_PRESETS[presetId], ...overrides };
+            const weaponClass = preset.weaponClass ? SHIP_WEAPON_CLASS_BY_ID[preset.weaponClass] : undefined;
+            const ship = new Starship(
+                x,
+                y,
+                preset.weaponCount,
+                preset.engineCount,
+                TEAM_COLORS[teamId],
+                preset.hullType,
+                weaponClass
+            );
+            if (typeof preset.weaponMaxRange === 'number') {
+                ship.weapons.forEach((weapon) => {
+                    weapon.maxRange = preset.weaponMaxRange;
+                });
+            }
+            return ship;
+        }
