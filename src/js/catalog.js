@@ -14,7 +14,7 @@ const COMPONENT_CATALOG = {
     radars: {
         radarA: { mass: 0, detectionRange: 120 },
         radarB: { mass: 1, detectionRange: 160 },
-        radarC: { mass: 2, detectionRange: 210 }
+        radarC: { mass: 2, detectionRange: 200 }
     },
     turrets: {
         turretA: {
@@ -24,7 +24,7 @@ const COMPONENT_CATALOG = {
             fireInterval: 60,
             bulletSpeed: 5,
             bulletDamage: 10,
-            maxRange: 180,
+            maxRange: 160,
             rotationSpeed: 0
         },
         turretB: {
@@ -34,7 +34,7 @@ const COMPONENT_CATALOG = {
             fireInterval: 60,
             bulletSpeed: 5,
             bulletDamage: 10,
-            maxRange: 225,
+            maxRange: 200,
             rotationSpeed: 0.1
         },
         turretC: {
@@ -44,7 +44,7 @@ const COMPONENT_CATALOG = {
             fireInterval: 90,
             bulletSpeed: 5,
             bulletDamage: 20,
-            maxRange: 338,
+            maxRange: 260,
             rotationSpeed: 0.1
         }
     }

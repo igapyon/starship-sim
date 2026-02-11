@@ -134,7 +134,7 @@ npm run typecheck
 
 ### 戦闘フロー
 
-1. **索敇** - レーダー範囲内（150～225px）で敵を認識
+1. **索敇** - レーダー範囲内（120～200px）で敵を認識
 2. **追跡** - 敵に向かって加速・回転
 3. **射撃** - 距離と角度が条件を満たしたら自動発火
 4. **ダメージ** - 被弾時に HP 低下、要素破壊時は機能喪失
@@ -167,11 +167,12 @@ npm run typecheck
 | `HullB` | 大型船体 | HP: 300, 重さ: 3 |
 | `HullC` | 軽巡船体 | HP: 500, 重さ: 5 |
 | `ThrusterEngine` | 推進エンジン | 推進力: 0.15, 旋回: 0.1 rad/frame |
-| `RadarA` | 標準レーダー | 範囲ボーナス: +0px |
-| `RadarB` | 索敵ユニット B | 範囲ボーナス: +30px |
-| `RadarC` | 索敵ユニット C | 範囲ボーナス: +45px |
-| `IndependentTurretA` | 標準砲塔 | HP: 150, 射撃間隔: 60f |
-| `IndependentTurretB` | 高火力砲塔 | HP: 200, 射撃間隔: 90f |
+| `RadarA` | レーダーA | 探知距離: 120 |
+| `RadarB` | レーダーB | 探知距離: 160 |
+| `RadarC` | レーダーC | 探知距離: 200 |
+| `IndependentTurretA` | 砲塔A | HP: 100, 射撃間隔: 60f |
+| `IndependentTurretB` | 砲塔B | HP: 150, 射撃間隔: 60f |
+| `IndependentTurretC` | 砲塔C | HP: 200, 射撃間隔: 90f |
 
 ### その他の要素
 
@@ -213,14 +214,14 @@ npm run typecheck
 
 | パラメータ | 値 |
 |-----------|-----|
-| 斥力範囲 | 画面端から 80px |
+| 斥力範囲 | 画面端から 50px |
 | 最大斥力 | 0.05 u/frame² |
 
 ### 戦闘パラメータ
 
 | パラメータ | 値 |
 |-----------|-----|
-| 索敇範囲（基本） | 150～225px |
+| 索敇範囲（レーダー） | 120～200px |
 | 射撃間隔（標準） | 60 フレーム |
 | 射撃間隔（高火力） | 90 フレーム |
 | ダメージ（1発） | 10～20 |
@@ -270,18 +271,22 @@ starship-sim/
 │   ├── css/app.css         # 開発用CSS
 │   ├── ts/
 │   │   ├── main.ts         # TypeScriptソース
+│   │   ├── catalog.ts
 │   │   ├── components.ts
 │   │   ├── projectiles-effects.ts
 │   │   ├── starship.ts
 │   │   ├── scenes.ts
-│   │   └── game-loop.ts
+│   │   ├── game-loop.ts
+│   │   └── teams.ts
 │   └── js/
 │       ├── main.js         # ビルド生成JS（開発実行用）
+│       ├── catalog.js
 │       ├── components.js
 │       ├── projectiles-effects.js
 │       ├── starship.js
 │       ├── scenes.js
-│       └── game-loop.js
+│       ├── game-loop.js
+│       └── teams.js
 ├── scripts/build.mjs       # 単一HTML生成スクリプト
 ├── package.json            # npm scripts（build）
 ├── tsconfig.json           # TypeScript設定
@@ -333,19 +338,21 @@ starship-sim/
 
 各コンポーネントのコストは重量に一致します：
 
-- **標準船体**: コスト1（重量1）
-- **大型船体**: コスト3（重量3）
-- **船体5**: コスト5（重量5）
+- **船体A（HullA）**: コスト1（重量1）
+- **船体B（HullB）**: コスト3（重量3）
+- **船体C（HullC）**: コスト5（重量5）
 - **標準推進エンジン**: コスト1（重量1）
-- **標準射撃ユニット**: コスト1（重量1）
-- **独立砲塔射撃ユニット**: コスト2（重量2）
-- **レーダーA (Radar A)**: コスト1（重量1）
-- **レーダーB (Radar B)**: コスト2（重量2）
+- **砲塔A (IndependentTurretA)**: コスト1（重量1）
+- **砲塔B (IndependentTurretB)**: コスト2（重量2）
+- **砲塔C (IndependentTurretC)**: コスト4（重量4）
+- **レーダーA (Radar A)**: コスト0（重量0）
+- **レーダーB (Radar B)**: コスト1（重量1）
+- **レーダーC (Radar C)**: コスト2（重量2）
 
 **艦隊構成別コスト**
-- **船種C（Corvette）**: 1 + 1 + 1 = **コスト3**
-- **船種D（Destroyer）**: 3 + 2 + 4 + 1 = **コスト10**
-- **船種L（Light Cruiser）**: 5 + 3 + 12 + 4 = **コスト24**
+- **船種C（Corvette）**: 1 + 2 + 1 + 0 = **コスト4**
+- **船種D（Destroyer）**: 3 + 4 + 2 + 1 = **コスト10**
+- **船種L（Light Cruiser）**: 5 + 12 + 3 + 2 = **コスト22**
 
 ### 物理パラメータ
 
@@ -358,7 +365,7 @@ starship-sim/
 
 ### 画面端の物理
 
-- **斥力範囲**: 画面端から 80 ピクセル
+- **斥力範囲**: 画面端から 50 ピクセル
 - **最大斥力**: 0.05 u/frame²
 - **敵艦の目標修正**: 画面端近くで中央方向に 60% 修正
 

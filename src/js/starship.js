@@ -243,7 +243,7 @@ class Starship {
             this.vy += Math.sin(this.angle) * acceleration * thrustFactor;
         }
         // 画面端の斥力
-        const margin = 80;
+        const margin = 50;
         const maxRepelStrength = 0.05;
         if (this.x < margin) {
             const distRatio = 1 - (this.x / margin);

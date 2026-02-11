@@ -261,7 +261,7 @@
                 }
 
                 // 画面端の斥力
-                const margin = 80;
+                const margin = 50;
                 const maxRepelStrength = 0.05;
                 
                 if (this.x < margin) {

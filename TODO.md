@@ -14,39 +14,46 @@
 
 ### レーダーシステムの実装乖離を修正
 
-[ ] RadarA/RadarB/RadarC の detectionRange を索敇ロジックに統合する
-  - 現状：RadarA/RadarB/RadarC クラスは存在し質量（mass）はコスト計算に含まれるが、detectionRange は未使用
-  - 目標：RadarA/RadarB/RadarC の detectionRange を実際の索敇範囲計算に反映させる
+[x] RadarA/RadarB/RadarC の detectionRange を索敇ロジックに統合する
+  - 実装：`getDetectionRange()` を経由して索敵判定・射撃判定・索敵円描画で使用
 
-[ ] selectTarget() メソッドを修正して、weapon.detectionRange ではなく radar.detectionRange を使用
-  - 現状：1135行で `distance < this.weapons[0].detectionRange` を使用
-  - 目標：レーダーコンポーネントベースの索敇範囲を使用
+[x] selectTarget() メソッドを修正して、weapon.detectionRange ではなく radar.detectionRange を使用
+  - 実装：`distance < detectionRange`（`getDetectionRange()` の値）に置換済み
 
-[ ] 全シーンの detectionRange 後付け設定を改善
-  - 現状：初期化時に `weapon.detectionRange = 180` などと後から上書き
-  - 目標：レーダーコンポーネントで統一管理
+[x] 全シーンの detectionRange 後付け設定を改善
+  - 実装：`scenes.ts` で `weapon.detectionRange` / `weapon.mass` の直接上書きを撤去
   - 方針：`scenes.ts` で `weapon.mass / detectionRange / maxRange` を直接上書きしない（カタログ/クラス定義側に寄せる）
 
 [ ] SHIP_TYPES.md のドキュメントを修正：レーダーコンポーネントが索敇範囲を決定することを明記
 
 ### コンポーネント抽象化と命名統一
 
-[ ] 現行実装では、レーダーの `detectionRange` は索敵ロジックに未反映です。
-[ ] レーダーは主に艦種差分の質量（=コスト）として効いています。
-[ ] 上記を抽象化・一般化し、コンポーネント定義の横並びを揃える。
+[x] レーダーの `detectionRange` は索敵ロジックに反映済み。
+[x] レーダーは艦種差分の質量（=コスト）に加え、索敵性能差分としても機能する。
+[x] 上記を抽象化・一般化し、コンポーネント定義の横並びを揃える。
 
 [x] `Standard Hull (Hull)` を `HullA` に名称変更する。
 [x] `Large Hull (LargeHull)` を `HullB` に名称変更する。
 
-[ ] `独立砲塔A相当（上書きIndependentTurretA）: 2` を抽象化・一般化し、他コンポーネントと同様に横並びを揃える。
+[x] `独立砲塔A相当（上書きIndependentTurretA）: 2` を抽象化・一般化し、他コンポーネントと同様に横並びを揃える。
 
 ### シーン定義のデータ化
 
 [ ] `src/ts/scenes.ts` の内容の大部分を静的化し、JSONに切り出して管理する。
+[ ] `SCENE_DEFS` の純データ化を完了する（`buildMassD1C8Groups()` 依存を解消）
+[ ] 位置指定DSLを導入する（`anchor` などで `WORLD_SIZE` 直書きを削減）
+[ ] シーン定義のバリデーション層を追加する（未知unit/欠損/負数など）
+[ ] `@ts-nocheck` を段階的に撤去し、まず `scenes.ts` の型定義を導入する
 
 ## 今後の拡張予定
 
 ### シミュレーション機能の強化
+
+[ ] **壁際離脱時の射撃停止仕様を検証する**
+  - 現状：索敵ロスト時（`detectedTarget=false`）は、壁際からの離脱中でも射撃停止する
+  - 観点A（妥当性）：目標を見失ったら撃たない挙動はシミュレーションとして自然
+  - 観点B（バランス）：壁際補正と索敵ロストが重なると一方陣営が過度に不利になる可能性
+  - 対応案：索敵ロスト直後の短時間射撃継続、または壁際補正中のみ射撃条件を緩和する実験を追加
 
 [ ] **ゲーム開始前の艦隊設定画面**
   - 艦隊構成（艦数、船種）の設定

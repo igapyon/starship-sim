@@ -90,10 +90,9 @@
             return groups;
         }
 
-        function buildSceneDefs() {
-            return {
+        const SCENE_DEFS = {
                 weapon1: {
-                    mouseControlTeam: 'A',
+                    initialMouseControlTeam: 'A',
                     teams: {
                         A: [{ kind: 'single', unit: 'corvette', x: WORLD_SIZE / 2, y: WORLD_SIZE / 2 }],
                         B: [],
@@ -101,7 +100,7 @@
                     }
                 },
                 weapon4: {
-                    mouseControlTeam: 'A',
+                    initialMouseControlTeam: 'A',
                     teams: {
                         A: [{
                             kind: 'grid',
@@ -118,7 +117,7 @@
                     }
                 },
                 destroyer1: {
-                    mouseControlTeam: 'A',
+                    initialMouseControlTeam: 'A',
                     teams: {
                         A: [{ kind: 'single', unit: 'destroyer', x: WORLD_SIZE / 2, y: WORLD_SIZE / 2 }],
                         B: [],
@@ -126,7 +125,7 @@
                     }
                 },
                 destroyer1v6: {
-                    mouseControlTeam: 'A',
+                    initialMouseControlTeam: 'A',
                     teams: {
                         A: [{ kind: 'single', unit: 'destroyer', x: WORLD_SIZE / 2, y: WORLD_SIZE / 2 }],
                         B: [{
@@ -143,7 +142,7 @@
                     }
                 },
                 destroyervsdestroyer: {
-                    mouseControlTeam: 'A',
+                    initialMouseControlTeam: 'A',
                     teams: {
                         A: [{ kind: 'single', unit: 'destroyer', x: WORLD_SIZE / 2, y: WORLD_SIZE - 80 }],
                         B: [{ kind: 'single', unit: 'destroyer', x: WORLD_SIZE / 2, y: 80 }],
@@ -151,7 +150,7 @@
                     }
                 },
                 lightcruiser1vsdestroyer2: {
-                    mouseControlTeam: 'A',
+                    initialMouseControlTeam: 'A',
                     teams: {
                         A: [{ kind: 'single', unit: 'lightCruiser', x: WORLD_SIZE / 2, y: WORLD_SIZE - 120 }],
                         B: [{
@@ -167,7 +166,7 @@
                     }
                 },
                 corvette8vsdestroyer2: {
-                    mouseControlTeam: 'A',
+                    initialMouseControlTeam: 'A',
                     teams: {
                         A: [{
                             kind: 'grid',
@@ -192,7 +191,7 @@
                     }
                 },
                 mixed1c8vsmixed1c8: {
-                    mouseControlTeam: 'A',
+                    initialMouseControlTeam: 'A',
                     teams: {
                         A: [
                             { kind: 'single', unit: 'lightCruiser', x: WORLD_SIZE / 2, y: WORLD_SIZE - 80 },
@@ -212,7 +211,7 @@
                     }
                 },
                 mass_d1c8: {
-                    mouseControlTeam: 'A',
+                    initialMouseControlTeam: 'A',
                     teams: {
                         A: [
                             { kind: 'single', unit: 'lightCruiser', x: WORLD_SIZE / 2, y: WORLD_SIZE - 100 },
@@ -226,7 +225,7 @@
                     }
                 },
                 threeway_l1d4c32: {
-                    mouseControlTeam: 'A',
+                    initialMouseControlTeam: 'A',
                     teams: {
                         A: [
                             { kind: 'single', unit: 'lightCruiser', x: WORLD_SIZE / 2 + 100, y: WORLD_SIZE - 100 },
@@ -246,7 +245,7 @@
                     }
                 },
                 default: {
-                    mouseControlTeam: 'A',
+                    initialMouseControlTeam: 'A',
                     teams: {
                         A: [],
                         B: [
@@ -258,8 +257,7 @@
                         C: []
                     }
                 }
-            };
-        }
+        };
 
         // ゲーム初期化関数
         function initializeGame(config = 'destroyer1') {
@@ -275,9 +273,8 @@
                 setTeamShips(teamId, []);
             }
 
-            const sceneDefs = buildSceneDefs();
-            const scene = sceneDefs[config] || sceneDefs.default;
-            mouseControlTeam = scene.mouseControlTeam || 'A';
+            const scene = SCENE_DEFS[config] || SCENE_DEFS.default;
+            mouseControlTeam = scene.initialMouseControlTeam || 'A';
 
             for (const teamId of TEAM_IDS) {
                 const formations = scene.teams[teamId] || [];
