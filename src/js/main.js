@@ -327,9 +327,10 @@ function layoutUi() {
     githubLink.style.top = `${Math.round(githubTop)}px`;
 }
 function resizeCanvas() {
+    const viewport = window.visualViewport;
     renderState.dpr = window.devicePixelRatio || 1;
-    renderState.viewportWidth = window.innerWidth;
-    renderState.viewportHeight = window.innerHeight;
+    renderState.viewportWidth = Math.floor(viewport ? viewport.width : window.innerWidth);
+    renderState.viewportHeight = Math.floor(viewport ? viewport.height : window.innerHeight);
     canvas.width = Math.floor(renderState.viewportWidth * renderState.dpr);
     canvas.height = Math.floor(renderState.viewportHeight * renderState.dpr);
     canvas.style.width = `${renderState.viewportWidth}px`;
@@ -351,6 +352,10 @@ function resizeCanvas() {
 }
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
+if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', resizeCanvas);
+    window.visualViewport.addEventListener('scroll', resizeCanvas);
+}
 function screenToWorld(screenX, screenY) {
     const worldX = (screenX - renderState.offsetX) / renderState.worldScale;
     const worldY = (screenY - renderState.offsetY) / renderState.worldScale;
