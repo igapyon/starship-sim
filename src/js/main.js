@@ -346,6 +346,7 @@ function resizeCanvas() {
         updateZoomControls();
     }
     recomputeRenderState();
+    layoutUi();
     requestAnimationFrame(layoutUi);
 }
 resizeCanvas();
@@ -512,18 +513,12 @@ function shiftZoom(direction) {
     recomputeRenderState();
     layoutUi();
 }
-zoomOutButton.addEventListener('click', () => {
-    shiftZoom(-1);
-});
-zoomInButton.addEventListener('click', () => {
-    shiftZoom(1);
-});
-zoomOutButton.addEventListener('touchstart', (e) => {
+zoomOutButton.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     shiftZoom(-1);
-}, { passive: false });
-zoomInButton.addEventListener('touchstart', (e) => {
+});
+zoomInButton.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     shiftZoom(1);
-}, { passive: false });
+});
 document.addEventListener('contextmenu', (e) => e.preventDefault());
