@@ -145,6 +145,8 @@ function updateTeam(ships, teamId, opponents) {
 // メインループ
 // ========================================
 function animate() {
+    // 追従モード時は毎フレームの艦船座標に合わせて表示位置を再計算
+    recomputeRenderState();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.imageSmoothingEnabled = false;
     // レターボックス背景
