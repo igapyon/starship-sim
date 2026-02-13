@@ -30,8 +30,8 @@
 - **開発時依存**: Node.js（ビルド時のみ）
 
 ### コード規模
-- **総行数**: 約 2,016 行（HTML + CSS + JavaScript 一体）
-- **クラス数**: 11 個
+- **総行数**: 約 2,672 行（`index.html`、HTML + CSS + JavaScript 一体）
+- **クラス数**: 14 個
 - **技術**: Canvas API + requestAnimationFrame + vanilla JavaScript
 
 ---
@@ -64,6 +64,8 @@
 - CSSソース: `src/css/app.css`
 - TypeScriptソース:
   - `src/ts/main.ts`
+  - `src/ts/teams.ts`
+  - `src/ts/catalog.ts`
   - `src/ts/components.ts`
   - `src/ts/projectiles-effects.ts`
   - `src/ts/starship.ts`
@@ -71,6 +73,8 @@
   - `src/ts/game-loop.ts`
 - 開発実行用JS（ビルド生成）:
   - `src/js/main.js`
+  - `src/js/teams.js`
+  - `src/js/catalog.js`
   - `src/js/components.js`
   - `src/js/projectiles-effects.js`
   - `src/js/starship.js`
@@ -206,7 +210,8 @@ npm run typecheck
 | パラメータ | 値 |
 |-----------|-----|
 | 最高速度 | 2.0 u/frame |
-| 標準加速 | 0.5 u/frame² |
+| ThrusterA 推進力 | 0.15 |
+| 実効加速度 | 総推進力 ÷ 総質量（艦種構成依存） |
 | 減速（摩擦） | 毎フレーム速度の 2% |
 | 旋回速度 | 0.1 rad/frame（標準） |
 

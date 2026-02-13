@@ -10,7 +10,7 @@
 
 [ ] まだまだ古い実装に由来する記述が残っている
 [ ] mdと実装上のクラス名が乖離しているところがある。概念に合わせて適宜実装も更新していきたい。
-[ ] GitHubアイコンの配置（PC/モバイルでUIと重ならない位置に設置）
+[x] GitHubアイコンの配置（PC/モバイルでUIと重ならない位置に設置）
 
 ### レーダーシステムの実装乖離を修正
 
@@ -24,7 +24,7 @@
   - 実装：`scenes.ts` で `weapon.detectionRange` / `weapon.mass` の直接上書きを撤去
   - 方針：`scenes.ts` で `weapon.mass / detectionRange / maxRange` を直接上書きしない（カタログ/クラス定義側に寄せる）
 
-[ ] SHIP_TYPES.md のドキュメントを修正：レーダーコンポーネントが索敇範囲を決定することを明記
+[x] SHIP_TYPES.md のドキュメントを修正：レーダーコンポーネントが索敇範囲を決定することを明記
 
 ### コンポーネント抽象化と命名統一
 
@@ -49,7 +49,7 @@
 
 [ ] `catalog.ts` の値が実装へ期待通り反映されているか、項目ごとの参照先マップを作成する（仕様確認用）
 
-[ ] `SIMULATION_SETTINGS`（仮）を追加し、コンポーネント値以外の調整値を集約する
+[x] `SIMULATION_SETTINGS`（仮）を追加し、コンポーネント値以外の調整値を集約する
   - 例: `edgeRepulsionMargin`, `edgeRepulsionStrength`, `friction`, `maxSpeed`
   - 例: `edgeTargetCorrectionMargin`, `edgeTargetCorrectionFactor`, `attackWrecksDefault`
 

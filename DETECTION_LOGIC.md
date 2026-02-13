@@ -39,7 +39,7 @@
 2. 上記がいない場合、`attackWrecks=true` のときのみ「残骸（weaponsなし）」の最短距離
 3. 見つからなければ `null`
 
-索敵範囲判定は `this.weapons[0].detectionRange` を使用します。
+索敵範囲判定は `Starship#getDetectionRange()`（レーダーの `detectionRange`）を使用します。
 
 ---
 
@@ -47,7 +47,7 @@
 
 ### ビーコン仕様（`DetectionBeacon`）
 
-- 範囲: `150`
+- 範囲: `160`（`SIMULATION_SETTINGS.ai.beaconRangeDefault`）
 - 持続: `180` フレーム
 - チーム属性あり（A/B/C）
 
@@ -106,9 +106,9 @@
 
 ## 注意点（現状の設計）
 
-1. レーダークラスの `detectionBonus` は未統合
-- `RadarA/RadarB` は質量コストには反映されるが、索敵距離計算には未使用
-- 実際の索敵は `weapon.detectionRange` ベース
+1. 索敵範囲はレーダー依存
+- `RadarA/RadarB/RadarC` の `detectionRange` が索敵距離計算に直接使用される
+- 実装経路は `Starship#getDetectionRange()` -> `selectTarget()` / `canFire()`
 
 2. ビーコン優先ではなく「近い方優先」
 - ビーコン候補が常に優先されるわけではない
