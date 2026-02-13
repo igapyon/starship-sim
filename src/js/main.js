@@ -96,9 +96,18 @@ function isWorldFullyVisible() {
     return worldPixelSize <= renderState.viewportWidth && worldPixelSize <= renderState.viewportHeight;
 }
 function isShipFollowModeActive() {
-    if (typeof selectedBeaconTeam === 'undefined')
+    const beaconTeam = getSelectedBeaconTeamSafe();
+    if (typeof beaconTeam === 'undefined')
         return false;
-    return selectedBeaconTeam === null && !isWorldFullyVisible();
+    return beaconTeam === null && !isWorldFullyVisible();
+}
+function getSelectedBeaconTeamSafe() {
+    try {
+        return selectedBeaconTeam;
+    }
+    catch {
+        return undefined;
+    }
 }
 function getFocusPoint() {
     const followModeActive = isShipFollowModeActive();
@@ -153,7 +162,9 @@ function computeCenteredOffset(viewportSize, worldPixelSize, targetWorldPos) {
     return Math.floor((viewportSize - worldPixelSize) / 2);
 }
 function formatZoomLabel(zoom) {
-    return `${Math.round(zoom * 100)}%`;
+    if (!Number.isFinite(zoom) || zoom <= 0)
+        return '100%';
+    return `${Math.max(1, Math.round(zoom * 100))}%`;
 }
 function updateZoomControls() {
     const maxFittableZoom = Math.min(renderState.viewportWidth, renderState.viewportHeight) / WORLD_SIZE;
@@ -170,9 +181,21 @@ function updateZoomControls() {
             levels.push(nextLevel);
     }
     renderState.zoomLevels = levels;
+    if (!Number.isFinite(renderState.zoom) || renderState.zoom <= 0) {
+        renderState.zoom = 1;
+    }
     const currentIndex = levels.indexOf(renderState.zoom);
     if (currentIndex === -1) {
-        renderState.zoom = levels[levels.length - 1];
+        let nearest = levels[0];
+        let bestDelta = Math.abs(renderState.zoom - nearest);
+        for (const level of levels) {
+            const delta = Math.abs(renderState.zoom - level);
+            if (delta < bestDelta) {
+                nearest = level;
+                bestDelta = delta;
+            }
+        }
+        renderState.zoom = nearest;
     }
     const nextIndex = levels.indexOf(renderState.zoom);
     zoomOutButton.disabled = nextIndex <= 0;
@@ -279,7 +302,8 @@ function layoutUi() {
         let top;
         if (rightGutter >= width) {
             left = worldRight + margin;
-            top = worldBottom - height;
+            // 右ガター配置時も、ズームは上下に揺れないよう常に下寄せを優先する
+            top = renderState.viewportHeight - height - margin;
         }
         else if (bottomGutter >= height) {
             left = worldRight - width;
@@ -329,8 +353,32 @@ function layoutUi() {
 function resizeCanvas() {
     const viewport = window.visualViewport;
     renderState.dpr = window.devicePixelRatio || 1;
-    renderState.viewportWidth = Math.floor(viewport ? viewport.width : window.innerWidth);
-    renderState.viewportHeight = Math.floor(viewport ? viewport.height : window.innerHeight);
+    const innerWidth = Math.floor(window.innerWidth);
+    const innerHeight = Math.floor(window.innerHeight);
+    const clientWidth = Math.floor(document.documentElement ? document.documentElement.clientWidth : 0);
+    const clientHeight = Math.floor(document.documentElement ? document.documentElement.clientHeight : 0);
+    const screenWidth = Math.floor(window.screen ? window.screen.width : 0);
+    const screenHeight = Math.floor(window.screen ? window.screen.height : 0);
+    const viewportWidth = Math.floor(viewport ? viewport.width : innerWidth);
+    const viewportHeight = Math.floor(viewport ? viewport.height : innerHeight);
+    function pickDimension(primary, secondary, tertiary, screenValue) {
+        const fallback = Math.max(primary, secondary, tertiary, screenValue, 1);
+        const suspiciousByScreen = screenValue > 0 && primary < screenValue * 0.25;
+        const suspiciousBySecondaryLarge = secondary > 0 && primary > secondary * 1.3;
+        const suspiciousByTertiaryLarge = tertiary > 0 && primary > tertiary * 1.3;
+        if (primary <= 0 || suspiciousByScreen || suspiciousBySecondaryLarge || suspiciousByTertiaryLarge) {
+            if (secondary > 0 && !(screenValue > 0 && secondary < screenValue * 0.25))
+                return secondary;
+            if (tertiary > 0 && !(screenValue > 0 && tertiary < screenValue * 0.25))
+                return tertiary;
+            if (screenValue > 0)
+                return screenValue;
+            return fallback;
+        }
+        return primary;
+    }
+    renderState.viewportWidth = pickDimension(viewportWidth, innerWidth, clientWidth, screenWidth);
+    renderState.viewportHeight = pickDimension(viewportHeight, innerHeight, clientHeight, screenHeight);
     canvas.width = Math.floor(renderState.viewportWidth * renderState.dpr);
     canvas.height = Math.floor(renderState.viewportHeight * renderState.dpr);
     canvas.style.width = `${renderState.viewportWidth}px`;
@@ -352,10 +400,21 @@ function resizeCanvas() {
 }
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
+window.addEventListener('orientationchange', resizeCanvas);
+window.addEventListener('pageshow', resizeCanvas);
+window.addEventListener('focus', resizeCanvas);
+document.addEventListener('visibilitychange', () => {
+    if (!document.hidden)
+        resizeCanvas();
+});
 if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', resizeCanvas);
     window.visualViewport.addEventListener('scroll', resizeCanvas);
 }
+// iOS/WebView は初回表示直後に viewport 値が遅れて安定するため、短時間だけ再計測する
+[0, 50, 150, 400, 1000].forEach((delay) => {
+    setTimeout(resizeCanvas, delay);
+});
 function screenToWorld(screenX, screenY) {
     const worldX = (screenX - renderState.offsetX) / renderState.worldScale;
     const worldY = (screenY - renderState.offsetY) / renderState.worldScale;
@@ -416,8 +475,9 @@ document.getElementById('wreckage-toggle').addEventListener('click', () => {
 // ビーコンチームボタンのイベントハンドラ
 const beaconTeamButtons = document.querySelectorAll('.beacon-team-btn');
 function updateBeaconTeamSelection(teamId) {
-    const previousBeaconTeam = selectedBeaconTeam;
-    if (selectedBeaconTeam === teamId) {
+    const currentBeaconTeam = getSelectedBeaconTeamSafe();
+    const previousBeaconTeam = currentBeaconTeam;
+    if (currentBeaconTeam === teamId) {
         selectedBeaconTeam = null;
     }
     else {
@@ -482,9 +542,10 @@ function placeBeaconFromEvent(e) {
     const worldPoint = screenToWorld(screenX, screenY);
     if (!worldPoint)
         return;
-    if (typeof selectedBeaconTeam !== 'undefined' && selectedBeaconTeam) {
+    const beaconTeam = getSelectedBeaconTeamSafe();
+    if (typeof beaconTeam !== 'undefined' && beaconTeam) {
         // ビーコン配置モード
-        detectionBeacons.push(new DetectionBeacon(worldPoint.x, worldPoint.y, selectedBeaconTeam));
+        detectionBeacons.push(new DetectionBeacon(worldPoint.x, worldPoint.y, beaconTeam));
         return;
     }
     // 追従モード（A/B/C すべてOFF）ではクリック/タップで船を選択
@@ -518,12 +579,29 @@ function shiftZoom(direction) {
     recomputeRenderState();
     layoutUi();
 }
-zoomOutButton.addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    shiftZoom(-1);
-});
-zoomInButton.addEventListener('pointerdown', (e) => {
-    e.preventDefault();
-    shiftZoom(1);
-});
+function bindPress(button, handler) {
+    if (window.PointerEvent) {
+        button.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            handler();
+        });
+        return;
+    }
+    let touchTriggered = false;
+    button.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        touchTriggered = true;
+        handler();
+    }, { passive: false });
+    button.addEventListener('click', (e) => {
+        if (touchTriggered) {
+            touchTriggered = false;
+            return;
+        }
+        e.preventDefault();
+        handler();
+    });
+}
+bindPress(zoomOutButton, () => shiftZoom(-1));
+bindPress(zoomInButton, () => shiftZoom(1));
 document.addEventListener('contextmenu', (e) => e.preventDefault());
