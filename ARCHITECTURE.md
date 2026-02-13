@@ -40,6 +40,8 @@ starship-sim/
 │   │   └── app.css
 │   ├── ts/
 │   │   ├── main.ts
+│   │   ├── teams.ts
+│   │   ├── catalog.ts
 │   │   ├── components.ts
 │   │   ├── projectiles-effects.ts
 │   │   ├── starship.ts
@@ -64,6 +66,16 @@ starship-sim/
 - UI配置（正方形戦場に寄せるレイアウト）
 - 入力イベント（マウス/タッチ）
 - ZOOMステッパー制御
+
+### `src/ts/teams.ts`
+
+- チームID・表示名・色・敵対関係の定義
+- チーム共通ロジックの定数集約
+
+### `src/ts/catalog.ts`
+
+- コンポーネント定義カタログ（Hull/Thruster/Radar/Turret）
+- シミュレーション設定（`SIMULATION_SETTINGS`）定義
 
 ### `src/ts/components.ts`
 

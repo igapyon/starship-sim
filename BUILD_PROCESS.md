@@ -21,6 +21,8 @@ starship-sim/
 │   │   └── app.css
 │   ├── ts/
 │   │   ├── main.ts
+│   │   ├── teams.ts
+│   │   ├── catalog.ts
 │   │   ├── components.ts
 │   │   ├── projectiles-effects.ts
 │   │   ├── starship.ts
@@ -45,6 +47,8 @@ starship-sim/
   - `<link rel="stylesheet" href="src/css/app.css">`
 - JS参照（順序固定）:
   - `src/js/main.js`
+  - `src/js/teams.js`
+  - `src/js/catalog.js`
   - `src/js/components.js`
   - `src/js/projectiles-effects.js`
   - `src/js/starship.js`
